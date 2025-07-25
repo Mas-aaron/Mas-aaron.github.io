@@ -30,6 +30,7 @@ class MenuItem(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
     image_url = models.URLField(max_length=200, blank=True, null=True)
+    image = models.ImageField(upload_to='menu_images/', null=True, blank=True)
     available_breakfast = models.BooleanField(default=True)
     available_lunch = models.BooleanField(default=True)
     available_dinner = models.BooleanField(default=True)

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/api_service.dart';
 import '../models/menu_item.dart';
@@ -103,132 +104,133 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Authentication and Restaurant Selection
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  decoration: const InputDecoration(
-                    labelText: 'API Token',
-                    hintText: 'Paste your auth token',
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Authentication and Restaurant Selection
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'API Token',
+                      hintText: 'Paste your auth token',
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        authToken = val;
+                        api = ApiService(baseUrl: 'http://10.0.2.2:8000/api', authToken: authToken);
+                      });
+                    },
                   ),
-                  onChanged: (val) {
-                    setState(() {
-                      authToken = val;
-                      api = ApiService(baseUrl: 'http://10.0.2.2:8000/api', authToken: authToken);
-                    });
+                ),
+                const SizedBox(width: 16),
+                DropdownButton<int>(
+                  value: selectedRestaurantId,
+                  items: [1, 2, 3].map((id) => DropdownMenuItem<int>(
+                    value: id,
+                    child: Text('Restaurant $id'),
+                  )).toList(),
+                  onChanged: (id) {
+                    if (id != null) {
+                      setState(() { selectedRestaurantId = id; });
+                      fetchMenu();
+                    }
                   },
                 ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Text('Menu Management', style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 24),
+            // CSV Upload Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.upload_file, color: Colors.orange),
+                    const SizedBox(width: 16),
+                    const Expanded(child: Text('Bulk Upload Menu Items (CSV)', style: TextStyle(fontWeight: FontWeight.bold))),
+                    ElevatedButton(
+                      onPressed: pickAndUploadCsv,
+                      child: const Text('Upload'),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 16),
-              DropdownButton<int>(
-                value: selectedRestaurantId,
-                items: [1, 2, 3].map((id) => DropdownMenuItem<int>(
-                  value: id,
-                  child: Text('Restaurant $id'),
-                )).toList(),
-                onChanged: (id) {
-                  if (id != null) {
-                    setState(() { selectedRestaurantId = id; });
-                    fetchMenu();
-                  }
-                },
-              ),
+            ),
+            if (uploadStatus != null) ...[
+              const SizedBox(height: 8),
+              Text(uploadStatus!, style: TextStyle(color: uploadStatus!.contains('fail') ? Colors.red : Colors.green)),
             ],
-          ),
-          const SizedBox(height: 24),
-          Text('Menu Management', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 24),
-          // CSV Upload Section
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.upload_file, color: Colors.orange),
-                  const SizedBox(width: 16),
-                  const Expanded(child: Text('Bulk Upload Menu Items (CSV)', style: TextStyle(fontWeight: FontWeight.bold))),
-                  ElevatedButton(
-                    onPressed: pickAndUploadCsv,
-                    child: const Text('Upload'),
-                  ),
-                ],
+            const SizedBox(height: 24),
+            // Menu Items List
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : menuItems.isEmpty
+                      ? const Center(child: Text('No menu items found.'))
+                      : ListView.builder(
+                          itemCount: menuItems.length,
+                          itemBuilder: (context, idx) {
+                            final item = menuItems[idx];
+                            return Card(
+                              child: ListTile(
+                                leading: CircleAvatar(backgroundColor: Colors.orange[100], child: const Icon(Icons.fastfood, color: Colors.orange)),
+                                title: Text(item.name),
+                                subtitle: Row(
+                                  children: [
+                                    if (item.availableBreakfast) Chip(label: const Text('Breakfast'), backgroundColor: Colors.orange[50]),
+                                    if (item.availableLunch) ...[
+                                      const SizedBox(width: 4),
+                                      Chip(label: const Text('Lunch'), backgroundColor: Colors.orange[50]),
+                                    ],
+                                    if (item.availableDinner) ...[
+                                      const SizedBox(width: 4),
+                                      Chip(label: const Text('Dinner'), backgroundColor: Colors.orange[50]),
+                                    ],
+                                  ],
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.orange),
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => MenuItemEditDialog(
+                                        item: item,
+                                        modifierGroups: modifierGroups,
+                                        restaurantId: selectedRestaurantId,
+                                        api: api,
+                                        onSave: () => fetchMenu(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+            ),
+            const SizedBox(height: 24),
+            // Modifier Groups Management
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.tune, color: Colors.orange),
+                    const SizedBox(width: 16),
+                    const Expanded(child: Text('Manage Modifier Groups (e.g. Spice Level, Add-ons)', style: TextStyle(fontWeight: FontWeight.bold))),
+                    ElevatedButton(
+                      onPressed: openModifierGroupDialog,
+                      child: const Text('Manage'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          if (uploadStatus != null) ...[
-            const SizedBox(height: 8),
-            Text(uploadStatus!, style: TextStyle(color: uploadStatus!.contains('fail') ? Colors.red : Colors.green)),
           ],
-          const SizedBox(height: 24),
-          // Menu Items List
-          Expanded(
-            child: isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : menuItems.isEmpty
-                    ? const Center(child: Text('No menu items found.'))
-                    : ListView.builder(
-                        itemCount: menuItems.length,
-                        itemBuilder: (context, idx) {
-                          final item = menuItems[idx];
-                          return Card(
-                            child: ListTile(
-                              leading: CircleAvatar(backgroundColor: Colors.orange[100], child: const Icon(Icons.fastfood, color: Colors.orange)),
-                              title: Text(item.name),
-                              subtitle: Row(
-                                children: [
-                                  if (item.availableBreakfast) Chip(label: const Text('Breakfast'), backgroundColor: Colors.orange[50]),
-                                  if (item.availableLunch) ...[
-                                    const SizedBox(width: 4),
-                                    Chip(label: const Text('Lunch'), backgroundColor: Colors.orange[50]),
-                                  ],
-                                  if (item.availableDinner) ...[
-                                    const SizedBox(width: 4),
-                                    Chip(label: const Text('Dinner'), backgroundColor: Colors.orange[50]),
-                                  ],
-                                ],
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.orange),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => MenuItemEditDialog(
-                                      item: item,
-                                      modifierGroups: modifierGroups,
-                                      restaurantId: selectedRestaurantId,
-                                      api: api,
-                                      onSave: () => fetchMenu(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-          ),
-          const SizedBox(height: 24),
-          // Modifier Groups Management
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  const Icon(Icons.tune, color: Colors.orange),
-                  const SizedBox(width: 16),
-                  const Expanded(child: Text('Manage Modifier Groups (e.g. Spice Level, Add-ons)', style: TextStyle(fontWeight: FontWeight.bold))),
-                  ElevatedButton(
-                    onPressed: openModifierGroupDialog,
-                    child: const Text('Manage'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -404,7 +406,8 @@ class _ModifierGroupDialogState extends State<ModifierGroupDialog> {
                 decoration: const InputDecoration(labelText: 'Name'),
                 onChanged: (v) => newName = v,
               ),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Checkbox(value: newRequired, onChanged: (v) => setState(() => newRequired = v ?? false)),
                   const Text('Required'),
@@ -492,13 +495,14 @@ class _MenuItemCreateDialogState extends State<MenuItemCreateDialog> {
   final _formKey = GlobalKey<FormState>();
   String name = '';
   String description = '';
-  String imageUrl = '';
+  XFile? pickedImage;
   double price = 0.0;
   bool breakfast = true;
   bool lunch = true;
   bool dinner = true;
   List<int> selectedModifierGroups = [];
   bool saving = false;
+  bool pickingImage = false;
 
   Future<void> save() async {
     if (!_formKey.currentState!.validate()) return;
@@ -510,12 +514,12 @@ class _MenuItemCreateDialogState extends State<MenuItemCreateDialog> {
           'name': name,
           'description': description,
           'price': price,
-          'image_url': imageUrl,
           'available_breakfast': breakfast,
           'available_lunch': lunch,
           'available_dinner': dinner,
           'modifier_groups': selectedModifierGroups,
         },
+        imageFile: pickedImage != null ? File(pickedImage!.path) : null,
       );
       widget.onSave();
       Navigator.pop(context);
@@ -546,9 +550,32 @@ class _MenuItemCreateDialogState extends State<MenuItemCreateDialog> {
                 decoration: const InputDecoration(labelText: 'Description'),
                 onChanged: (v) => description = v,
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Image URL'),
-                onChanged: (v) => imageUrl = v,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.image),
+                    label: const Text('Select Image'),
+                    onPressed: pickingImage ? null : () async {
+                      setState(() => pickingImage = true);
+                      final ImagePicker picker = ImagePicker();
+                      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                      setState(() {
+                        pickedImage = image;
+                        pickingImage = false;
+                      });
+                    },
+                  ),
+                  if (pickedImage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: SizedBox(
+                        width: 72,
+                        height: 72,
+                        child: Image.file(File(pickedImage!.path), fit: BoxFit.cover),
+                      ),
+                    ),
+                ],
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Price'),

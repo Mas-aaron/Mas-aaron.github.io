@@ -71,10 +71,11 @@ class MenuItemSerializer(serializers.ModelSerializer):
     available_breakfast = serializers.BooleanField()
     available_lunch = serializers.BooleanField()
     available_dinner = serializers.BooleanField()
+    image = serializers.ImageField(required=False, allow_null=True)
     class Meta:
         model = MenuItem
         fields = (
-            'id', 'name', 'description', 'price', 'image_url',
+            'id', 'name', 'description', 'price', 'image',
             'available_breakfast', 'available_lunch', 'available_dinner',
             'modifier_groups'
         )

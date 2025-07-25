@@ -99,11 +99,38 @@ class ApiService {
   Future<void> createMenuItem({
     required int restaurantId,
     required Map<String, dynamic> data,
+    File? imageFile,
   }) async {
-    final url = Uri.parse('[baseUrl]/restaurants/$restaurantId/menu-items/');
-    final res = await http.post(url, headers: _headers, body: json.encode(data));
-    if (res.statusCode != 201) {
-      throw Exception('Failed to create menu item: [res.body]');
+    if (imageFile != null) {
+      final url = Uri.parse('$baseUrl/menu-items/create/');
+      var request = http.MultipartRequest('POST', url);
+      request.fields['restaurant'] = restaurantId.toString();
+      data.forEach((key, value) {
+        if (value != null) {
+          if (value is List) {
+            for (var v in value) {
+              request.fields['$key[]'] = v.toString();
+            }
+          } else {
+            request.fields[key] = value.toString();
+          }
+        }
+      });
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+      if (authToken != null) {
+        request.headers['Authorization'] = 'Token $authToken';
+      }
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      if (response.statusCode != 201) {
+        throw Exception('Failed to create menu item: ${response.body}');
+      }
+    } else {
+      final url = Uri.parse('$baseUrl/restaurants/$restaurantId/menu-items/');
+      final res = await http.post(url, headers: _headers, body: json.encode(data));
+      if (res.statusCode != 201) {
+        throw Exception('Failed to create menu item: ${res.body}');
+      }
     }
   }
 }

@@ -16,13 +16,13 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'food_delivery.settings')
 django.setup()
 
-import api.routing
+import food_delivery.routing
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            api.routing.websocket_urlpatterns
+            food_delivery.routing.websocket_urlpatterns
         )
     ),
 })

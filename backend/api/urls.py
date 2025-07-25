@@ -4,7 +4,7 @@ from .views import (
     RestaurantViewSet, CreateUserView, RestaurantMenuView, 
     CartItemViewSet, OrderListCreateView, OrderDetailView, # Import the new view
     AvailableOrderListView, RiderOrderViewSet, MenuItemListByRestaurantView,
-    ModifierGroupViewSet, ModifierViewSet
+    ModifierGroupViewSet, ModifierViewSet, MenuItemCreateView
 )
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -24,6 +24,7 @@ urlpatterns = [
     # Restaurant URLs
     path('restaurants/<int:restaurant_pk>/menu/', RestaurantMenuView.as_view(), name='restaurant-menu'),
     path('restaurants/<int:restaurant_pk>/menu-items/', MenuItemListByRestaurantView.as_view(), name='restaurant-menu-items'),
+    path('menu-items/create/', MenuItemCreateView.as_view(), name='menu-item-create'),
 
     # Auth URLs
     path('register/', CreateUserView.as_view(), name='register'),

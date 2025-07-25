@@ -16,6 +16,14 @@ from .serializers import (
 
 from geopy.distance import geodesic
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class MenuItemCreateView(generics.CreateAPIView):
+    queryset = MenuItem.objects.all()
+    serializer_class = MenuItemSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
+
 class RestaurantViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RestaurantSerializer
 
