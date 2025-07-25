@@ -1,0 +1,26 @@
+name: restaurant_dashboard
+version: 1.0.0+1
+description: Restaurant Dashboard for food delivery platform
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  http: ^1.2.0
+  provider: ^6.1.0
+  file_picker: ^6.1.1
+  csv: ^6.0.0
+  charts_flutter: ^0.12.0
+  intl: ^0.17.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
