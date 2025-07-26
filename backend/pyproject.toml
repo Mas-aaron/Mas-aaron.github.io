@@ -16,6 +16,8 @@ django-cors-headers = "^4.7.0"
 geopy = "^2.4.1"
 pillow = "^11.3.0"
 daphne = "^4.2.1"
+dj-database-url = "^3.0.1"
+psycopg2-binary = "^2.9.10"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
