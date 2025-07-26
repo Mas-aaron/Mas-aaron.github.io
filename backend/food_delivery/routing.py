@@ -1,6 +1,6 @@
 from django.urls import re_path
-from api.consumers import TrackingConsumer
+from . import consumers
 
 websocket_urlpatterns = [
-    re_path(r'^ws/track/(?P<order_id>\w+)/$', TrackingConsumer.as_asgi()),
+    re_path(r'^ws/track/(?P<order_id>\d+)/$', consumers.TrackingConsumer.as_asgi()),
 ]

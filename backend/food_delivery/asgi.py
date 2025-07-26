@@ -1,28 +1,13 @@
-"""
-ASGI config for food_delivery project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
-"""
-
 import os
-import django
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
 from django.core.asgi import get_asgi_application
+from . import routing  # Import your routing configuration
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'food_delivery.settings')
-django.setup()
-
-import food_delivery.routing
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            food_delivery.routing.websocket_urlpatterns
-        )
+    "websocket": URLRouter(
+        routing.websocket_urlpatterns
     ),
 })
