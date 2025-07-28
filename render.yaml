@@ -1,6 +1,6 @@
 services:
   # 1. PostgreSQL Database
-  - type: psql
+  - type: postgres
     name: postgres
     plan: free
 
@@ -26,7 +26,7 @@ services:
         value: false
       - key: DATABASE_URL
         fromService:
-          type: psql
+          type: postgres
           name: postgres
           property: connectionString
       - key: REDIS_URL
@@ -59,7 +59,7 @@ services:
         value: false
       - key: DATABASE_URL
         fromService:
-          type: psql
+          type: postgres
           name: postgres
           property: connectionString
       - key: REDIS_URL
