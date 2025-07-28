@@ -1,7 +1,7 @@
 services:
   # 1. PostgreSQL Database
-  - type: postgresql  # Changed from "postgres" to "postgresql"
-    name: food-delivery-db  # Give it a unique name
+  - type: postgres  # This is the correct type name Render expects
+    name: food-delivery-db
     plan: free
     databaseName: food_delivery
     user: food_delivery_user
@@ -16,7 +16,7 @@ services:
     name: food-delivery-web
     env: python
     plan: free
-    region: oregon  # Specify your preferred region
+    region: oregon
     buildCommand: |
       poetry install --no-interaction --no-ansi
       poetry run python manage.py migrate
@@ -27,7 +27,7 @@ services:
       - key: DEBUG
         value: false
       - key: DATABASE_URL
-        fromDatabase:
+        fromService:
           name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
@@ -53,7 +53,7 @@ services:
       - key: DEBUG
         value: false
       - key: DATABASE_URL
-        fromDatabase:
+        fromService:
           name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
