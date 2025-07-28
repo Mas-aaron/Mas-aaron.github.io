@@ -1,22 +1,24 @@
 services:
   # 1. PostgreSQL Database
-  - type: postgres
-    name: postgres
+  - type: postgresql  # Changed from "postgres" to "postgresql"
+    name: food-delivery-db  # Give it a unique name
     plan: free
+    databaseName: food_delivery
+    user: food_delivery_user
 
   # 2. Redis Instance
   - type: redis
-    name: redis
+    name: food-delivery-redis
     plan: free
 
-  # 3. Web Service (Gunicorn)
+  # 3. Web Service (Django)
   - type: web
-    name: web
+    name: food-delivery-web
     env: python
     plan: free
-    rootDir: ./backend
+    region: oregon  # Specify your preferred region
     buildCommand: |
-      poetry install --no-root --no-dev
+      poetry install --no-interaction --no-ansi
       poetry run python manage.py migrate
     startCommand: gunicorn food_delivery.wsgi:application
     envVars:
@@ -25,50 +27,36 @@ services:
       - key: DEBUG
         value: false
       - key: DATABASE_URL
-        fromService:
-          type: postgres
-          name: postgres
+        fromDatabase:
+          name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
-          name: redis
+          name: food-delivery-redis
           property: connectionString
       - key: ALLOWED_HOSTS
-        fromService:
-          type: web
-          name: web
-          property: host
+        value: .onrender.com
 
   # 4. Worker (Daphne for WebSockets)
   - type: worker
-    name: daphne
+    name: food-delivery-worker
     env: python
     plan: free
-    rootDir: ./backend
     buildCommand: |
-      poetry install --no-root --no-dev
+      poetry install --no-interaction --no-ansi
     startCommand: daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
     envVars:
       - key: SECRET_KEY
         fromService:
-          type: web
-          name: web
+          name: food-delivery-web
           envVarKey: SECRET_KEY
       - key: DEBUG
         value: false
       - key: DATABASE_URL
-        fromService:
-          type: postgres
-          name: postgres
+        fromDatabase:
+          name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
-          name: redis
+          name: food-delivery-redis
           property: connectionString
-      - key: ALLOWED_HOSTS
-        fromService:
-          type: web
-          name: web
-          property: host
