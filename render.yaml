@@ -1,6 +1,6 @@
 services:
   # 1. PostgreSQL Database
-  - type: pg  # This is now the correct type for PostgreSQL
+  - type: postgres  # The correct type is actually 'postgres' (lowercase)
     name: food-delivery-db
     plan: free
     databaseName: food_delivery
@@ -28,12 +28,10 @@ services:
         value: false
       - key: DATABASE_URL
         fromService:
-          type: pg
           name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
           name: food-delivery-redis
           property: connectionString
       - key: ALLOWED_HOSTS
@@ -50,18 +48,15 @@ services:
     envVars:
       - key: SECRET_KEY
         fromService:
-          type: web
           name: food-delivery-web
           envVarKey: SECRET_KEY
       - key: DEBUG
         value: false
       - key: DATABASE_URL
         fromService:
-          type: pg
           name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
           name: food-delivery-redis
           property: connectionString
