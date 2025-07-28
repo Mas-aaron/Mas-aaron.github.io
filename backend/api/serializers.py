@@ -166,19 +166,19 @@ class OrderSerializer(serializers.ModelSerializer):
         if not cart or not cart.items.exists():
             raise serializers.ValidationError("Your cart is empty.")
 
+        # 2. Validation: Check for required location data
+        if 'customer_lat' not in validated_data or 'customer_lng' not in validated_data:
+            raise serializers.ValidationError("Customer location (lat, lng) is required.")
+
         restaurant = cart.items.first().menu_item.category.restaurant
 
-        # 2. Validation: Check for missing restaurant location data
+        # 3. Validation: Check for missing restaurant location data
         if restaurant.latitude is None or restaurant.longitude is None:
             raise serializers.ValidationError(f"Restaurant '{restaurant.name}' is missing location data and cannot accept orders.")
 
         total_price = sum(item.menu_item.price * item.quantity for item in cart.items.all())
 
-        # Placeholder for customer coordinates
-        customer_lat_placeholder = 37.7749
-        customer_lng_placeholder = -122.4194
-
-        # 3. Create the Order
+        # 4. Create the Order
         order = Order.objects.create(
             user=user,
             restaurant=restaurant,
@@ -186,8 +186,8 @@ class OrderSerializer(serializers.ModelSerializer):
             delivery_address=validated_data['delivery_address'],
             restaurant_lat=restaurant.latitude,
             restaurant_lng=restaurant.longitude,
-            customer_lat=customer_lat_placeholder,
-            customer_lng=customer_lng_placeholder
+            customer_lat=validated_data['customer_lat'],
+            customer_lng=validated_data['customer_lng']
         )
 
         # 4. Create OrderItems from CartItems
@@ -211,7 +211,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'total_price', 'status', 'created_at', 'delivery_address', 'items',
             'restaurant_lat', 'restaurant_lng', 'customer_lat', 'customer_lng'
         ]
-        read_only_fields = ('user', 'rider', 'total_price', 'status', 'created_at', 'items')
+        read_only_fields = ('user', 'rider', 'restaurant', 'restaurant_name', 'total_price', 'status', 'created_at', 'items')
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True)

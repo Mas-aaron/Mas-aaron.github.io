@@ -18,6 +18,9 @@ pillow = "^11.3.0"
 daphne = "^4.2.1"
 dj-database-url = "^3.0.1"
 psycopg2-binary = "^2.9.10"
+python-dotenv = "^1.0.1"
+websockets = "^15.0.1"
+googlemaps = "^4.10.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]

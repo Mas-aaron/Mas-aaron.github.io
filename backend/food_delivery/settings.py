@@ -10,12 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import os
 from pathlib import Path
+import os
 import dj_database_url
 
+# Load environment variables from .env
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,12 +31,21 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-8^7at1!9+e!h^d@zmutm+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    'mas-aaron-github-io.onrender.com',
-    '10.0.2.2',
-    '127.0.0.1',
-    'localhost',
-]
+if DEBUG:
+    ALLOWED_HOSTS = [
+        '10.0.2.2',
+        '127.0.0.1',
+        'localhost',
+        '10.5.55.169', # For physical device testing
+    ]
+else:
+    # In production, get the allowed hosts from an environment variable.
+    # This should be a comma-separated string, e.g., "mydomain.com,www.mydomain.com"
+    allowed_hosts_env = os.environ.get('ALLOWED_HOSTS')
+    if allowed_hosts_env:
+        ALLOWED_HOSTS = allowed_hosts_env.split(',')
+    else:
+        ALLOWED_HOSTS = []
 
 # Application definition
 
