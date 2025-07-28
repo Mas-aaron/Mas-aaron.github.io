@@ -1,10 +1,12 @@
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import 'package:rider_app/models/order.dart';
+import 'package:rider_app/constants.dart';
 
 class ApiService {
-  final String _baseUrl = 'http://10.0.2.2:8000/api';
+    final String _baseUrl = '$backendUrl/api';
   String? _token;
 
   Future<bool> login(String username, String password) async {
@@ -21,7 +23,11 @@ class ApiService {
 
     if (response.statusCode == 200) {
       _token = jsonDecode(response.body)['token'];
-      return true;
+      // Save token
+      final prefs = await SharedPreferences.getInstance();
+      final data = jsonDecode(response.body);
+      await prefs.setString('authToken', data['token']);
+      return true; // Login successful
     } else {
       return false;
     }
@@ -91,4 +97,8 @@ class ApiService {
     }
   }
 
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('authToken');
+  }
 }

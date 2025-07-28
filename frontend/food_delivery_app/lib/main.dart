@@ -4,6 +4,7 @@ import 'providers/auth_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/main_navigation_screen.dart';
+import 'screens/websocket_test_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/main': (context) => const MainNavigationScreen(),
+          '/ws-test': (context) => const WebSocketTestScreen(orderId: 21),
         },
       ),
     );

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:food_delivery_app/models/order.dart';
@@ -7,6 +9,7 @@ import 'package:food_delivery_app/services/api_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:food_delivery_app/constants.dart';
+import 'package:geolocator/geolocator.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
   final int orderId;
@@ -23,8 +26,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   WebSocketChannel? _channel;
 Timer? _reconnectTimer;
 String? _lastStatus;
-LatLng? _lastRiderPosition;
-BitmapDescriptor? _riderIcon;
+  bool _myLocationEnabled = false;
 
   Future<Order>? _futureOrder;
   String? _currentStatus;
@@ -35,74 +37,154 @@ BitmapDescriptor? _riderIcon;
   @override
   void initState() {
     super.initState();
-    _loadRiderIcon();
-    _futureOrder = _fetchOrderDetails();
+    _futureOrder = _initializeScreen();
   }
 
-  void _loadRiderIcon() async {
-    try {
-      _riderIcon = await BitmapDescriptor.fromAssetImage(
-        const ImageConfiguration(size: Size(48, 48)),
-        'assets/rider_marker.png', // Place your custom icon in assets and update pubspec.yaml
-      );
-    } catch (_) {
-      _riderIcon = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
-    }
-  }
+  Future<Order> _initializeScreen() async {
+    await _requestLocationPermission();
+    final order = await _apiService.getOrderDetails(widget.orderId);
 
-  Future<Order> _fetchOrderDetails() async {
-    try {
-      // First, fetch only the essential order details.
-      final order = await _apiService.getOrderDetails(widget.orderId);
-      if (mounted) {
-        setState(() {
-          _currentStatus = order.status;
-        });
-        // Once we have the order, initialize websockets and set initial map markers.
-        _initializeWebSocket();
+    if (mounted) {
+      setState(() {
+        _currentStatus = order.status;
         _setMarkers(order);
-        // Fetch the route in the background without blocking the UI.
-        _getRouteAndDrawPolyline(order);
+      });
+
+      // Use a small delay to ensure the UI is fully rendered before initializing WebSocket
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _initializeWebSocket();
+          _getRouteAndDrawPolyline(order);
+        }
+      });
+    }
+    return order;
+  }
+
+  Future<void> _requestLocationPermission() async {
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, handle appropriately.
+        return;
       }
-      return order;
-    } catch (e) {
-      // Propagate the error to the FutureBuilder.
-      rethrow;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _myLocationEnabled = true;
+      });
     }
   }
 
-    void _initializeWebSocket() {
-    final urlString = 'ws://10.0.2.2:8000/ws/track/${widget.orderId}/';
-_channel = WebSocketChannel.connect(Uri.parse(urlString));
-    _channel!.stream.listen(
-      (data) {
-        if (!mounted) return;
-        final decodedData = jsonDecode(data);
-        final message = decodedData['message'];
-        if (message is! Map<String, dynamic>) return;
-        setState(() {
-          // Animate marker if rider moves
-          if (message['latitude'] != null && message['longitude'] != null) {
-            final lat = message['latitude'];
-            final lng = message['longitude'];
-            _animateRiderMarker(LatLng(lat, lng));
-          }
-          // Status change with snackbar
-          if (message['status'] != null) {
-            if (_lastStatus != null && _lastStatus != message['status']) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Order status: ${message['status']}')),
-              );
+
+
+  void _initializeWebSocket() {
+    final urlString = '$webSocketUrl/ws/track/${widget.orderId}/';
+    print('Connecting to WebSocket: $urlString');
+    
+    try {
+      _channel = WebSocketChannel.connect(Uri.parse(urlString));
+      print('WebSocket channel created successfully');
+      
+      // Add a small delay to ensure connection is established
+      Future.delayed(Duration(milliseconds: 500), () {
+        if (_channel != null) {
+          print('WebSocket connection status check: Channel exists');
+        } else {
+          print('WebSocket connection status check: Channel is null');
+        }
+      });
+
+      _channel!.stream.listen(
+        (data) {
+          if (!mounted) return;
+          print('WebSocket received: $data');
+          
+          try {
+            final decodedData = jsonDecode(data);
+            print('Decoded data: $decodedData');
+            
+            // Check if this is a direct location update (not wrapped in 'message')
+            if (decodedData is Map<String, dynamic> && 
+                decodedData['latitude'] != null && 
+                decodedData['longitude'] != null) {
+              print('Direct location update received');
+              final lat = decodedData['latitude'].toDouble();
+              final lng = decodedData['longitude'].toDouble();
+              print('Updating rider position to: ($lat, $lng)');
+              _animateRiderMarker(LatLng(lat, lng));
+              return;
             }
-            _lastStatus = message['status'];
-            _currentStatus = message['status'];
+            
+            final message = decodedData['message'];
+            if (message is! Map<String, dynamic>) {
+              print('Invalid message format: $message');
+              return;
+            }
+            print('Message content: $message');
+
+            if (message['latitude'] != null && message['longitude'] != null) {
+              final lat = message['latitude'].toDouble();
+              final lng = message['longitude'].toDouble();
+              print('Updating rider position to: ($lat, $lng)');
+              _animateRiderMarker(LatLng(lat, lng));
+            }
+
+            if (message['status'] != null && _lastStatus != message['status']) {
+              if (mounted) {
+                setState(() {
+                  _currentStatus = message['status'];
+                  _lastStatus = message['status'];
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Order status: ${message['status']}')),
+                );
+              }
+            }
+          } catch (e) {
+            print('Error processing WebSocket message: $e');
+            print('Error type: ${e.runtimeType}');
           }
-        });
-      },
-      onDone: _scheduleReconnect,
-      onError: (_) => _scheduleReconnect(),
-      cancelOnError: true,
-    );
+        },
+        onDone: () {
+          print('WebSocket connection closed.');
+          print('Connection closed at: ${DateTime.now()}');
+          _scheduleReconnect();
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+          print('Error occurred at: ${DateTime.now()}');
+          print('Error type: ${error.runtimeType}');
+          // Add more detailed error information
+          if (error is WebSocketChannelException) {
+            print('WebSocketChannelException details: ${error.message}');
+          }
+          _scheduleReconnect();
+        },
+        cancelOnError: true,
+      );
+      print('WebSocket stream listener attached');
+      print('WebSocket connection initiated at: ${DateTime.now()}');
+      
+      // Add a timeout to detect if connection fails to establish
+      Future.delayed(const Duration(seconds: 15), () {
+        if (_channel != null) {
+          print('WebSocket connection verification: Still active');
+        }
+      });
+    } catch (e) {
+      print('Error initializing WebSocket: $e');
+      print('Error occurred at: ${DateTime.now()}');
+      print('Error type: ${e.runtimeType}');
+      _scheduleReconnect();
+    }
   }
 
   void _scheduleReconnect() {
@@ -113,42 +195,60 @@ _channel = WebSocketChannel.connect(Uri.parse(urlString));
   }
 
   void _animateRiderMarker(LatLng newPos) async {
-    if (_lastRiderPosition == null) {
-      _lastRiderPosition = newPos;
-      _setRiderMarker(newPos);
-      _autoZoom();
-      return;
+    if (!mounted) return;
+
+    await _setRiderMarker(newPos); // Ensure the marker is updated before redrawing
+
+    if (mounted) {
+      setState(() {
+        // The _markers set is now updated, just trigger a rebuild and zoom.
+        _autoZoom();
+      });
     }
-    // Animate in 10 steps
-    for (int i = 1; i <= 10; i++) {
-      final lat = _lastRiderPosition!.latitude + (newPos.latitude - _lastRiderPosition!.latitude) * i / 10;
-      final lng = _lastRiderPosition!.longitude + (newPos.longitude - _lastRiderPosition!.longitude) * i / 10;
-      _setRiderMarker(LatLng(lat, lng));
-      await Future.delayed(const Duration(milliseconds: 30));
-    }
-    _lastRiderPosition = newPos;
-    _autoZoom();
   }
 
-  void _setRiderMarker(LatLng position) {
-    setState(() {
-      _markers.removeWhere((m) => m.markerId.value == 'rider');
-      _markers.add(
-        Marker(
-          markerId: const MarkerId('rider'),
-          position: position,
-          icon: _riderIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-          infoWindow: const InfoWindow(title: 'Rider'),
-        ),
-      );
-    });
+  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+  }
+
+  Future<void> _setRiderMarker(LatLng position) async {
+    // This function just updates the marker data set. It does not call setState itself.
+    _markers.removeWhere((m) => m.markerId.value == 'rider');
+    
+        final Uint8List markerIcon = await getBytesFromAsset('assets/images/rider_marker.png', 100);
+
+    _markers.add(
+      Marker(
+        markerId: const MarkerId('rider'),
+        position: position,
+        icon: BitmapDescriptor.fromBytes(markerIcon),
+        infoWindow: const InfoWindow(title: 'Rider'),
+      ),
+    );
   }
 
   void _autoZoom() async {
-    if (_markers.length < 2) return;
-    final GoogleMapController controller = await _mapController.future;
-    LatLngBounds bounds = _computeBounds(_markers.map((m) => m.position).toList());
-    controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
+    // Always try to auto-zoom, even with a single marker
+    if (_markers.isEmpty) return;
+    
+    try {
+      final GoogleMapController controller = await _mapController.future;
+      
+      if (_markers.length == 1) {
+        // If there's only one marker, just center on it
+        final marker = _markers.first;
+        controller.animateCamera(CameraUpdate.newLatLng(marker.position));
+      } else {
+        // If there are multiple markers, fit them all in view
+        LatLngBounds bounds = _computeBounds(_markers.map((m) => m.position).toList());
+        controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
+      }
+    } catch (e) {
+      print('Error in _autoZoom: $e');
+    }
   }
 
   LatLngBounds _computeBounds(List<LatLng> positions) {
@@ -164,21 +264,28 @@ _channel = WebSocketChannel.connect(Uri.parse(urlString));
   }
 
   void _setMarkers(Order order) {
-    if (order.restaurantLat != null && order.restaurantLng != null) {
-      _markers.add(Marker(
-        markerId: const MarkerId('restaurant'),
-        position: LatLng(order.restaurantLat!, order.restaurantLng!),
-        infoWindow: InfoWindow(title: order.restaurant.name),
-      ));
-    }
-    if (order.customerLat != null && order.customerLng != null) {
-      _markers.add(Marker(
-        markerId: const MarkerId('customer'),
-        position: LatLng(order.customerLat!, order.customerLng!),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: const InfoWindow(title: 'Your Location'),
-      ));
-    }
+    print('Setting markers for Order ID: ${order.id}');
+    print('Restaurant Coords: (${order.restaurantLat}, ${order.restaurantLng})');
+    print('Customer Coords: (${order.customerLat}, ${order.customerLng})');
+    final restaurantPosition = LatLng(order.restaurantLat!, order.restaurantLng!); 
+    final customerPosition = LatLng(order.customerLat!, order.customerLng!);
+
+    _markers.add(Marker(
+      markerId: const MarkerId('restaurant'),
+      position: restaurantPosition,
+      infoWindow: const InfoWindow(title: 'Restaurant'),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+    ));
+
+    _markers.add(Marker(
+      markerId: const MarkerId('customer'),
+      position: customerPosition,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      infoWindow: const InfoWindow(title: 'Your Location'),
+    ));
+
+    // Set the initial rider position
+    _setRiderMarker(restaurantPosition);
   }
 
   void _getRouteAndDrawPolyline(Order order) async {
@@ -189,11 +296,14 @@ _channel = WebSocketChannel.connect(Uri.parse(urlString));
       return;
     }
 
+    final restaurantPosition = PointLatLng(order.restaurantLat!, order.restaurantLng!); 
+    final customerPosition = PointLatLng(order.customerLat!, order.customerLng!);
+
     PolylineResult result = await _polylinePoints.getRouteBetweenCoordinates(
       googleApiKey: googleMapsApiKey,
       request: PolylineRequest(
-        origin: PointLatLng(order.restaurantLat!, order.restaurantLng!),
-        destination: PointLatLng(order.customerLat!, order.customerLng!),
+        origin: restaurantPosition,
+        destination: customerPosition,
         mode: TravelMode.driving,
       ),
     );
@@ -250,13 +360,14 @@ _channel = WebSocketChannel.connect(Uri.parse(urlString));
                     }
                   },
                   initialCameraPosition: CameraPosition(
-                    // Default to a safe location if coordinates are invalid to prevent crashing.
                     target: LatLng(
-                      (order.restaurantLat ?? 0.0) != 0.0 ? (order.restaurantLat! + order.customerLat!) / 2 : 37.7749,
-                      (order.restaurantLng ?? 0.0) != 0.0 ? (order.restaurantLng! + order.customerLng!) / 2 : -122.4194,
+                      (order.restaurantLat! + order.customerLat!) / 2,
+                      (order.restaurantLng! + order.customerLng!) / 2,
                     ),
                     zoom: 12.5,
                   ),
+                                    myLocationEnabled: _myLocationEnabled,
+                  myLocationButtonEnabled: true, // Keep the button always visible for now
                   markers: _markers,
                   polylines: _polylines,
                   padding: const EdgeInsets.only(bottom: 120), // Adjust padding for the overlay

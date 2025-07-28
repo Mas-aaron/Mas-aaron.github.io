@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/widgets/restaurant_card.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Restaurant>> _futureRestaurants;
+  String _currentLocation = 'Current Location';
+  bool _isFetchingLocation = false;
 
   @override
   void initState() {
@@ -59,24 +63,30 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             'What are you craving?',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.location_on_outlined, size: 20),
-              const SizedBox(width: 4),
-              Text(
-                'Current Location',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined),
-                onPressed: () {},
-              ),
-            ],
+          GestureDetector(
+            onTap: _getCurrentLocation,
+            child: Row(
+              children: [
+                const Icon(Icons.location_on_outlined, size: 20),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    _isFetchingLocation ? 'Fetching location...' : _currentLocation,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined),
+                  onPressed: () {},
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -214,6 +224,81 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _isFetchingLocation = true;
+    });
+
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        setState(() {
+          _currentLocation = 'Permission Denied';
+          _isFetchingLocation = false;
+        });
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      print('Fetched position: Lat: ${position.latitude}, Lng: ${position.longitude}');
+
+      List<Placemark> placemarks = [];
+      try {
+        placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      } catch (e) {
+        print('Error during geocoding: $e');
+        // Geocoding failed, fall back to showing coordinates.
+        setState(() {
+          _currentLocation = 'Lat: ${position.latitude.toStringAsFixed(4)}, Lng: ${position.longitude.toStringAsFixed(4)}';
+        });
+        // Return here to skip the placemark processing logic.
+        return;
+      }
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        setState(() {
+          // Build the address string safely, handling nulls
+          final street = place.street;
+          final locality = place.locality;
+          
+          List<String> addressParts = [];
+          if (street != null && street.isNotEmpty) {
+            addressParts.add(street);
+          }
+          if (locality != null && locality.isNotEmpty) {
+            addressParts.add(locality);
+          }
+
+          if (addressParts.isEmpty) {
+            _currentLocation = 'Address not found';
+          } else {
+            _currentLocation = addressParts.join(', ');
+          }
+        });
+      } else {
+        setState(() {
+          _currentLocation = 'Location not found';
+        });
+      }
+    } catch (e) {
+      print('Error fetching location: $e');
+      setState(() {
+        _currentLocation = 'Error fetching location';
+      });
+    } finally {
+      setState(() {
+        _isFetchingLocation = false;
+      });
+    }
   }
 
   Widget _buildTopPicks() {

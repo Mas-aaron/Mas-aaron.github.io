@@ -76,6 +76,18 @@ class ProfileScreen extends StatelessWidget {
                 },
               ),
             ),
+            const SizedBox(height: 8),
+            Card(
+              child: ListTile(
+                leading: Icon(Icons.developer_mode, color: Colors.orange),
+                title: const Text('WebSocket Test'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  // Navigate to WebSocket test screen
+                  Navigator.pushNamed(context, '/ws-test');
+                },
+              ),
+            ),
             const SizedBox(height: 32),
             ElevatedButton(
               style: ElevatedButton.styleFrom(

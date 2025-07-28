@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/cart.dart';
 import 'package:food_delivery_app/models/cart_item.dart';
 import 'package:food_delivery_app/services/api_service.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:food_delivery_app/services/location_service.dart'; // For permission handling
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -14,6 +16,7 @@ class _CartScreenState extends State<CartScreen> {
   late Future<List<CartItem>> futureCartItems;
   final ApiService apiService = ApiService();
   final _addressController = TextEditingController();
+  bool _isPlacingOrder = false;
 
 
   @override
@@ -50,16 +53,31 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _placeOrder(String address) async {
+    if (_isPlacingOrder) return;
+
+    setState(() {
+      _isPlacingOrder = true;
+    });
+
     try {
-      final order = await apiService.placeOrder(address);
+      // 1. Get current location
+      final Position position = await LocationService.getCurrentLocation();
+
+      // 2. Place order with location data
+      final order = await apiService.placeOrder(address, position.latitude, position.longitude);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Order placed successfully! Order ID: ${order.id}')),
       );
-      _loadCart();
+      _loadCart(); // Refresh cart (it should be empty now)
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to place order: ${e.toString().replaceAll("Exception: ", "")}')),
       );
+    } finally {
+      setState(() {
+        _isPlacingOrder = false;
+      });
     }
   }
 
@@ -108,7 +126,7 @@ class _CartScreenState extends State<CartScreen> {
                       );
                     },
                   ),
-                  _OrderSummaryCard(cart: cart, addressController: _addressController, onPlaceOrder: _placeOrder),
+                  _OrderSummaryCard(cart: cart, addressController: _addressController, onPlaceOrder: _placeOrder, isPlacingOrder: _isPlacingOrder),
                 ],
               ),
             );
@@ -205,11 +223,13 @@ class _OrderSummaryCard extends StatelessWidget {
   final Cart cart;
   final TextEditingController addressController;
   final Function(String) onPlaceOrder;
+  final bool isPlacingOrder;
 
   const _OrderSummaryCard({
     required this.cart,
     required this.addressController,
     required this.onPlaceOrder,
+    required this.isPlacingOrder,
   });
 
   double _calculateSubtotal(Cart cart) {
@@ -259,8 +279,7 @@ class _OrderSummaryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('Place Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                onPressed: () {
+                onPressed: isPlacingOrder ? null : () {
                   if (addressController.text.trim().isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Please enter a delivery address.')),
@@ -269,6 +288,9 @@ class _OrderSummaryCard extends StatelessWidget {
                   }
                   onPlaceOrder(addressController.text);
                 },
+                child: isPlacingOrder 
+                    ? SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)) 
+                    : Text('Place Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

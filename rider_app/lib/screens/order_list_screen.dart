@@ -51,7 +51,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => OrderTrackingScreen(order: order),
+                          builder: (context) => OrderTrackingScreen(order: order, apiService: widget.apiService),
                         ),
                       );
                     },

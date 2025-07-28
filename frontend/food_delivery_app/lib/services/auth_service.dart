@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:food_delivery_app/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  final String _baseUrl = 'http://10.0.2.2:8000/api'; // Use 10.0.2.2 for Android emulator
+  final String _baseUrl = baseUrl;
 
   Future<String?> login(String username, String password) async {
     final response = await http.post(

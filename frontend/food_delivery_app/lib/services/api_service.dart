@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:food_delivery_app/models/cart_item.dart';
 import 'package:food_delivery_app/models/order.dart';
+import 'package:food_delivery_app/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/restaurant.dart';
@@ -9,7 +10,7 @@ import '../models/menu_category.dart';
 import '../models/menu_item.dart';
 
 class ApiService {
-  final String _baseUrl = 'http://10.0.2.2:8000/api'; // 10.0.2.2 is for Android emulator
+  final String _baseUrl = baseUrl;
   Future<void> register(String username, String email, String password, String password2) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/register/'),
@@ -185,9 +186,13 @@ class ApiService {
     }
   }
 
-  Future<Order> placeOrder(String deliveryAddress) async {
+  Future<Order> placeOrder(String deliveryAddress, double latitude, double longitude) async {
     final headers = await _getAuthHeaders();
-    final body = jsonEncode({'delivery_address': deliveryAddress});
+    final body = jsonEncode({
+      'delivery_address': deliveryAddress,
+      'customer_lat': latitude,
+      'customer_lng': longitude,
+    });
     final response = await http.post(Uri.parse('$_baseUrl/orders/'), headers: headers, body: body);
 
     if (response.statusCode == 201) {

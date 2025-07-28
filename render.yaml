@@ -1,0 +1,78 @@
+services:
+  # 1. PostgreSQL Database
+  - type: psql
+    name: postgres
+    plan: free
+
+  # 2. Redis Instance
+  - type: redis
+    name: redis
+    plan: free
+
+  # 3. Web Service (Gunicorn)
+  - type: web
+    name: web
+    env: python
+    plan: free
+    rootDir: ./backend
+    buildCommand: |
+      poetry install --no-root --no-dev
+      poetry run python manage.py migrate
+    startCommand: |
+      echo "DATABASE_URL is $DATABASE_URL"
+      gunicorn food_delivery.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: DATABASE_URL
+        fromService:
+          type: psql
+          name: postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: redis
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        fromService:
+          type: web
+          name: web
+          property: host
+
+  # 4. Worker (Daphne for WebSockets)
+  - type: worker
+    name: daphne
+    env: python
+    plan: free
+    rootDir: ./backend
+    buildCommand: |
+      poetry install --no-root --no-dev
+    startCommand: |
+      echo "DATABASE_URL is $DATABASE_URL"
+      daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
+    envVars:
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: web
+          envVarKey: SECRET_KEY
+      - key: DEBUG
+        value: false
+      - key: DATABASE_URL
+        fromService:
+          type: psql
+          name: postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: redis
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        fromService:
+          type: web
+          name: web
+          property: host

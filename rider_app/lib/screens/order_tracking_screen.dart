@@ -7,13 +7,15 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:convert';
 
 import 'package:rider_app/models/order.dart';
+import 'package:rider_app/services/api_service.dart';
 import 'package:rider_app/constants.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
-  final Order order;
+    final Order order;
+  final ApiService apiService;
 
-  const OrderTrackingScreen({super.key, required this.order});
+    const OrderTrackingScreen({super.key, required this.order, required this.apiService});
 
   @override
   _OrderTrackingScreenState createState() => _OrderTrackingScreenState();
@@ -26,16 +28,15 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   final List<LatLng> _polylineCoordinates = [];
   final PolylinePoints _polylinePoints = PolylinePoints();
   WebSocketChannel? _channel;
-Timer? _broadcastTimer;
-Timer? _reconnectTimer;
-bool _wsConnected = false;
-bool _showWsError = false;
+  Timer? _broadcastTimer;
+  Timer? _reconnectTimer;
+  bool _wsConnected = false;
+  bool _showWsError = false;
 
-final Location _location = Location();
-StreamSubscription<LocationData>? _locationSubscription;
-LocationData? _currentLocation;
+  final Location _location = Location();
+  StreamSubscription<LocationData>? _locationSubscription;
+  LocationData? _currentLocation;
 
-  @override
   @override
   void initState() {
     super.initState();
@@ -75,11 +76,22 @@ LocationData? _currentLocation;
     setState(() {});
   }
 
-  void _initializeWebSocket() {
-  final wsUrl = Uri.parse('ws://10.0.2.2:8000/ws/track/${widget.order.id}/');
+    void _initializeWebSocket() async {
+    final token = await widget.apiService.getToken();
+    if (token == null) {
+      print('Error: Auth token is null. Cannot connect to WebSocket.');
+      setState(() {
+        _showWsError = true; // Show an error state on the UI
+      });
+      return;
+    }
+        final wsUrl = Uri.parse('$websocketUrl/ws/track/${widget.order.id}/?token=$token');
   _showWsError = false;
   _wsConnected = false;
   _channel = WebSocketChannel.connect(wsUrl);
+  _wsConnected = true;
+  setState(() {});
+
   _channel!.stream.listen(
     (event) {
       _wsConnected = true;
@@ -105,8 +117,12 @@ void _scheduleReconnect() {
 }
 
 void _sendLocationData(LocationData locationData) {
-  if (!_wsConnected || _channel == null || locationData.latitude == null || locationData.longitude == null) return;
-  if (!_shouldBroadcast()) return;
+  if (!_wsConnected || _channel == null || locationData.latitude == null || locationData.longitude == null) {
+    return;
+  }
+  if (!_shouldBroadcast()) {
+    return;
+  }
   final data = jsonEncode({
     'latitude': locationData.latitude,
     'longitude': locationData.longitude,
@@ -121,10 +137,12 @@ void _sendLocationData(LocationData locationData) {
 
 bool _shouldBroadcast() {
   // Only broadcast if order is active (customize statuses as needed)
-  return widget.order.status == 'accepted' || widget.order.status == 'on_the_way';
+      // Broadcast as long as the order is active.
+    final status = widget.order.status.toLowerCase();
+    return status != 'delivered' && status != 'cancelled';
 }
 
-  void _getRouteAndDrawPolyline() async {
+  Future<void> _getRouteAndDrawPolyline() async {
     final restaurantLat = widget.order.restaurantLat;
     final restaurantLng = widget.order.restaurantLng;
     final customerLat = widget.order.customerLat;
@@ -170,17 +188,21 @@ bool _shouldBroadcast() {
       if (permissionGranted != PermissionStatus.granted) return;
     }
 
+
     _locationSubscription = _location.onLocationChanged.listen((LocationData currentLocation) {
-  setState(() {
-    _currentLocation = currentLocation;
-    _updateRiderMarker(currentLocation);
-  });
-  // Throttle: only send every 3 seconds
-  _broadcastTimer?.cancel();
-  _broadcastTimer = Timer(const Duration(seconds: 3), () {
-    _sendLocationData(currentLocation);
-  });
-});
+      setState(() {
+        _currentLocation = currentLocation;
+        _updateRiderMarker(currentLocation);
+      });
+
+      // Throttle: only send every 3 seconds
+      _broadcastTimer?.cancel();
+      _broadcastTimer = Timer(const Duration(seconds: 3), () {
+        if (_shouldBroadcast()) {
+          _sendLocationData(currentLocation);
+        }
+      });
+    });
   }
 
   void _updateRiderMarker(LocationData locationData) {
@@ -209,6 +231,8 @@ bool _shouldBroadcast() {
   @override
   void dispose() {
     _locationSubscription?.cancel();
+    _broadcastTimer?.cancel();
+    _reconnectTimer?.cancel();
     _channel?.sink.close();
     super.dispose();
   }
@@ -231,7 +255,7 @@ bool _shouldBroadcast() {
           IconButton(
             icon: Icon(Icons.my_location),
             onPressed: () {
-              if (_currentLocation != null) {
+              if (_currentLocation != null && _shouldBroadcast()) {
                 _animateCameraToPosition(LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!));
               }
             },
