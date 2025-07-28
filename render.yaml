@@ -18,9 +18,7 @@ services:
     buildCommand: |
       poetry install --no-root --no-dev
       poetry run python manage.py migrate
-    startCommand: |
-      echo "DATABASE_URL is $DATABASE_URL"
-      gunicorn food_delivery.wsgi:application
+    startCommand: gunicorn food_delivery.wsgi:application
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -50,9 +48,7 @@ services:
     rootDir: ./backend
     buildCommand: |
       poetry install --no-root --no-dev
-    startCommand: |
-      echo "DATABASE_URL is $DATABASE_URL"
-      daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
+    startCommand: daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
     envVars:
       - key: SECRET_KEY
         fromService:
