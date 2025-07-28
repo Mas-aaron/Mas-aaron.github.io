@@ -99,8 +99,9 @@ ASGI_APPLICATION = 'food_delivery.asgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 if not DEBUG:
     DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600)
+        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
+    DATABASES['default']['CONN_MAX_AGE'] = 600
 else:
     DATABASES = {
         'default': {
