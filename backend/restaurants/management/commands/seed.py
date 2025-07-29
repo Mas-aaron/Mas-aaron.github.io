@@ -1,12 +1,16 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from restaurants.models import Restaurant, Menu
+from django.apps import apps
 
 class Command(BaseCommand):
     help = 'Seeds the database with initial data'
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Seeding database...')
+
+        # Use Django's app registry to get models to avoid import issues
+        Restaurant = apps.get_model('restaurants', 'Restaurant')
+        Menu = apps.get_model('restaurants', 'Menu')
 
         # Check if data already exists
         if Restaurant.objects.exists():
@@ -39,12 +43,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Created Restaurant: {restaurant.name}'))
 
             menu = Menu.objects.create(restaurant=restaurant, name=f"{r_data['name']} Menu")
-            for dish_name in r_data['dishes']:
-                # Assuming you have a 'Dish' model with a 'menu' foreign key and 'name' and 'price' fields
-                # This part is commented out as I don't know your exact Dish model structure
-                # You can uncomment and adapt it if you have a Dish model.
-                # from restaurants.models import Dish
-                # Dish.objects.create(menu=menu, name=dish_name, price=10.00) # Example price
+            for dish__name in r_data['dishes']:
+                # This part is a placeholder for creating Dish objects.
+                # You can adapt this if you have a Dish model.
                 pass
             self.stdout.write(self.style.SUCCESS(f'Created Menu for {restaurant.name}'))
 
