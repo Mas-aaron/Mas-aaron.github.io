@@ -11,9 +11,9 @@ services:
     plan: free
     ipAllowList: [] # Allow all internal connections
 
-  # 3. Web Service (Django)
+  # 3. Web Service (Daphne for WebSockets and HTTP)
   - type: web
-    name: food-delivery-web
+    name: food-delivery-app
     env: python
     plan: free
     region: oregon
@@ -21,47 +21,20 @@ services:
     buildCommand: |
       poetry install --no-interaction --no-ansi
       poetry run python manage.py migrate
-    startCommand: gunicorn food_delivery.wsgi:application
+    startCommand: daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: food-delivery-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: food-delivery-redis
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
         value: false
-      - key: DATABASE_URL
-        fromDatabase:
-          name: food-delivery-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: food-delivery-redis
-          property: connectionString
       - key: ALLOWED_HOSTS
         value: .onrender.com
-
-  # 4. Worker (Daphne for WebSockets)
-  - type: worker
-    name: food-delivery-worker
-    env: python
-    plan: free
-    rootDir: ./backend
-    buildCommand: |
-      poetry install --no-interaction --no-ansi
-    startCommand: daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
-    envVars:
-      - key: SECRET_KEY
-        fromService:
-          type: web
-          name: food-delivery-web
-          envVarKey: SECRET_KEY
-      - key: DEBUG
-        value: false
-      - key: DATABASE_URL
-        fromDatabase:
-          name: food-delivery-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: food-delivery-redis
-          property: connectionString
