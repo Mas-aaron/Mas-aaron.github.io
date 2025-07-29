@@ -45,7 +45,11 @@ else:
     if allowed_hosts_env:
         ALLOWED_HOSTS = allowed_hosts_env.split(',')
     else:
-        ALLOWED_HOSTS = []
+        ALLOWED_HOSTS = [
+        'mas-aarongithubio-production.up.railway.app',
+        'localhost',
+        '127.0.0.1',
+    ]
 
 # Application definition
 
