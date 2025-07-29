@@ -51,7 +51,13 @@ else:
         '127.0.0.1',
     ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS (Cross-Origin Resource Sharing) settings
+# In production, we use a regex whitelist for security to ensure only our apps can access the API.
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.up\.railway\.app$", # Allow any railway app subdomain
+    r"^http://localhost(:\d+)?$",      # Allow localhost for local development
+    r"^http://127\.0\.0\.1(:\d+)?$",   # Allow 127.0.0.1 for local development
+]
 
 # Application definition
 
