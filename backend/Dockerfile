@@ -35,7 +35,7 @@ COPY backend/. ./
 RUN python manage.py collectstatic --noinput
 
 # Copy the entrypoint script into the image
-COPY entrypoint.sh /app/entrypoint.sh
+COPY backend/entrypoint.sh /app/entrypoint.sh
 
 # Make the entrypoint script executable
 RUN chmod +x /app/entrypoint.sh
