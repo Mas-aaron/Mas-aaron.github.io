@@ -1,7 +1,9 @@
-from django.db.models import F, FloatField, ExpressionWrapper
-from django.db.models.functions import Radians, Power, Sin, Cos, Sqrt, ATan2
+from django.db.models import F, FloatField, ExpressionWrapper, Sum, Count
+from django.db.models.functions import Radians, Power, Sin, Cos, Sqrt, ATan2, TruncMonth
+from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, generics, status
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -207,6 +209,67 @@ class ModifierViewSet(viewsets.ModelViewSet):
     queryset = Modifier.objects.all()
     serializer_class = ModifierSerializer
     permission_classes = [IsAuthenticated]
+
+
+class DashboardAnalyticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Get the restaurant owned by the logged-in user
+        try:
+            restaurant = Restaurant.objects.get(owner=request.user)
+        except Restaurant.DoesNotExist:
+            return Response({"error": "No restaurant associated with this user."}, status=status.HTTP_404_NOT_FOUND)
+
+        # 1. Calculate Header Stats
+        completed_orders = Order.objects.filter(restaurant=restaurant, status='Delivered')
+        total_income = completed_orders.aggregate(total=Sum('total_price'))['total'] or 0
+
+        all_orders = Order.objects.filter(restaurant=restaurant)
+        total_orders_count = all_orders.count()
+        pending_orders_count = all_orders.filter(status='Preparing').count()
+
+        # 2. Calculate Order Rate (e.g., last 12 months)
+        order_rate_data = (
+            Order.objects.filter(
+                restaurant=restaurant,
+                created_at__gte=datetime.now() - timedelta(days=365)
+            )
+            .annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        # Format for chart
+        order_rate = [
+            {"month": item['month'].strftime('%b'), "orders": item['count']}
+            for item in order_rate_data
+        ]
+
+        # 3. Calculate Popular Food Items
+        popular_items_data = (
+            OrderItem.objects.filter(order__restaurant=restaurant)
+            .values('menu_item__name')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:5]  # Top 5 items
+        )
+
+        popular_items = [
+            {"name": item['menu_item__name'], "count": item['count']}
+            for item in popular_items_data
+        ]
+
+        # 4. Assemble the response
+        data = {
+            'total_income': total_income,
+            'total_orders': total_orders_count,
+            'pending_orders': pending_orders_count,
+            'order_rate': order_rate,
+            'popular_items': popular_items,
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
 
 class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
     """

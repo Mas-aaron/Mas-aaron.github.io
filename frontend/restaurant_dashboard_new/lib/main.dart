@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/login_screen.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -48,6 +48,6 @@ class AuthWrapper extends StatelessWidget {
 
     // Using a simple check on the token, which is loaded asynchronously.
     // A Consumer or a FutureBuilder could provide a loading screen.
-    return authProvider.isAuthenticated ? const DashboardScreen() : const LoginScreen();
+    return authProvider.isAuthenticated ? const HomeScreen() : const LoginScreen();
   }
 }

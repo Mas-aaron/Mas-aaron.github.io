@@ -2,9 +2,10 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     RestaurantViewSet, CreateUserView, RestaurantMenuView, 
-    CartItemViewSet, OrderListCreateView, OrderDetailView, # Import the new view
+    CartItemViewSet, OrderListCreateView, OrderDetailView, 
     AvailableOrderListView, RiderOrderViewSet, MenuItemListByRestaurantView,
-    ModifierGroupViewSet, ModifierViewSet, MenuItemCreateView
+    ModifierGroupViewSet, ModifierViewSet, MenuItemCreateView,
+    DashboardAnalyticsView # Will be created next
 )
 from rest_framework.authtoken.views import obtain_auth_token
 
@@ -31,5 +32,8 @@ urlpatterns = [
     path('login/', obtain_auth_token, name='login'),
 
     # Rider URLs
-    path('rider/available-orders/', AvailableOrderListView.as_view(), name='available-orders-list'), 
+    path('rider/available-orders/', AvailableOrderListView.as_view(), name='available-orders-list'),
+
+    # Dashboard URLs
+    path('dashboard-analytics/', DashboardAnalyticsView.as_view(), name='dashboard-analytics'),
 ]
