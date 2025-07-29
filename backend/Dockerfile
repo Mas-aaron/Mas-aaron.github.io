@@ -31,16 +31,14 @@ RUN poetry config virtualenvs.create false && \
 # This copies the contents of the 'backend' directory into the container's working directory
 COPY backend/. ./
 
-# Run database migrations
-RUN python manage.py migrate
-
-# Seed the database with initial data
-RUN python manage.py seed
-
-# Collect static files for production
+# Collect static files for production. This is run during the build.
 RUN python manage.py collectstatic --noinput
 
-# The command to run when the container starts.
-# We use the exec form to explicitly invoke a shell, which is the most reliable
-# way to ensure environment variables like $PORT are expanded.
-CMD ["/bin/sh", "-c", "daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application"]
+# Copy the entrypoint script into the image
+COPY entrypoint.sh /app/entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /app/entrypoint.sh
+
+# Set the entrypoint script as the command to run when the container starts
+ENTRYPOINT ["/app/entrypoint.sh"]
