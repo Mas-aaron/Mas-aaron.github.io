@@ -25,7 +25,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   @override
   void initState() {
     super.initState();
-    api = ApiService(baseUrl: 'http://10.0.2.2:8000/api', authToken: authToken);
+    api = ApiService(baseUrl: 'https://food-delivery-app-1x87.onrender.com/api', authToken: authToken);
     fetchMenu();
     fetchModifiers();
   }
@@ -118,7 +118,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     onChanged: (val) {
                       setState(() {
                         authToken = val;
-                        api = ApiService(baseUrl: 'http://10.0.2.2:8000/api', authToken: authToken);
+                        api = ApiService(baseUrl: 'https://food-delivery-app-1x87.onrender.com/api', authToken: authToken);
                       });
                     },
                   ),
