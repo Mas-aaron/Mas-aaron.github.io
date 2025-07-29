@@ -20,14 +20,16 @@ RUN pip install --upgrade pip && \
     pip install poetry
 
 # Copy dependency files first to leverage Docker's layer caching
-COPY pyproject.toml poetry.lock* ./
+# Paths are relative to the repository root (the build context)
+COPY backend/pyproject.toml backend/poetry.lock* ./
 
 # Configure Poetry to not create a virtual environment and install dependencies
 RUN poetry config virtualenvs.create false && \
     poetry install --no-interaction --no-ansi
 
 # Copy the rest of the application source code
-COPY . .
+# This copies the contents of the 'backend' directory into the container's working directory
+COPY backend/. ./
 
 # Run database migrations
 RUN python manage.py migrate
