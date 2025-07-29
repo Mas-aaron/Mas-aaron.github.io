@@ -1,9 +1,12 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
-  "services": [
-    {
-      "name": "backend",
-      "rootDir": "./backend"
-    }
-  ]
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "backend/Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application",
+    "healthcheckPath": "/health/",
+    "healthcheckTimeout": 100
+  }
 }
