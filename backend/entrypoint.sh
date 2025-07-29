@@ -11,6 +11,10 @@ python manage.py migrate
 echo "Seeding database..."
 python manage.py seed
 
+# Collect static files for production
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
+
 # Create a superuser if it doesn't exist
 echo "Checking for superuser..."
 python manage.py shell <<EOF
