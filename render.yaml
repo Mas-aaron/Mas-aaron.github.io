@@ -21,6 +21,7 @@ services:
     buildCommand: |
       poetry install --no-interaction --no-ansi
       poetry run python manage.py migrate
+      poetry run python manage.py seed
     startCommand: daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
     envVars:
       - key: DATABASE_URL
