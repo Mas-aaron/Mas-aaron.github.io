@@ -1,11 +1,10 @@
-services:
-  # 1. PostgreSQL Database
-  - type: postgres  # The correct type is actually 'postgres' (lowercase)
-    name: food-delivery-db
+databases:
+  - name: food-delivery-db
     plan: free
     databaseName: food_delivery
     user: food_delivery_user
 
+services:
   # 2. Redis Instance
   - type: redis
     name: food-delivery-redis
@@ -17,6 +16,7 @@ services:
     env: python
     plan: free
     region: oregon
+    rootDir: ./backend
     buildCommand: |
       poetry install --no-interaction --no-ansi
       poetry run python manage.py migrate
@@ -27,7 +27,7 @@ services:
       - key: DEBUG
         value: false
       - key: DATABASE_URL
-        fromService:
+        fromDatabase:
           name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
@@ -42,6 +42,7 @@ services:
     name: food-delivery-worker
     env: python
     plan: free
+    rootDir: ./backend
     buildCommand: |
       poetry install --no-interaction --no-ansi
     startCommand: daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
@@ -53,7 +54,7 @@ services:
       - key: DEBUG
         value: false
       - key: DATABASE_URL
-        fromService:
+        fromDatabase:
           name: food-delivery-db
           property: connectionString
       - key: REDIS_URL
