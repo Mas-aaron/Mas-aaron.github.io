@@ -8,10 +8,30 @@ echo "Applying database migrations..."
 python manage.py migrate
 
 # Seed the database with initial data
-# We will run this every time, but our seed script should be smart enough
-# not to create duplicate data.
 echo "Seeding database..."
 python manage.py seed
+
+# Create a superuser if it doesn't exist
+echo "Checking for superuser..."
+python manage.py shell <<EOF
+from django.contrib.auth import get_user_model
+import os
+
+User = get_user_model()
+
+username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'admin@example.com')
+password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+
+if not User.objects.filter(username=username).exists():
+    if password:
+        print(f'Creating superuser {username}')
+        User.objects.create_superuser(username, email, password)
+    else:
+        print('DJANGO_SUPERUSER_PASSWORD not set, skipping superuser creation.')
+else:
+    print(f'Superuser {username} already exists.')
+EOF
 
 # Start the application server
 echo "Starting server..."

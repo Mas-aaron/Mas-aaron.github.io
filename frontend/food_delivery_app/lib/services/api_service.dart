@@ -78,7 +78,9 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     if (token == null) {
-      throw Exception('Token not found. Please log in again.');
+      // Return base headers if no token is found.
+      // The API will then correctly reject requests to protected endpoints.
+      return {'Content-Type': 'application/json; charset=UTF-8'};
     }
     return {
       'Content-Type': 'application/json; charset=UTF-8',
@@ -91,6 +93,7 @@ class ApiService {
     if (lat != null && lng != null) {
       url += '?lat=$lat&lng=$lng';
     }
+    // This is a public endpoint, so no auth headers are needed.
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
