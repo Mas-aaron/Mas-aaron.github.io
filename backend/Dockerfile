@@ -40,5 +40,6 @@ RUN python manage.py seed
 # Collect static files for production
 RUN python manage.py collectstatic --noinput
 
-# The command to run when the container starts
-CMD ["daphne", "-b", "0.0.0.0", "-p", "$PORT", "food_delivery.asgi:application"]
+# The command to run when the container starts. 
+# Using shell form to allow for $PORT variable expansion.
+CMD daphne -b 0.0.0.0 -p $PORT food_delivery.asgi:application
