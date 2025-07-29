@@ -99,8 +99,13 @@ ASGI_APPLICATION = 'food_delivery.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 if not DEBUG:
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    if not DATABASE_URL:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured("The DATABASE_URL environment variable is not set. Please set it in your Railway service variables.")
+
     DATABASES = {
-        'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
+        'default': dj_database_url.parse(DATABASE_URL)
     }
     DATABASES['default']['CONN_MAX_AGE'] = 600
 else:
