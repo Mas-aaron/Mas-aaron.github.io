@@ -51,8 +51,6 @@ else:
         '127.0.0.1',
     ]
 
-CORS_ALLOW_ALL_ORIGINS = True
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -169,18 +167,19 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True # For development only. In production, use a specific list.
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-]
+if DEBUG:
+    # During development, allow the Flutter web app to connect from any port.
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"http://localhost:[0-9]+",
+    ]
+else:
+    # In production, only allow specific origins.
+    CORS_ALLOWED_ORIGINS = [
+        # Add the URL of your deployed Flutter web dashboard here once it's live.
+    ]
+
+# This is necessary for the mobile app, which doesn't send a standard origin header.
+CORS_ALLOW_ALL_ORIGINS = False # This should be False, we use the lists above.
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {

@@ -57,6 +57,10 @@ class ApiService {
       final data = jsonDecode(response.body);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
+      // TEMPORARY: Print token to console for restaurant dashboard access
+      print('--- AUTH TOKEN ---');
+      print(data['token']);
+      print('------------------');
     } else {
       throw Exception('Failed to login');
     }
