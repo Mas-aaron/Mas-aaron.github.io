@@ -9,8 +9,8 @@ class Command(BaseCommand):
         self.stdout.write('Seeding database...')
 
         # Use Django's app registry to get models to avoid import issues
-        Restaurant = apps.get_model('restaurants', 'Restaurant')
-        Menu = apps.get_model('restaurants', 'Menu')
+        Restaurant = apps.get_model('api', 'Restaurant')
+        MenuCategory = apps.get_model('api', 'MenuCategory')
 
         # Check if data already exists
         if Restaurant.objects.exists():
@@ -42,7 +42,7 @@ class Command(BaseCommand):
             )
             self.stdout.write(self.style.SUCCESS(f'Created Restaurant: {restaurant.name}'))
 
-            menu = Menu.objects.create(restaurant=restaurant, name=f"{r_data['name']} Menu")
+            menu = MenuCategory.objects.create(restaurant=restaurant, name=f"{r_data['name']} Menu")
             for dish__name in r_data['dishes']:
                 # This part is a placeholder for creating Dish objects.
                 # You can adapt this if you have a Dish model.
