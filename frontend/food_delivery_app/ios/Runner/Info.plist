@@ -46,8 +46,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to find restaurants near you.</string>
+	<string>We need your location to deliver food to your exact address.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We use your location to provide real-time order tracking and find nearby restaurants, even when the app is in the background.</string>
+	<string>We need your location to deliver food to your exact address and provide real-time order tracking.</string>
 </dict>
 </plist>

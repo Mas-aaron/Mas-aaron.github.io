@@ -1,36 +1,235 @@
-from django.db.models import F, FloatField, ExpressionWrapper, Sum, Count
+import requests
+from .utils import send_push_notification
+from .models import NotificationTemplate
+from rest_framework.permissions import IsAdminUser
+from rest_framework.views import APIView
+from django.conf import settings
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.db.models import F, FloatField, ExpressionWrapper, Sum, Count, Q
 from django.db.models.functions import Radians, Power, Sin, Cos, Sqrt, ATan2, TruncMonth
 from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, generics, status
-from rest_framework.views import APIView
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+import logging
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+
+from rest_framework import viewsets, generics, permissions, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.generics import RetrieveAPIView
+
 from django.contrib.auth.models import User
-from .models import Restaurant, MenuCategory, MenuItem, Cart, CartItem, Order, OrderItem, ModifierGroup, Modifier
-from .dispatch_service import find_and_assign_rider
-from .serializers import (
-    RestaurantSerializer, UserSerializer, MenuCategorySerializer, 
-    CartSerializer, CartItemSerializer, OrderSerializer, CartItemWriteSerializer, MenuItemSerializer,
-    ModifierGroupSerializer, ModifierSerializer, MenuItemBulkUploadSerializer
-)
+from django.contrib.auth import login, logout, authenticate
 
 from geopy.distance import geodesic
 
-from rest_framework.parsers import MultiPartParser, FormParser
+from .permissions import IsCustomer, IsRestaurantOwner
+from .models import (
+    Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, 
+    Order, OrderItem, Message, Notification, DietaryPreference, CustomerProfile, 
+    UserAddress, Review, Device, RiderProfile, NotificationTemplate
+)
+from .dispatch_service import find_and_assign_rider
+from .models import Cart
+from .serializers import (
+    CartItemSerializer,
+    CartSerializer,
+    CartItemWriteSerializer,
+    CartSerializer,
+    MenuCategorySerializer,
+    MenuItemBulkUploadSerializer,
+    MenuItemSerializer,
+    MessageSerializer,
+    ModifierGroupSerializer,
+    ModifierSerializer,
+    NotificationSerializer,
+    OrderSerializer,
+    OrderUpdateStatusSerializer,
+    RestaurantOrderSerializer,
+    RestaurantSerializer,
+    RestaurantSignUpSerializer,
+    MenuCategoryCRUDSerializer,
+    UserSerializer,
+    RiderSignUpSerializer,
+    DietaryPreferenceSerializer,
+    UserAddressSerializer,
+    CustomerProfileSerializer,
+    ReviewSerializer,
+    DeviceSerializer,
+)
 
-class MenuItemCreateView(generics.CreateAPIView):
-    queryset = MenuItem.objects.all()
-    serializer_class = MenuItemSerializer
+logger = logging.getLogger(__name__)
+
+# --- Device and Notification Views ---
+
+class DeviceViewSet(viewsets.ModelViewSet):
+    serializer_class = DeviceSerializer
     permission_classes = [IsAuthenticated]
-    parser_classes = (MultiPartParser, FormParser)
+    queryset = Device.objects.all()
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user, is_active=True)
+
+    def create(self, request, *args, **kwargs):
+        token = request.data.get('token')
+        device_type = request.data.get('device_type')
+        
+        if not token or not device_type:
+            return Response(
+                {'error': 'Both token and device_type are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Try to get existing device (active or inactive)
+            device = Device.objects.get(
+                Q(user=request.user, token=token) |
+                Q(token=token, is_active=False)
+            )
+            
+            # Reactivate if inactive
+            if not device.is_active:
+                device.is_active = True
+                device.user = request.user
+            
+            # Update device type if changed
+            if device.device_type != device_type:
+                device.device_type = device_type
+            
+            device.save()
+            serializer = self.get_serializer(device)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Device.DoesNotExist:
+            # Create new device
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+from django.utils import timezone
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test_notification(request):
+    """Endpoint to test push notifications"""
+    try:
+        # Verify user has registered devices
+        active_devices = request.user.devices.filter(is_active=True)
+        if not active_devices.exists():
+            return Response({
+                'status': 'failed',
+                'message': 'User has no active devices registered',
+                'device_count': 0
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Send test notification
+        notification_sent_successfully = send_push_notification(
+            request.user,
+            "Test Notification",
+            "This is a test notification from the server",
+            {
+                'type': 'test',
+                'timestamp': str(timezone.now()),
+                'user_id': str(request.user.id),
+                'click_action': 'FLUTTER_NOTIFICATION_CLICK' # Important for foreground taps
+            }
+        )
+
+        if notification_sent_successfully:
+            return Response({
+                'status': 'success',
+                'message': 'Test notification sent to at least one device.',
+                'device_count': active_devices.count(),
+            })
+        else:
+            return Response({
+                'status': 'failed',
+                'message': 'Failed to send notification to any devices. Check server logs for details.',
+                'device_count': active_devices.count(),
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        logger.error(f"Test notification failed: {str(e)}", exc_info=True)
+        return Response({
+            'status': 'error',
+            'message': 'An internal server error occurred while sending the notification.',
+            'error_details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SendTemplateNotificationView(APIView):
+    """
+    An admin-only endpoint to send a notification to a user based on a pre-defined template.
+    """
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        template_name = request.data.get('template_name')
+        user_id = request.data.get('user_id')
+
+        if not template_name or not user_id:
+            return Response(
+                {'error': 'template_name and user_id are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            template = NotificationTemplate.objects.get(name=template_name)
+            user = User.objects.get(id=user_id)
+        except NotificationTemplate.DoesNotExist:
+            return Response(
+                {'error': f'Template with name "{template_name}" not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except User.DoesNotExist:
+            return Response(
+                {'error': f'User with id "{user_id}" not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Prepare a simple data payload
+        data_payload = {
+            'template_name': template.name,
+            'category': template.category,
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK', # Standard for FCM
+        }
+
+        # Send the notification using our enhanced function
+        success = send_push_notification(
+            user=user,
+            title=template.title,
+            body=template.body,
+            data=data_payload,
+            image_url=template.image_url
+        )
+
+        if success:
+            return Response(
+                {'message': f'Successfully dispatched "{template.name}" notification for user {user.username}.'},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {'error': 'Failed to send notification to any device. Check logs for details.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# --- Restaurant and Menu Views ---
 
 class RestaurantViewSet(viewsets.ReadOnlyModelViewSet):
+    """Provides a read-only API for listing approved restaurants, with optional proximity filtering."""
     serializer_class = RestaurantSerializer
 
     def get_queryset(self):
-        queryset = Restaurant.objects.all() # Required for ModelViewSet base name auto-generation
+        queryset = Restaurant.objects.filter(is_approved=True)
         lat = self.request.query_params.get('lat')
         lng = self.request.query_params.get('lng')
 
@@ -38,62 +237,41 @@ class RestaurantViewSet(viewsets.ReadOnlyModelViewSet):
             try:
                 lat_f = float(lat)
                 lng_f = float(lng)
-
-                # Earth radius in kilometers
                 earth_radius_km = 6371.0
-
-                # Haversine formula using Django ORM
                 dlat = Radians(F('latitude') - lat_f)
                 dlon = Radians(F('longitude') - lng_f)
-
-                a = (
-                    Power(Sin(dlat / 2), 2) +
-                    Cos(Radians(lat_f)) * Cos(Radians(F('latitude'))) * Power(Sin(dlon / 2), 2)
-                )
+                a = Power(Sin(dlat / 2), 2) + Cos(Radians(lat_f)) * Cos(Radians(F('latitude'))) * Power(Sin(dlon / 2), 2)
                 c = 2 * ATan2(Sqrt(a), Sqrt(1 - a))
-                distance = ExpressionWrapper(
-                    earth_radius_km * c,
-                    output_field=FloatField()
-                )
-
+                distance = ExpressionWrapper(earth_radius_km * c, output_field=FloatField())
                 queryset = queryset.annotate(distance=distance).order_by('distance')
-
             except (ValueError, TypeError):
-                # Ignore invalid lat/lng and return the default queryset
                 pass
-        
         return queryset
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
         lat = self.request.query_params.get('lat')
         lng = self.request.query_params.get('lng')
-
         if lat and lng:
             try:
                 context['user_location'] = (float(lat), float(lng))
             except (ValueError, TypeError):
-                pass # Ignore invalid lat/lng
+                pass
         return context
-
-class RestaurantMenuView(generics.ListAPIView):
-    serializer_class = MenuCategorySerializer
-
-    def get_queryset(self):
-        restaurant_pk = self.kwargs['restaurant_pk']
-        return MenuCategory.objects.filter(restaurant_id=restaurant_pk)
 
 class MenuItemListByRestaurantView(generics.ListAPIView):
     serializer_class = MenuItemSerializer
 
     def get_queryset(self):
         restaurant_pk = self.kwargs['restaurant_pk']
-        return MenuItem.objects.filter(category__restaurant_id=restaurant_pk)
+        queryset = MenuItem.objects.filter(category__restaurant_id=restaurant_pk)
+        dietary_preferences = self.request.query_params.getlist('dietary_preferences')
+        if dietary_preferences:
+            for preference_id in dietary_preferences:
+                queryset = queryset.filter(dietary_preferences=preference_id)
+        return queryset.distinct()
 
-class CreateUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+# --- Cart and Order Views ---
 
 class CartView(generics.RetrieveAPIView):
     serializer_class = CartSerializer
@@ -103,43 +281,113 @@ class CartView(generics.RetrieveAPIView):
         cart, _ = Cart.objects.get_or_create(user=self.request.user)
         return cart
 
-class CartItemViewSet(viewsets.ModelViewSet):
+class CartDetailView(RetrieveAPIView):
+    """
+    Retrieve the cart for the current user.
+    Creates a cart if one doesn't exist.
+    """
+    serializer_class = CartSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_class(self):
-        if self.action in ['create', 'update', 'partial_update']:
-            return CartItemWriteSerializer
-        return CartItemSerializer
+    def get_object(self):
+        cart, created = Cart.objects.get_or_create(user=self.request.user)
+        return cart
 
-    def get_queryset(self):
-        return CartItem.objects.filter(cart__user=self.request.user).select_related(
-            'menu_item__category__restaurant'
+
+class AddToCartView(APIView):
+    """
+    A dedicated view to handle adding items to the cart.
+    Expects a POST request with 'menu_item_id' and 'quantity'.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, *args, **kwargs):
+        menu_item_id = request.data.get('menu_item_id')
+        quantity = request.data.get('quantity', 1)
+
+        if not menu_item_id:
+            return Response({'error': 'menu_item_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            menu_item = MenuItem.objects.get(pk=menu_item_id)
+            quantity = int(quantity)
+            if quantity <= 0:
+                raise ValueError("Quantity must be positive.")
+        except MenuItem.DoesNotExist:
+            return Response({'error': 'Menu item not found'}, status=status.HTTP_404_NOT_FOUND)
+        except (ValueError, TypeError):
+            return Response({'error': 'Invalid quantity'}, status=status.HTTP_400_BAD_REQUEST)
+
+        cart, _ = Cart.objects.get_or_create(user=request.user)
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            menu_item=menu_item,
+            defaults={'quantity': quantity}
         )
 
-    def create(self, request, *args, **kwargs):
-        # Use the write serializer to validate and save the data
-        write_serializer = self.get_serializer(data=request.data)
-        write_serializer.is_valid(raise_exception=True)
-        instance, created = write_serializer.save()
+        if not created:
+            # If item already exists, update its quantity
+            cart_item.quantity += quantity
+            cart_item.save()
 
-        # Use the read serializer to return the full object representation
-        read_serializer = CartItemSerializer(instance)
+        serializer = CartItemSerializer(cart_item)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(read_serializer.data, status=status_code)
 
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        # Always return the full CartItem (read serializer)
-        read_serializer = CartItemSerializer(instance)
-        return Response(read_serializer.data)
+class RemoveFromCartView(APIView):
+    permission_classes = [IsAuthenticated, IsCustomer]
 
-    def partial_update(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        cart_item_id = request.data.get('cart_item_id')
+
+        if not cart_item_id:
+            return Response({'error': 'cart_item_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            cart_item = CartItem.objects.get(pk=cart_item_id, cart__user=request.user)
+            cart_item.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except CartItem.DoesNotExist:
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UpdateCartItemView(APIView):
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def put(self, request, item_id, *args, **kwargs):
+        quantity = request.data.get('quantity')
+
+        if not quantity:
+            return Response({'error': 'quantity is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                # If quantity is zero or less, remove the item
+                cart_item = CartItem.objects.get(pk=item_id, cart__user=request.user)
+                cart_item.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+            cart_item = CartItem.objects.get(pk=item_id, cart__user=request.user)
+            cart_item.quantity = quantity
+            cart_item.save()
+            serializer = CartItemSerializer(cart_item)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CartItem.DoesNotExist:
+            return Response({'error': 'Cart item not found'}, status=status.HTTP_404_NOT_FOUND)
+        except (ValueError, TypeError):
+            return Response({'error': 'Invalid quantity'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class CartItemViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get_serializer_class(self):
+        return CartItemWriteSerializer if self.action in ['create', 'update', 'partial_update'] else CartItemSerializer
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart__user=self.request.user).select_related('menu_item__category__restaurant')
 
 class OrderListCreateView(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
@@ -149,17 +397,165 @@ class OrderListCreateView(generics.ListCreateAPIView):
         return Order.objects.filter(user=self.request.user).order_by('-created_at')
 
     def perform_create(self, serializer):
-        # The serializer's create method now handles all logic, 
-        # including validation and associating the user from the request context.
-        serializer.save()
+        order = serializer.save(user=self.request.user)
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            restaurant_id = order.restaurant.id
+            order_data = RestaurantOrderSerializer(order).data
+            # The order data must be dumped to a JSON string to be sent through the channel layer.
+            async_to_sync(channel_layer.group_send)(
+                f'restaurant_{restaurant_id}',
+                {
+                    'type': 'new_order',
+                    'order': json.dumps(order_data)
+                }
+            )
+            logger.info(f'Sent new order notification for order {order.id} to group restaurant_{restaurant_id}')
 
 class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Ensure users can only see their own orders
         return Order.objects.filter(user=self.request.user)
+
+class OrderUpdateStatusView(generics.UpdateAPIView):
+    """Allows a restaurant or rider to update the status of an order."""
+    queryset = Order.objects.all()
+    serializer_class = OrderUpdateStatusSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'pk'
+
+    def update(self, request, *args, **kwargs):
+        order = self.get_object()
+        old_status = order.status
+        response = super().update(request, *args, **kwargs)
+
+        if response.status_code == 200:
+            order.refresh_from_db()
+            new_status = order.status
+
+            # If status has changed, send notifications
+            if old_status != new_status:
+                logger.info(f"Order {order.id} status changed from {old_status} to {new_status}. Sending notifications.")
+                
+                # Generic status update for customer
+                if order.user:
+                    send_push_notification(
+                        order.user,
+                        f"Order #{order.id} Update",
+                        f"Your order status is now: {order.get_status_display()}",
+                        data={'orderId': str(order.id), 'status': new_status}
+                    )
+
+                # Broadcast the status update to the restaurant's dashboard via WebSocket
+                channel_layer = get_channel_layer()
+                if channel_layer and order.restaurant:
+                    restaurant_group_name = f'restaurant_{order.restaurant.id}'
+                    updated_order_data = RestaurantOrderSerializer(order).data
+                    async_to_sync(channel_layer.group_send)(
+                        restaurant_group_name,
+                        {
+                            'type': 'order_update',
+                            'order': updated_order_data
+                        }
+                    )
+                    logger.info(f"Sent order status update for order {order.id} to group {restaurant_group_name}")
+
+                # Specific notification if a rider was just assigned
+                if new_status == 'En route to Restaurant' and order.rider:
+                    if order.restaurant and order.restaurant.owner:
+                        send_push_notification(
+                            order.restaurant.owner,
+                            f"Rider assigned for order #{order.id}",
+                            f"{order.rider.user.username} has accepted the delivery.",
+                            data={'orderId': str(order.id), 'status': new_status}
+                        )
+
+            # If order is ready, notify available riders
+            if new_status == 'Ready for Pickup':
+                channel_layer = get_channel_layer()
+                order_serializer = RestaurantOrderSerializer(order)
+                async_to_sync(channel_layer.group_send)(
+                    'riders_available',
+                    {'type': 'new_order_message', 'order': order_serializer.data}
+                )
+                logger.info(f"Sent 'Ready for Pickup' notification for order {order.id} to riders.")
+
+        return response
+
+# --- User and Auth Views ---
+
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+class RestaurantSignUpView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RestaurantSignUpSerializer
+    permission_classes = [AllowAny]
+
+class RiderSignUpView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RiderSignUpSerializer
+    permission_classes = [AllowAny]
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
+        if user:
+            login(request, user)
+            return Response(UserSerializer(user).data)
+        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response(UserSerializer(request.user).data)
+
+# --- Other Views ---
+
+class AvailableOrderListView(generics.ListAPIView):
+    serializer_class = RestaurantOrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(status='Ready for Pickup', rider__isnull=True)
+
+class AssignOrderToRiderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        try:
+            order = Order.objects.get(id=order_id, status='Ready for Pickup')
+            rider_profile = RiderProfile.objects.get(user=request.user)
+            order.rider = rider_profile
+            order.status = 'En Route to Restaurant'
+            order.save()
+            send_push_notification(
+                order.user,
+                title=f"Your order #{order.id} is on its way!",
+                body=f"{rider_profile.user.username} is coming to pick up your order.",
+                data={'orderId': str(order.id), 'status': order.status}
+            )
+            return Response(OrderSerializer(order).data)
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found or not ready for pickup.'}, status=status.HTTP_404_NOT_FOUND)
+        except RiderProfile.DoesNotExist:
+            return Response({'error': 'Rider profile not found.'}, status=status.HTTP_403_FORBIDDEN)
+
+
 
 class AvailableOrderListView(generics.ListAPIView):
     """
@@ -189,6 +585,8 @@ class AvailableOrderListView(generics.ListAPIView):
 
 from rest_framework.parsers import MultiPartParser, FormParser
 
+
+
 class MenuItemBulkUploadView(generics.CreateAPIView):
     serializer_class = MenuItemBulkUploadSerializer
     permission_classes = [IsAuthenticated]
@@ -200,16 +598,31 @@ class MenuItemBulkUploadView(generics.CreateAPIView):
         result = serializer.save()
         return Response(result, status=status.HTTP_201_CREATED)
 
+
 class ModifierGroupViewSet(viewsets.ModelViewSet):
     queryset = ModifierGroup.objects.all()
     serializer_class = ModifierGroupSerializer
     permission_classes = [IsAuthenticated]
 
-class ModifierViewSet(viewsets.ModelViewSet):
-    queryset = Modifier.objects.all()
-    serializer_class = ModifierSerializer
-    permission_classes = [IsAuthenticated]
 
+
+
+class DashboardMenuView(generics.ListAPIView):
+    """
+    API endpoint for the restaurant owner's dashboard to view their menu items.
+    """
+    serializer_class = MenuItemSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+
+    def get_queryset(self):
+        # Get the restaurant associated with the logged-in user
+        try:
+            restaurant = Restaurant.objects.get(owner=self.request.user)
+            # Return all menu items for that restaurant
+            return MenuItem.objects.filter(category__restaurant=restaurant)
+        except Restaurant.DoesNotExist:
+            # If no restaurant is associated with the user, return an empty queryset
+            return MenuItem.objects.none()
 
 class DashboardAnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -271,9 +684,141 @@ class DashboardAnalyticsView(APIView):
 
         return Response(data, status=status.HTTP_200_OK)
 
+class RestaurantDashboardMenuView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        try:
+            # Ensure the user has a restaurant profile.
+            restaurant = user.restaurant_profile
+            
+            # Get the categories and their related menu items.
+            queryset = MenuCategory.objects.filter(restaurant=restaurant).prefetch_related('menu_items')
+            
+            # Manually serialize the data to ensure the correct structure.
+            serializer = MenuCategorySerializer(queryset, many=True)
+            
+            # Return the data within the 'categories' key as expected by the frontend.
+            return Response({'categories': serializer.data}, status=status.HTTP_200_OK)
+            
+        except Restaurant.DoesNotExist:
+            # If the user is not a restaurant owner, return an empty set.
+            return Response({'categories': []}, status=status.HTTP_200_OK)
+        except AttributeError:
+            # Catches cases where user.restaurant_profile doesn't exist
+            return Response({'categories': []}, status=status.HTTP_200_OK)
+
+
+class RestaurantOrderViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This view returns a list of all orders for the restaurant
+    owned by the currently authenticated user.
+    """
+    serializer_class = RestaurantOrderSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            # The user's restaurant profile is now directly on the unified Restaurant model.
+            restaurant = user.restaurant_profile
+            return Order.objects.filter(restaurant=restaurant).order_by('-created_at')
+        except (Restaurant.DoesNotExist, AttributeError):
+            # This will catch cases where the user is not a restaurant owner
+            # or the restaurant_profile attribute doesn't exist.
+            return Order.objects.none()
+
+
+class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for viewing user notifications."""
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """This view should return a list of all the notifications
+        for the currently authenticated user."""
+        return self.request.user.notifications.all()
+
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        """Mark a specific notification as read."""
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save()
+        return Response({'status': 'notification marked as read'})
+
+
+class MessageViewSet(viewsets.ModelViewSet):
+    """ViewSet for handling messages between users."""
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """This view should return a list of all messages for the currently authenticated user."""
+        user = self.request.user
+        # Return messages where the user is either the sender or the recipient
+        return Message.objects.filter(Q(sender=user) | Q(recipient=user)).order_by('-timestamp')
+
+    def perform_create(self, serializer):
+        """Set the sender of the message to the currently authenticated user."""
+        serializer.save(sender=self.request.user)
+
+
+class CurrentUserView(APIView):
+    """View to get the current authenticated user's data."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Return the data for the currently authenticated user."""
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+
+class MenuCategoryViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows restaurants to manage their menu categories.
+    """
+    serializer_class = MenuCategoryCRUDSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the categories
+        for the currently authenticated restaurant.
+        """
+        try:
+            restaurant = self.request.user.restaurant_profile
+            return MenuCategory.objects.filter(restaurant=restaurant)
+        except Restaurant.DoesNotExist:
+            return MenuCategory.objects.none()
+        except AttributeError:
+            return MenuCategory.objects.none()
+
+    def perform_create(self, serializer):
+        """
+        Associate the category with the logged-in user's restaurant.
+        """
+        try:
+            restaurant = self.request.user.restaurant_profile
+            serializer.save(restaurant=restaurant)
+        except Restaurant.DoesNotExist:
+            # This case should ideally not happen if IsRestaurantOwner permission is checked
+            pass
+
+
+class RestaurantProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = RestaurantSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        # Use the related_name we defined in the model
+        return self.request.user.restaurant_profile
+
+
 class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    This viewset handles listing a rider's assigned orders.
+    This viewset handles listing and managing a rider's orders.
     """
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
@@ -285,4 +830,180 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
         """
         return Order.objects.filter(rider=self.request.user).order_by('-created_at')
 
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk=None):
+        """
+        Allows a rider to accept an order that is 'Ready for Pickup'.
+        """
+        try:
+            order = Order.objects.get(pk=pk, status='Ready for Pickup', rider__isnull=True)
+        except Order.DoesNotExist:
+            return Response({'error': 'This order is no longer available.'}, status=status.HTTP_404_NOT_FOUND)
 
+        order.rider = request.user
+        order.status = 'On the way'
+        order.save()
+
+        serializer = self.get_serializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None):
+        """
+        Allows a rider to mark an order as delivered.
+        """
+        try:
+            # .get_queryset() already filters for the current rider
+            order = self.get_queryset().get(pk=pk, status='On the way')
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found or not in a deliverable state.'}, status=status.HTTP_404_NOT_FOUND)
+
+        order.status = 'Delivered'
+        order.save()
+
+        serializer = self.get_serializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class DirectionsProxyView(APIView):
+    """
+    A proxy view to fetch directions from the Google Maps API.
+    This is necessary to avoid CORS issues on the web client.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        origin = request.query_params.get('origin')
+        destination = request.query_params.get('destination')
+        api_key = getattr(settings, 'GOOGLE_MAPS_API_KEY', None)
+
+        if not all([origin, destination, api_key]):
+            return Response(
+                {'error': 'Missing required parameters: origin, destination, and API key.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&key={api_key}"
+
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an exception for bad status codes
+            return Response(response.json())
+        except requests.exceptions.RequestException as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class RestaurantSignUpView(generics.CreateAPIView):
+    """
+    A view for new restaurants to sign up. This creates a new User and a new Restaurant instance.
+    """
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSignUpSerializer
+    permission_classes = [AllowAny] # Anyone can sign up
+
+class RiderSignUpView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = RiderSignUpSerializer
+
+
+class DietaryPreferenceViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Provides a read-only list of available dietary preferences.
+    """
+    queryset = DietaryPreference.objects.all()
+    serializer_class = DietaryPreferenceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class UserAddressViewSet(viewsets.ModelViewSet):
+    """
+    Allows users to manage their saved addresses.
+    """
+    serializer_class = UserAddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the addresses
+        for the currently authenticated user.
+        """
+        return UserAddress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """ViewSet for creating and listing reviews."""
+    serializer_class = ReviewSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        """Optionally restricts the returned reviews to a given menu item."""
+        queryset = Review.objects.all()
+        menu_item_id = self.request.query_params.get('menu_item_id')
+        if menu_item_id is not None:
+            queryset = queryset.filter(menu_item_id=menu_item_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class DeviceViewSet(viewsets.ModelViewSet):
+    """ViewSet for the Device model, handles device registration for push notifications."""
+    queryset = Device.objects.all()
+    serializer_class = DeviceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        """Handles device registration. Updates existing device or creates a new one."""
+        token = request.data.get('token')
+        device_type = request.data.get('device_type') 
+
+        if not token or not device_type:
+            return Response(
+                {"error": "Both token and device_type are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Use update_or_create to handle existing devices gracefully.
+        device, created = Device.objects.update_or_create(
+            token=token,
+            defaults={
+                'user': request.user,
+                'device_type': device_type
+            }
+        )
+
+        serializer = self.get_serializer(device)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(serializer.data, status=status_code)
+
+    @action(detail=False, methods=['post'])
+    def unregister(self, request):
+        """Unregister a device by deleting it."""
+        token = request.data.get('token')
+        if not token:
+            return Response({'error': 'Device token not provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Unregistering should remove the device token from the system.
+        devices_deleted, _ = Device.objects.filter(token=token).delete()
+
+        # Always return a success response to the client.
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CustomerProfileView(generics.RetrieveUpdateAPIView):
+    """
+    Allows the current user to retrieve and update their customer profile.
+    """
+    serializer_class = CustomerProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        """
+        Retrieve or create the profile for the current user.
+        """
+        profile, created = CustomerProfile.objects.get_or_create(user=self.request.user)
+        return profile

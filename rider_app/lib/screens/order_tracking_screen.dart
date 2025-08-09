@@ -1,21 +1,35 @@
 import 'dart:async';
-
+import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:rider_app/constants.dart';
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:convert';
 
 import 'package:rider_app/models/order.dart';
+
 import 'package:rider_app/services/api_service.dart';
-import 'package:rider_app/constants.dart';
+
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+// Helper function to programmatically resize marker icons
+Future<BitmapDescriptor> getMarkerIcon(String path, int width) async {
+  ByteData data = await rootBundle.load(path);
+  ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+  ui.FrameInfo fi = await codec.getNextFrame();
+  final Uint8List resizedData = (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
+  return BitmapDescriptor.fromBytes(resizedData);
+}
+
 class OrderTrackingScreen extends StatefulWidget {
-    final Order order;
+  final Order order;
   final ApiService apiService;
 
-    const OrderTrackingScreen({super.key, required this.order, required this.apiService});
+  const OrderTrackingScreen({super.key, required this.order, required this.apiService});
 
   @override
   _OrderTrackingScreenState createState() => _OrderTrackingScreenState();
@@ -23,27 +37,48 @@ class OrderTrackingScreen extends StatefulWidget {
 
 class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   final Completer<GoogleMapController> _controller = Completer();
+  final ApiService _apiService = ApiService();
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
   final List<LatLng> _polylineCoordinates = [];
   final PolylinePoints _polylinePoints = PolylinePoints();
+  LocationData? _currentLocation;
+  final Location _location = Location();
+  StreamSubscription<LocationData>? _locationSubscription;
   WebSocketChannel? _channel;
   Timer? _broadcastTimer;
   Timer? _reconnectTimer;
   bool _wsConnected = false;
-  bool _showWsError = false;
 
-  final Location _location = Location();
-  StreamSubscription<LocationData>? _locationSubscription;
-  LocationData? _currentLocation;
+  BitmapDescriptor? _riderIcon;
 
   @override
   void initState() {
     super.initState();
-    _setMarkers();
-    _initializeLocation();
-    _getRouteAndDrawPolyline();
-    _initializeWebSocket();
+    _initializeScreen();
+  }
+
+  Future<void> _initializeScreen() async {
+    // Ensure the custom marker is loaded before any other map-related setup
+    await _loadCustomMarker();
+
+    // Now that assets are ready, proceed with the rest of the setup
+    if (mounted) {
+      _setMarkers();
+      _initializeLocation();
+      _getRouteAndDrawPolyline();
+      _initWebSocket();
+    }
+  }
+
+  Future<void> _loadCustomMarker() async {
+    // Use the new helper function to get a resized marker icon
+    final icon = await getMarkerIcon('assets/images/rider_marker.png', 80);
+    if (mounted) {
+      setState(() {
+        _riderIcon = icon;
+      });
+    }
   }
 
   void _setMarkers() {
@@ -76,71 +111,88 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     setState(() {});
   }
 
-    void _initializeWebSocket() async {
-    final token = await widget.apiService.getToken();
+  Future<void> _initWebSocket() async {
+    final token = await ApiService.getToken();
     if (token == null) {
-      print('Error: Auth token is null. Cannot connect to WebSocket.');
-      setState(() {
-        _showWsError = true; // Show an error state on the UI
-      });
+      print('Authentication token not found, cannot connect to WebSocket.');
       return;
     }
-        final wsUrl = Uri.parse('$websocketUrl/ws/track/${widget.order.id}/?token=$token');
-  _showWsError = false;
-  _wsConnected = false;
-  _channel = WebSocketChannel.connect(wsUrl);
-  _wsConnected = true;
-  setState(() {});
 
-  _channel!.stream.listen(
-    (event) {
-      _wsConnected = true;
-      _showWsError = false;
-      setState(() {});
-    },
-    onDone: _scheduleReconnect,
-    onError: (_) {
-      _showWsError = true;
-      _wsConnected = false;
-      setState(() {});
-      _scheduleReconnect();
-    },
-    cancelOnError: true,
-  );
-}
+    final wsUrl = Uri.parse('$webSocketUrl${widget.order.id}/?token=$token');
+    _channel = WebSocketChannel.connect(wsUrl);
 
-void _scheduleReconnect() {
-  _reconnectTimer?.cancel();
-  _reconnectTimer = Timer(const Duration(seconds: 3), () {
-    if (mounted) _initializeWebSocket();
-  });
-}
+    // Assume the connection is active immediately and handle errors reactively.
+    if (mounted) {
+      setState(() {
+        _wsConnected = true;
+      });
+    }
 
-void _sendLocationData(LocationData locationData) {
-  if (!_wsConnected || _channel == null || locationData.latitude == null || locationData.longitude == null) {
-    return;
+    _channel!.stream.listen(
+      (event) {
+        // Handle incoming messages if needed, but connection is already active.
+        print('Received WebSocket message: $event');
+      },
+      onDone: () {
+        if (mounted) {
+          print('WebSocket connection closed.');
+          setState(() {
+            if (_wsConnected) {
+              _wsConnected = false;
+            }
+          });
+          _scheduleReconnect();
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          print('WebSocket error: $error');
+          setState(() {
+            _wsConnected = false;
+          });
+          _scheduleReconnect();
+        }
+      },
+      cancelOnError: true,
+    );
   }
-  if (!_shouldBroadcast()) {
-    return;
-  }
-  final data = jsonEncode({
-    'latitude': locationData.latitude,
-    'longitude': locationData.longitude,
-  });
-  try {
-    _channel!.sink.add(data);
-  } catch (_) {
-    _showWsError = true;
-    setState(() {});
-  }
-}
 
-bool _shouldBroadcast() {
-  // Only broadcast if order is active (customize statuses as needed)
-      // Broadcast as long as the order is active.
+  void _scheduleReconnect() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) _initWebSocket();
+    });
+  }
+
+  void _sendLocationData(LocationData locationData) {
+    if (!_wsConnected || _channel == null || locationData.latitude == null || locationData.longitude == null) {
+      return;
+    }
+    if (!_shouldBroadcast()) {
+      return;
+    }
+
+    // Add a 'type' to help the backend distinguish message types
+    final data = jsonEncode({
+      'type': 'rider_location_update',
+      'latitude': locationData.latitude,
+      'longitude': locationData.longitude,
+    });
+
+    try {
+      print('Sending location update: $data');
+      _channel!.sink.add(data);
+    } catch (e) {
+      print('Error sending location data: $e');
+    }
+  }
+
+  bool _shouldBroadcast() {
+    // Only broadcast if order is active (customize statuses as needed)
+    // Broadcast as long as the order is active.
     final status = widget.order.status.toLowerCase();
     return status != 'delivered' && status != 'cancelled';
-}
+  }
 
   Future<void> _getRouteAndDrawPolyline() async {
     final restaurantLat = widget.order.restaurantLat;
@@ -149,20 +201,33 @@ bool _shouldBroadcast() {
     final customerLng = widget.order.customerLng;
 
     if (restaurantLat == null || restaurantLng == null || customerLat == null || customerLng == null) {
+      print('Error: Missing location coordinates.');
       return;
     }
 
-    PolylineResult result = await _polylinePoints.getRouteBetweenCoordinates(
-        googleApiKey: googleMapsApiKey,
-        request: PolylineRequest(
-            origin: PointLatLng(restaurantLat, restaurantLng),
-            destination: PointLatLng(customerLat, customerLng),
-            mode: TravelMode.driving));
-
-    if (result.points.isNotEmpty) {
-      for (var point in result.points) {
-        _polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+    try {
+      final token = await ApiService.getToken();
+      if (token == null) {
+        print('Error: Auth token not available.');
+        return;
       }
+
+      final directions = await _apiService.getDirections(
+        origin: '$restaurantLat,$restaurantLng',
+        destination: '$customerLat,$customerLng',
+        token: token,
+      );
+
+      if (directions['routes'] != null && directions['routes'].isNotEmpty) {
+        final points = _polylinePoints.decodePolyline(directions['routes'][0]['overview_polyline']['points']);
+        if (points.isNotEmpty) {
+          for (var point in points) {
+            _polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching directions: $e');
     }
 
     setState(() {
@@ -182,12 +247,16 @@ bool _shouldBroadcast() {
       if (!serviceEnabled) return;
     }
 
-    PermissionStatus permissionGranted = await _location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await _location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) return;
+    if (!kIsWeb) {
+      PermissionStatus permissionGranted = await _location.hasPermission();
+      if (permissionGranted == PermissionStatus.denied) {
+        permissionGranted = await _location.requestPermission();
+        if (permissionGranted != PermissionStatus.granted) return;
+      }
     }
 
+    // Set desired accuracy for the location updates.
+    await _location.changeSettings(accuracy: LocationAccuracy.high);
 
     _locationSubscription = _location.onLocationChanged.listen((LocationData currentLocation) {
       setState(() {
@@ -213,7 +282,7 @@ bool _shouldBroadcast() {
       markerId: MarkerId('rider'),
       position: riderPosition,
       infoWindow: InfoWindow(title: 'Your Location'),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      icon: _riderIcon ?? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
     );
 
     setState(() {
@@ -228,6 +297,25 @@ bool _shouldBroadcast() {
       CameraPosition(target: position, zoom: 15.5, tilt: 30.0),
     ));
   }
+
+  Future<void> _completeOrder() async {
+    try {
+      await _apiService.completeOrder(widget.order.id);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Order delivered successfully!')),
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to complete order: $e')),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _locationSubscription?.cancel();
@@ -271,6 +359,13 @@ bool _shouldBroadcast() {
         markers: _markers,
         polylines: _polylines,
       ),
+      floatingActionButton: widget.order.status == 'On the way'
+          ? FloatingActionButton.extended(
+              onPressed: _completeOrder,
+              label: const Text('Mark as Delivered'),
+              icon: const Icon(Icons.check),
+            )
+          : null,
     );
   }
 }

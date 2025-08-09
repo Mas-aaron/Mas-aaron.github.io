@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/order.dart';
 import 'package:food_delivery_app/services/api_service.dart';
+import 'package:food_delivery_app/widgets/rating_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:food_delivery_app/models/order_item.dart';
 import 'package:food_delivery_app/screens/order_tracking_screen.dart';
@@ -19,7 +20,35 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    futureOrders = apiService.getOrders();
+    _loadOrders();
+  }
+
+  void _loadOrders() {
+    setState(() {
+      futureOrders = apiService.fetchOrders();
+    });
+  }
+
+  void _showRatingDialog(BuildContext context, OrderItem item) {
+    showDialog(
+      context: context,
+      builder: (context) => RatingDialog(
+        mealName: item.menuItem.name,
+        onSubmit: (rating, comment) async {
+          try {
+            await apiService.submitReview(item.menuItem.id, rating, comment);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Review submitted successfully!'), backgroundColor: Colors.green),
+            );
+            // Optionally, refresh the order or item state to show it's been reviewed
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to submit review: ${e.toString()}'), backgroundColor: Colors.red),
+            );
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -29,35 +58,41 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         title: Text('My Orders'),
         elevation: 0,
       ),
-      body: FutureBuilder<List<Order>>(
-        future: futureOrders,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading orders.'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
-                  SizedBox(height: 16),
-                  Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                ],
-              ),
-            );
-          } else {
-            final orders = snapshot.data!;
-            return ListView.builder(
-              padding: EdgeInsets.all(8.0),
-              itemCount: orders.length,
-              itemBuilder: (context, index) {
-                return _OrderCard(order: orders[index]);
-              },
-            );
-          }
-        },
+      body: RefreshIndicator(
+        onRefresh: () async => _loadOrders(),
+        child: FutureBuilder<List<Order>>(
+          future: futureOrders,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error loading orders. Pull to refresh.'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
+                    SizedBox(height: 16),
+                    Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                  ],
+                ),
+              );
+            } else {
+              final orders = snapshot.data!;
+              return ListView.builder(
+                padding: EdgeInsets.all(8.0),
+                itemCount: orders.length,
+                itemBuilder: (context, index) {
+                  return _OrderCard(
+                    order: orders[index],
+                    onRate: (item) => _showRatingDialog(context, item),
+                  );
+                },
+              );
+            }
+          },
+        ),
       ),
     );
   }
@@ -65,14 +100,17 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
 class _OrderCard extends StatelessWidget {
   final Order order;
+  final Function(OrderItem) onRate;
 
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, required this.onRate});
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'delivered':
         return Colors.green;
       case 'pending':
+      case 'preparing':
+      case 'ready for pickup':
         return Colors.orange;
       case 'cancelled':
         return Colors.red;
@@ -144,7 +182,7 @@ class _OrderCard extends StatelessWidget {
               children: [
                 Text('Items:', style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 8),
-                ...order.items.map((item) => _OrderItemDetails(item: item)),
+                ...order.items.map((item) => _OrderItemRow(item: item, orderStatus: order.status, onRate: () => onRate(item))),
                 SizedBox(height: 12),
                 Text('Delivery Address:', style: TextStyle(fontWeight: FontWeight.bold)),
                 SizedBox(height: 4),
@@ -159,7 +197,7 @@ class _OrderCard extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => OrderTrackingScreen(orderId: order.id),
+                            builder: (context) => OrderTrackingScreen(order: order),
                           ),
                         );
                       },
@@ -181,20 +219,37 @@ class _OrderCard extends StatelessWidget {
   }
 }
 
-class _OrderItemDetails extends StatelessWidget {
+class _OrderItemRow extends StatelessWidget {
   final OrderItem item;
+  final String orderStatus;
+  final VoidCallback onRate;
 
-  const _OrderItemDetails({required this.item});
+  const _OrderItemRow({required this.item, required this.orderStatus, required this.onRate});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('${item.quantity} x ${item.menuItem.name}'),
-          Text('\$${item.price}'),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${item.quantity} x ${item.menuItem.name}'),
+                Text('\$${item.price}', style: TextStyle(color: Colors.grey[600])),
+              ],
+            ),
+          ),
+          if (orderStatus.toLowerCase() == 'delivered')
+            TextButton(
+              onPressed: onRate,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text('Rate'),
+            ),
         ],
       ),
     );

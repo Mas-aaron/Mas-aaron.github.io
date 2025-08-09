@@ -1,11 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
+
 import 'providers/auth_provider.dart';
-import 'screens/login_screen.dart';
+import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/manage_categories_screen.dart';
+import 'screens/signup_screen.dart';
+import 'screens/order_protocol_screen.dart';
+import 'screens/menu_management_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,41 +29,38 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (ctx) => AuthProvider(),
-      child: MaterialApp(
-        title: 'Restaurant Dashboard',
-        theme: ThemeData(
-          primarySwatch: Colors.orange,
-          scaffoldBackgroundColor: const Color(0xFFF9F6F2),
-          cardTheme: CardTheme(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
+    return Consumer2<ThemeProvider, AuthProvider>(
+      builder: (context, themeProvider, authProvider, child) {
+        return OverlaySupport.global(
+          child: MaterialApp(
+          title: 'Restaurant Dashboard',
+          theme: ThemeData(
+            brightness: Brightness.light,
+            primarySwatch: Colors.orange,
+            scaffoldBackgroundColor: const Color(0xFFF7F7F7),
+            visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            primarySwatch: Colors.orange,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          fontFamily: 'Roboto',
-          useMaterial3: true,
+          themeMode: themeProvider.themeMode,
+          home: authProvider.isAuthenticated
+              ? HomeScreen()
+              : const LoginScreen(),
+          routes: {
+            LoginScreen.routeName: (context) => const LoginScreen(),
+            SignUpScreen.routeName: (context) => SignUpScreen(),
+            SettingsScreen.routeName: (ctx) => SettingsScreen(),
+            ManageCategoriesScreen.routeName: (ctx) => ManageCategoriesScreen(),
+            MenuManagementScreen.routeName: (context) => const MenuManagementScreen(),
+            HomeScreen.routeName: (context) => HomeScreen(),
+            OrderProtocolScreen.routeName: (context) => OrderProtocolScreen(),
+          },
         ),
-        home: const AuthWrapper(),
-      ),
+        );
+      },
     );
-  }
-}
-
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
-    // Using a simple check on the token, which is loaded asynchronously.
-    // A Consumer or a FutureBuilder could provide a loading screen.
-    return authProvider.isAuthenticated ? const HomeScreen() : const LoginScreen();
   }
 }

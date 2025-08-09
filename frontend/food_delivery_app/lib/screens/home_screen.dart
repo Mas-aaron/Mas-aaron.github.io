@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
+import 'package:food_delivery_app/providers/location_provider.dart';
+import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/widgets/restaurant_card.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,13 +17,31 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Restaurant>> _futureRestaurants;
-  String _currentLocation = 'Current Location';
-  bool _isFetchingLocation = false;
 
   @override
   void initState() {
     super.initState();
+    // Fetch restaurants and initial location
     _futureRestaurants = _apiService.fetchRestaurants();
+    // Use post-frame callback to safely access provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // No need to check for mounted here, as it's a post-frame callback.
+      context.read<LocationProvider>().determineInitialLocation();
+    });
+  }
+
+  void _navigateToSetLocationScreen(LocationProvider locationProvider) {
+    final currentPosition = locationProvider.currentPosition;
+    LatLng? initialLatLng;
+    if (currentPosition != null) {
+      initialLatLng = LatLng(currentPosition.latitude, currentPosition.longitude);
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => SetLocationScreen(initialPosition: initialLatLng),
+      ),
+    );
   }
 
   @override
@@ -32,16 +52,23 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with search and location
-              _buildHeader(),
-              
-              // Category icons
+              _buildHeader(context),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _apiService.testPushNotification();
+                    },
+                    child: const Text('Test Push Notification'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                    ),
+                  ),
+                ),
+              ),
               _buildCategories(),
-              
-              // Promotional banner
               _buildBanner(),
-              
-              // Top picks section
               _buildTopPicks(),
             ],
           ),
@@ -50,59 +77,89 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'What are you craving?',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+  Widget _buildHeader(BuildContext context) {
+    return Consumer<LocationProvider>(
+      builder: (context, locationProvider, child) {
+        final displayAddress = locationProvider.currentAddress ?? 'Set Your Location';
+        final isFetchingLocation = locationProvider.currentAddress == null;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: _getCurrentLocation,
-            child: Row(
-              children: [
-                const Icon(Icons.location_on_outlined, size: 20),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    _isFetchingLocation ? 'Fetching location...' : _currentLocation,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'What are you craving?',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => _navigateToSetLocationScreen(locationProvider),
+                child: Row(
+                  children: [
+                    const Icon(Icons.location_on, color: Colors.orange, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: isFetchingLocation
+                          ? const LinearProgressIndicator(minHeight: 1)
+                          : Text(
+                              displayAddress,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                    ),
+                    const Icon(Icons.arrow_drop_down, color: Colors.orange),
+                  ],
+                ),
+              ),
+              if (!locationProvider.isLocationAccurate && locationProvider.currentAddress != null)
+                GestureDetector(
+                  onTap: () => _navigateToSetLocationScreen(locationProvider),
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.amber.shade600, width: 1),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded, color: Colors.amber.shade800, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Location may be inaccurate. Tap to adjust.',
+                            style: TextStyle(color: Colors.amber.shade900, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
-                  onPressed: () {},
+              const SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search for restaurants, dishes...',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search for restaurants or dishes',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
               ),
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surface,
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -133,35 +190,27 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: categories.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
+              separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
-                final category = categories[index];
-                return GestureDetector(
-                  onTap: () {},
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Center(
-                          child: Text(
-                            category['icon']!,
-                            style: const TextStyle(fontSize: 30),
-                          ),
+                return Column(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          categories[index]['icon']!,
+                          style: const TextStyle(fontSize: 28),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        category['label']!,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(categories[index]['label']!),
+                  ],
                 );
               },
             ),
@@ -175,19 +224,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        height: 120,
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.secondary,
-            ],
-          ),
+          color: Theme.of(context).colorScheme.primary,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: IntrinsicHeight(
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Column(
@@ -224,81 +268,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _getCurrentLocation() async {
-    setState(() {
-      _isFetchingLocation = true;
-    });
-
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-        setState(() {
-          _currentLocation = 'Permission Denied';
-          _isFetchingLocation = false;
-        });
-        return;
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      print('Fetched position: Lat: ${position.latitude}, Lng: ${position.longitude}');
-
-      List<Placemark> placemarks = [];
-      try {
-        placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
-      } catch (e) {
-        print('Error during geocoding: $e');
-        // Geocoding failed, fall back to showing coordinates.
-        setState(() {
-          _currentLocation = 'Lat: ${position.latitude.toStringAsFixed(4)}, Lng: ${position.longitude.toStringAsFixed(4)}';
-        });
-        // Return here to skip the placemark processing logic.
-        return;
-      }
-
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        setState(() {
-          // Build the address string safely, handling nulls
-          final street = place.street;
-          final locality = place.locality;
-          
-          List<String> addressParts = [];
-          if (street != null && street.isNotEmpty) {
-            addressParts.add(street);
-          }
-          if (locality != null && locality.isNotEmpty) {
-            addressParts.add(locality);
-          }
-
-          if (addressParts.isEmpty) {
-            _currentLocation = 'Address not found';
-          } else {
-            _currentLocation = addressParts.join(', ');
-          }
-        });
-      } else {
-        setState(() {
-          _currentLocation = 'Location not found';
-        });
-      }
-    } catch (e) {
-      print('Error fetching location: $e');
-      setState(() {
-        _currentLocation = 'Error fetching location';
-      });
-    } finally {
-      setState(() {
-        _isFetchingLocation = false;
-      });
-    }
   }
 
   Widget _buildTopPicks() {

@@ -1,16 +1,59 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+class NotificationTemplate(models.Model):
+    CATEGORY_CHOICES = [
+        ('INFORMATIONAL', 'Informational'),
+        ('REMINDER', 'Reminder'),
+        ('PROMOTIONAL', 'Promotional'),
+        ('PERSONALIZED', 'Personalized'),
+        ('TRANSACTIONAL', 'Transactional'),
+        ('ENGAGEMENT', 'Engagement'),
+    ]
+
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    name = models.CharField(max_length=100, unique=True, help_text="A unique name for internal reference, e.g., 'promo_flash_sale'")
+    title = models.CharField(max_length=255, help_text="The notification title, can include emojis.")
+    body = models.TextField(help_text="The main content of the notification.")
+    image_url = models.URLField(max_length=500, blank=True, null=True, help_text="Optional URL for a rich notification image.")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"[{self.get_category_display()}] {self.name}"
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 class Restaurant(models.Model):
+    class OrderProtocol(models.TextChoices):
+        TABLET = 'TABLET', 'Tablet'
+        EMAIL = 'EMAIL', 'Email'
+        PHONE = 'PHONE', 'Phone Call'
+
+    # Fields from original api.Restaurant
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
-    image_url = models.URLField(max_length=200, blank=True)
+    image_url = models.URLField(max_length=200, blank=True, null=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
+    # Merged fields from restaurant_onboarding.Restaurant
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name='restaurant_profile') # Allow null for legacy
+    email = models.EmailField(unique=True, null=True, blank=True) # Allow null for legacy
+    is_approved = models.BooleanField(default=False)
+    order_protocol = models.CharField(
+        max_length=10,
+        choices=OrderProtocol.choices,
+        default=OrderProtocol.TABLET
+    )
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True) # Allow null for legacy
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True) # Allow null for legacy
+
     def __str__(self):
         return self.name
+
 
 
 class MenuCategory(models.Model):
@@ -36,6 +79,7 @@ class MenuItem(models.Model):
     available_dinner = models.BooleanField(default=True)
     # ManyToMany to ModifierGroup (optional/required)
     modifier_groups = models.ManyToManyField('ModifierGroup', blank=True, related_name='menu_items')
+    dietary_preferences = models.ManyToManyField('DietaryPreference', blank=True, related_name='menu_items')
 
     def __str__(self):
         return self.name
@@ -59,8 +103,10 @@ class Modifier(models.Model):
 
 
 class Cart(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    notified_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when the user was notified about the abandoned cart.")
 
     def __str__(self):
         return f'Cart for {self.user.username}'
@@ -76,20 +122,25 @@ class CartItem(models.Model):
 
 class Order(models.Model):
     STATUS_CHOICES = (
-        ('Pending', 'Pending'),                 # Customer has placed the order
-        ('Preparing', 'Preparing'),             # Restaurant is preparing the food
-        ('Ready for Pickup', 'Ready for Pickup'), # Food is ready, waiting for a rider
-        ('Accepted', 'Accepted'),               # Rider has accepted the order
-        ('Out for Delivery', 'Out for Delivery'), # Rider has picked up the order
-        ('Delivered', 'Delivered'),             # Rider has delivered the order
-        ('Cancelled', 'Cancelled'),             # Order was cancelled
+        # Restaurant-facing statuses
+        ('Pending', 'Pending'),                     # A new order that needs confirmation
+        ('Accepted', 'Accepted'),                   # Restaurant has confirmed the order
+        ('Rejected', 'Rejected'),                   # Restaurant has rejected the order
+        ('Preparing', 'Preparing'),                 # Restaurant is preparing the food
+        ('Ready for Pickup', 'Ready for Pickup'),   # Food is ready for a rider
+
+        # Rider/Customer-facing statuses
+        ('Assigned', 'Assigned'),                   # A rider has been assigned
+        ('Out for Delivery', 'Out for Delivery'),   # Rider has picked up the order
+        ('Delivered', 'Delivered'),                 # Rider has delivered the order
+        ('Cancelled', 'Cancelled'),                 # Order was cancelled (by customer or system)
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
     rider = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_orders')
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Ready for Pickup')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     delivery_address = models.CharField(max_length=255)
     # Geolocation fields
@@ -119,4 +170,105 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.quantity} of {self.menu_item.name}'
+
+
+class Message(models.Model):
+    """Represents a message between a sender and a recipient, optionally tied to an order.""" 
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True, related_name='messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Message from {self.sender.username} to {self.recipient.username} at {self.timestamp.strftime("%Y-%m-%d %H:%M")}'
+
+    class Meta:
+        ordering = ['-timestamp']
+
+
+class Notification(models.Model):
+    """
+    Represents a notification for a user.
+    e.g., "Your order #12345 has been confirmed."
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Notification for {self.user.username}: {self.title}'
+
+    class Meta:
+        ordering = ['-timestamp']
+
+
+class DietaryPreference(models.Model):
+    """Represents a dietary preference, e.g., Vegetarian, Gluten-Free."""
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class CustomerProfile(models.Model):
+    """Extends the default User model to include customer-specific information."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_profile')
+    dietary_preferences = models.ManyToManyField(DietaryPreference, blank=True)
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"
+
+
+class UserAddress(models.Model):
+    """Represents a saved address for a user."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    state_province = models.CharField(max_length=100)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.address_line_1}, {self.city} for {self.user.username}"
+
+    class Meta:
+        verbose_name_plural = "User Addresses"
+
+
+class Device(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='devices')
+    token = models.CharField(max_length=255, unique=True)
+    device_type = models.CharField(max_length=20, choices=[('android', 'Android'), ('ios', 'iOS')])
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'token')
+
+    def __str__(self):
+        return f"{self.user.username}'s {self.device_type} device"
+
+
+class Review(models.Model):
+    """Represents a rating and comment for a specific meal by a user."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'menu_item') # Ensures a user can only review a specific meal once
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Review for {self.menu_item.name} by {self.user.username}'
 

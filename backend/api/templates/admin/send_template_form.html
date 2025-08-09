@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <h2>Send Template: "{{ opts.verbose_name|capfirst }} - {{ original.name }}"</h2>
+
+    {% if messages %}
+    <ul class="messagelist">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <fieldset class="module aligned">
+        <div class="form-row">
+            <label for="id_user_id">Select User:</label>
+            <select name="user_id" id="id_user_id" required>
+                <option value="" selected>---------</option>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </fieldset>
+
+    <div class="submit-row">
+        <input type="submit" value="Send Notification" class="default" name="_send">
+    </div>
+</form>
+{% endblock %}

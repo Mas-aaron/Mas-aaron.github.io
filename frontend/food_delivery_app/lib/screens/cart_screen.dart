@@ -1,136 +1,87 @@
 import 'package:flutter/material.dart';
-import 'package:food_delivery_app/models/cart.dart';
-import 'package:food_delivery_app/models/cart_item.dart';
-import 'package:food_delivery_app/services/api_service.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:food_delivery_app/services/location_service.dart'; // For permission handling
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
+import '../models/cart.dart';
+import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({super.key});
+  const CartScreen({Key? key}) : super(key: key);
 
   @override
   _CartScreenState createState() => _CartScreenState();
 }
 
 class _CartScreenState extends State<CartScreen> {
-  late Future<List<CartItem>> futureCartItems;
-  final ApiService apiService = ApiService();
-  final _addressController = TextEditingController();
-  bool _isPlacingOrder = false;
-
-
   @override
   void initState() {
     super.initState();
-    futureCartItems = apiService.getCartItems();
-  }
-
-  @override
-  void dispose() {
-    _addressController.dispose();
-    super.dispose();
-  }
-
-  void _loadCart() {
-    setState(() {
-      futureCartItems = apiService.getCartItems();
+    // Fetch cart data when the screen is initialized
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CartProvider>(context, listen: false).fetchCart();
     });
   }
 
-  void _updateQuantity(int cartItemId, int newQuantity) async {
-    try {
-      if (newQuantity > 0) {
-        await apiService.updateCartItem(cartItemId, newQuantity);
-      } else {
-        await apiService.deleteCartItem(cartItemId);
-      }
-      _loadCart();
-    } catch (e) {
+  void _placeOrder(Cart cart) {
+    if (cart.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update cart: ${e.toString().replaceAll("Exception: ", "")}')),
+        const SnackBar(content: Text('Your cart is empty.')),
       );
+      return;
     }
-  }
-
-  void _placeOrder(String address) async {
-    if (_isPlacingOrder) return;
-
-    setState(() {
-      _isPlacingOrder = true;
-    });
-
-    try {
-      // 1. Get current location
-      final Position position = await LocationService.getCurrentLocation();
-
-      // 2. Place order with location data
-      final order = await apiService.placeOrder(address, position.latitude, position.longitude);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Order placed successfully! Order ID: ${order.id}')),
-      );
-      _loadCart(); // Refresh cart (it should be empty now)
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to place order: ${e.toString().replaceAll("Exception: ", "")}')),
-      );
-    } finally {
-      setState(() {
-        _isPlacingOrder = false;
-      });
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutScreen(cart: cart),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Cart'),
+        title: const Text('My Cart'),
         elevation: 0,
       ),
-      body: FutureBuilder<List<CartItem>>(
-        future: futureCartItems,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error loading cart. Please try again.'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey[400]),
-                  SizedBox(height: 16),
-                  Text('Your cart is empty', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                ],
-              ),
-            );
-          } else {
-            // Create a Cart object on the fly from the list of items
-            final cart = Cart(id: 0, items: snapshot.data!, createdAt: DateTime.now().toIso8601String());
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  ListView.builder(
-                    // Important: shrinkWrap and physics are needed for a ListView inside a SingleChildScrollView
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    itemCount: cart.items.length,
-                    itemBuilder: (context, index) {
-                      final item = cart.items[index];
-                      return _CartItemCard(
-                        item: item,
-                        onUpdateQuantity: _updateQuantity,
-                      );
-                    },
-                  ),
-                  _OrderSummaryCard(cart: cart, addressController: _addressController, onPlaceOrder: _placeOrder, isPlacingOrder: _isPlacingOrder),
-                ],
+      body: Consumer<CartProvider>(
+        builder: (context, cartProvider, child) {
+          if (cartProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (cartProvider.error != null) {
+            return Center(child: Text('Error: ${cartProvider.error}'));
+          }
+
+          if (cartProvider.cart == null || cartProvider.cart!.items.isEmpty) {
+            return const Center(
+              child: Text(
+                'Your cart is empty.',
+                style: TextStyle(fontSize: 18, color: Colors.grey),
               ),
             );
           }
+
+          final cart = cartProvider.cart!;
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: cart.items.length,
+                  itemBuilder: (context, index) {
+                    final item = cart.items[index];
+                    return _CartItemCard(item: item);
+                  },
+                ),
+              ),
+              _OrderSummaryCard(
+                cart: cart,
+                onPlaceOrder: () => _placeOrder(cart),
+              ),
+            ],
+          );
         },
       ),
     );
@@ -138,63 +89,68 @@ class _CartScreenState extends State<CartScreen> {
 }
 
 class _CartItemCard extends StatelessWidget {
-  final CartItem item;
-  final Function(int, int) onUpdateQuantity;
+  final dynamic item; // Using dynamic to access properties easily
 
-  const _CartItemCard({required this.item, required this.onUpdateQuantity});
+  const _CartItemCard({Key? key, required this.item}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            // IMAGE (safe)
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: (item.menuItem.imageUrl != null && item.menuItem.imageUrl!.isNotEmpty)
-                  ? Image.network(
-                      item.menuItem.imageUrl!,
-                      width: 64,
-                      height: 64,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 64,
-                        height: 64,
-                        color: Colors.grey[200],
-                        child: Icon(Icons.fastfood, size: 32, color: Colors.orange),
-                      ),
-                    )
-                  : Container(
-                      width: 64,
-                      height: 64,
-                      color: Colors.grey[200],
-                      child: Icon(Icons.fastfood, size: 32, color: Colors.orange),
-                    ),
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.network(
+                item.menuItem?.imageUrl ?? 'https://via.placeholder.com/150',
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => 
+                  const Icon(Icons.image_not_supported, size: 60),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.menuItem.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text('\$${item.menuItem.price}', style: TextStyle(color: Colors.grey[600])),
+                  Text(
+                    item.menuItem?.name ?? 'Unknown',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '\$${item.menuItem?.price.toStringAsFixed(2) ?? '0.00'}'
+                  ),
                 ],
               ),
             ),
             Row(
               children: [
-                _buildQuantityButton(Icons.remove, () => onUpdateQuantity(item.id, item.quantity - 1)),
+                _buildQuantityButton(context, Icons.remove, () {
+                  if (item.quantity > 1) {
+                    cartProvider.updateItemQuantity(item.id, item.quantity - 1);
+                  } else {
+                    cartProvider.removeItem(item.id);
+                  }
+                }),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Text('${item.quantity}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    '${item.quantity}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
-                _buildQuantityButton(Icons.add, () => onUpdateQuantity(item.id, item.quantity + 1)),
+                _buildQuantityButton(context, Icons.add, () {
+                  cartProvider.updateItemQuantity(item.id, item.quantity + 1);
+                }),
               ],
             ),
           ],
@@ -203,17 +159,17 @@ class _CartItemCard extends StatelessWidget {
     );
   }
 
-  Widget _buildQuantityButton(IconData icon, VoidCallback onPressed) {
+  Widget _buildQuantityButton(BuildContext context, IconData icon, VoidCallback onPressed) {
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: EdgeInsets.all(4),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(color: Colors.grey.shade300),
         ),
-        child: Icon(icon, size: 18),
+        child: Icon(icon, size: 18, color: Theme.of(context).primaryColor),
       ),
     );
   }
@@ -221,76 +177,53 @@ class _CartItemCard extends StatelessWidget {
 
 class _OrderSummaryCard extends StatelessWidget {
   final Cart cart;
-  final TextEditingController addressController;
-  final Function(String) onPlaceOrder;
-  final bool isPlacingOrder;
+  final VoidCallback onPlaceOrder;
 
   const _OrderSummaryCard({
+    Key? key,
     required this.cart,
-    required this.addressController,
     required this.onPlaceOrder,
-    required this.isPlacingOrder,
-  });
-
-  double _calculateSubtotal(Cart cart) {
-    return cart.items.fold(0, (total, item) => total + (item.menuItem.price * item.quantity));
-  }
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final subtotal = _calculateSubtotal(cart);
-    final deliveryFee = 5.00; // Example fee
-    final total = subtotal + deliveryFee;
+    const deliveryFee = 5.00;
+    final total = cart.totalPrice + deliveryFee;
 
     return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      margin: const EdgeInsets.all(0),
       elevation: 8,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: addressController,
-              decoration: InputDecoration(
-                labelText: 'Delivery Address',
-                hintText: 'Enter your full address',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-            ),
-            SizedBox(height: 16),
-            _buildPriceRow('Subtotal', subtotal),
-            SizedBox(height: 8),
+            _buildAddressSection(),
+            const SizedBox(height: 16),
+            _buildPriceRow('Subtotal', cart.totalPrice),
+            const SizedBox(height: 8),
             _buildPriceRow('Delivery Fee', deliveryFee),
-            Divider(height: 24),
-            _buildPriceRow('Total', total, isTotal: true),
-            SizedBox(height: 16),
+            const Divider(height: 24, thickness: 1),
+            _buildTotalRow('Total', total),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                onPressed: onPlaceOrder,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                onPressed: isPlacingOrder ? null : () {
-                  if (addressController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Please enter a delivery address.')),
-                    );
-                    return;
-                  }
-                  onPlaceOrder(addressController.text);
-                },
-                child: isPlacingOrder 
-                    ? SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)) 
-                    : Text('Place Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text('Place Order'),
               ),
             ),
           ],
@@ -299,24 +232,49 @@ class _OrderSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceRow(String title, double value, {bool isTotal = false}) {
+  Widget _buildAddressSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Delivery Address',
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text(
+            'M6PX+X58, Fort Portal, Uganda', // Placeholder address
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(String title, double amount) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Text(title, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
+        Text('\$${amount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
+      ],
+    );
+  }
+
+  Widget _buildTotalRow(String title, double amount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         Text(
-          title,
-          style: TextStyle(
-            fontSize: isTotal ? 18 : 16,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            color: isTotal ? Colors.black : Colors.grey[600],
-          ),
-        ),
-        Text(
-          '\$${value.toStringAsFixed(2)}',
-          style: TextStyle(
-            fontSize: isTotal ? 18 : 16,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-          ),
+          '\$${amount.toStringAsFixed(2)}',
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ],
     );

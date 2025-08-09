@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/api_service.dart';
+import 'package:food_delivery_app/services/auth_service.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -15,8 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _password2Controller = TextEditingController();
-  final _apiService = ApiService();
+  final AuthService _authService = AuthService();
   String _errorMessage = '';
   bool _isLoading = false;
 
@@ -28,20 +27,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
 
       try {
-        await _apiService.register(
+        final success = await _authService.register(
           _usernameController.text,
           _emailController.text,
           _passwordController.text,
-          _password2Controller.text,
         );
-        // After successful registration, automatically log the user in
-        await Provider.of<AuthProvider>(context, listen: false).login(
-          _usernameController.text,
-          _passwordController.text,
-        );
-        // Navigate away on success
-        if (mounted) {
-          Navigator.of(context).pop();
+
+        if (success && mounted) {
+          final loggedIn = await Provider.of<AuthProvider>(context, listen: false).login(
+            _usernameController.text,
+            _passwordController.text,
+          );
+          if (loggedIn && mounted) {
+            Navigator.of(context).pop();
+          }
+        } else {
+          setState(() {
+            _errorMessage = 'Registration failed. Please try again.';
+          });
         }
       } catch (e) {
         setState(() {
@@ -96,16 +99,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                   SizedBox(height: 24),
-                  _buildTextFormField(
+                  TextFormField(
                     controller: _usernameController,
-                    labelText: 'Username',
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
                     validator: (value) => value!.isEmpty ? 'Please enter a username' : null,
                   ),
                   SizedBox(height: 16),
-                  _buildTextFormField(
+                  TextFormField(
                     controller: _emailController,
-                    labelText: 'Email',
                     keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
                     validator: (value) {
                       if (value!.isEmpty) return 'Please enter an email';
                       if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
@@ -115,23 +130,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                   ),
                   SizedBox(height: 16),
-                  _buildTextFormField(
+                  TextFormField(
                     controller: _passwordController,
-                    labelText: 'Password',
                     obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    ),
                     validator: (value) {
                       if (value!.isEmpty) return 'Please enter a password';
                       if (value.length < 8) return 'Password must be at least 8 characters';
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  _buildTextFormField(
-                    controller: _password2Controller,
-                    labelText: 'Confirm Password',
-                    obscureText: true,
-                    validator: (value) {
-                      if (value != _passwordController.text) return 'Passwords do not match';
                       return null;
                     },
                   ),
@@ -165,25 +176,5 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildTextFormField({
-    required TextEditingController controller,
-    required String labelText,
-    bool obscureText = false,
-    TextInputType? keyboardType,
-    required String? Function(String?) validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: labelText,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      ),
-    );
-  }
+
 }

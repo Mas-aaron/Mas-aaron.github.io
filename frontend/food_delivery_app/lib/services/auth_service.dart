@@ -2,13 +2,16 @@ import 'dart:convert';
 import 'package:food_delivery_app/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:food_delivery_app/services/push_notification_service.dart';
+import 'package:food_delivery_app/services/api_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class AuthService {
   final String _baseUrl = baseUrl;
 
   Future<String?> login(String username, String password) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/login/'),
+      Uri.parse('$_baseUrl/api/login/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -22,22 +25,30 @@ class AuthService {
       final token = jsonDecode(response.body)['token'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
+
+      // Register device for push notifications
+      try {
+        await PushNotificationService().initialize();
+      } catch (e) {
+        print('Failed to register for push notifications: $e');
+        // We don't rethrow the error, so login can proceed
+      }
       return token;
     } else {
-      // Handle error
       print('Failed to login: ${response.body}');
       return null;
     }
   }
 
-  Future<bool> register(String username, String password) async {
+  Future<bool> register(String username, String email, String password) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/register/'),
+      Uri.parse('$_baseUrl/api/register/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
         'username': username,
+        'email': email,
         'password': password,
       }),
     );
@@ -45,9 +56,31 @@ class AuthService {
     if (response.statusCode == 201) {
       return true;
     } else {
-      // Handle error
       print('Failed to register: ${response.body}');
       return false;
     }
   }
+
+  Future<void> logout() async {
+    final ApiService apiService = ApiService();
+    try {
+      // Get the current FCM token
+      final String? fcmToken = await FirebaseMessaging.instance.getToken();
+      // Unregister the device from the backend
+      await apiService.unregisterDevice(fcmToken);
+    } catch (e) {
+      print('Could not unregister device during logout: $e');
+      // We don't want to block logout if this fails
+    }
+
+    // Finally, clear the local token
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
 }
+

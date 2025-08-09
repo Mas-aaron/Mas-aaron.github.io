@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rider_app/screens/rider_home_screen.dart';
 import 'package:rider_app/services/api_service.dart';
+import 'package:rider_app/screens/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -40,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (success) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => RiderHomeScreen(apiService: _apiService)),
+          MaterialPageRoute(builder: (context) => const RiderHomeScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -108,6 +109,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: const Text('Login'),
                     ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                  );
+                },
+                child: const Text('Don\'t have an account? Sign Up'),
+              ),
             ],
           ),
         ),

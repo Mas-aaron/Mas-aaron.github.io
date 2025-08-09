@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery_app/services/auth_service.dart';
 import 'package:provider/provider.dart';
-import '../services/api_service.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -15,8 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _password2Controller = TextEditingController();
-  final _apiService = ApiService();
+  final _authService = AuthService();
   String _errorMessage = '';
   bool _isLoading = false;
 
@@ -28,20 +27,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
 
       try {
-        await _apiService.register(
+        await _authService.register(
           _usernameController.text,
           _emailController.text,
           _passwordController.text,
-          _password2Controller.text,
         );
-        // After successful registration, automatically log the user in
-        await Provider.of<AuthProvider>(context, listen: false).login(
-          _usernameController.text,
-          _passwordController.text,
-        );
-        // Navigate away on success
+        // Navigate away on success and show a confirmation message
         if (mounted) {
           Navigator.of(context).pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registration successful! Please log in.')),
+          );
         }
       } catch (e) {
         setState(() {
@@ -122,16 +118,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     validator: (value) {
                       if (value!.isEmpty) return 'Please enter a password';
                       if (value.length < 8) return 'Password must be at least 8 characters';
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  _buildTextFormField(
-                    controller: _password2Controller,
-                    labelText: 'Confirm Password',
-                    obscureText: true,
-                    validator: (value) {
-                      if (value != _passwordController.text) return 'Passwords do not match';
                       return null;
                     },
                   ),

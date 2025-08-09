@@ -1,78 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery_app/providers/auth_provider.dart';
+import 'package:food_delivery_app/providers/location_provider.dart';
+import 'package:food_delivery_app/providers/cart_provider.dart';
+import 'package:food_delivery_app/screens/home_screen.dart';
+import 'package:food_delivery_app/screens/main_navigation_screen.dart';
+import 'package:food_delivery_app/screens/login_screen.dart';
+import 'package:food_delivery_app/screens/register_screen.dart';
+import 'package:food_delivery_app/screens/welcome_screen.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/main_navigation_screen.dart';
-import 'screens/websocket_test_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:food_delivery_app/services/push_notification_service.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await PushNotificationService().initialize();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-
-
-    return ChangeNotifierProvider(
-      create: (context) => AuthProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
       child: MaterialApp(
         title: 'Food Delivery App',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.orange,
-            brightness: Brightness.light,
-            primary: Colors.orange,
-            secondary: Colors.orangeAccent,
+          primarySwatch: Colors.deepOrange,
+          scaffoldBackgroundColor: Colors.grey[50],
+          fontFamily: 'Metropolis',
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: Colors.grey[200],
           ),
-          useMaterial3: true,
-          scaffoldBackgroundColor: Colors.white,
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor: Colors.deepOrange,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.orange, width: 2),
-            ),
-          ),
-          cardTheme: const CardTheme(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16)),
-            ),
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            iconTheme: IconThemeData(color: Colors.black),
-            titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-        initialRoute: '/',
+        home: const WelcomeScreen(), // Set WelcomeScreen as the initial screen
         routes: {
-          '/': (context) => const AuthWrapper(),
+          '/auth': (context) => const AuthWrapper(), // Route to handle auth logic
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
-          '/main': (context) => const MainNavigationScreen(),
-          '/ws-test': (context) => const WebSocketTestScreen(orderId: 21),
+          '/home': (context) => const HomeScreen(),
         },
       ),
     );
@@ -80,13 +67,13 @@ class MyApp extends StatelessWidget {
 }
 
 class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
+  const AuthWrapper({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        if (authProvider.isLoggedIn) {
+      builder: (context, auth, child) {
+        if (auth.isLoggedIn) {
           return const MainNavigationScreen();
         } else {
           return const LoginScreen();

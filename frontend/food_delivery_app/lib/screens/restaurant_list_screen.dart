@@ -164,9 +164,10 @@ class _RestaurantListScreenState extends State<RestaurantListScreen> {
           'Location permissions are permanently denied, we cannot request permissions.');
     }
 
-    // Add a timeout to prevent the app from hanging indefinitely.
-    return await Geolocator.getCurrentPosition()
-        .timeout(const Duration(seconds: 10));
+    // Request high accuracy and add a timeout.
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    ).timeout(const Duration(seconds: 10));
   }
 }
 

@@ -29,7 +29,7 @@ class _WebSocketTestScreenState extends State<WebSocketTestScreen> {
     // Close existing connection if any
     _channel?.sink.close();
     
-    final urlString = '$webSocketUrl/ws/track/${widget.orderId}/';
+    final urlString = '$websocketUrl/ws/tracking/${widget.orderId}/';
     print('Test: Connecting to WebSocket: $urlString');
     
     try {
