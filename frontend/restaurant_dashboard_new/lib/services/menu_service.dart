@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'package:restaurant_dashboard_new/models/menu_category.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,7 +53,7 @@ class MenuService {
   Future<http.Response> addMenuItem(String name, String description, double price, int categoryId) async {
     final token = await _getToken();
     var request = http.MultipartRequest(
-        'POST', Uri.parse('$_baseUrl/menu-items/create/'));
+        'POST', Uri.parse('$_baseUrl/menu-items/'));
 
     request.headers['Authorization'] = 'Token $token';
 
@@ -110,21 +111,36 @@ class MenuService {
     }
   }
 
-  Future<void> addMenuCategory(String name) async {
+    Future<void> addMenuCategory(String name) async {
     final token = await _getToken();
-    final response = await http.post(
-      Uri.parse('$_baseUrl/menu-categories/'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Token $token',
-      },
-      body: jsonEncode(<String, String>{
-        'name': name,
-      }),
-    );
+    final url = Uri.parse('$_baseUrl/menu-categories/');
+    final headers = <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Token $token',
+    };
+    final body = jsonEncode(<String, String>{'name': name});
 
-    if (response.statusCode != 201) {
-      throw Exception('Failed to add menu category: ${response.body}');
+    developer.log('Attempting to add category: $name', name: 'MenuService.addMenuCategory');
+    developer.log('URL: $url', name: 'MenuService.addMenuCategory');
+    developer.log('Headers: $headers', name: 'MenuService.addMenuCategory');
+    developer.log('Body: $body', name: 'MenuService.addMenuCategory');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: body,
+      );
+
+      developer.log('Response status: ${response.statusCode}', name: 'MenuService.addMenuCategory');
+      developer.log('Response body: ${response.body}', name: 'MenuService.addMenuCategory');
+
+      if (response.statusCode != 201) {
+        throw Exception('Failed to add menu category: ${response.body}');
+      }
+    } catch (e) {
+      developer.log('Error adding menu category: $e', name: 'MenuService.addMenuCategory', error: e);
+      throw Exception('Failed to add menu category: $e');
     }
   }
 

@@ -13,10 +13,9 @@ import '../models/review.dart';
 
 class ApiService {
   final String _baseUrl = baseUrl;
-  final AuthService _authService = AuthService();
 
   Future<Map<String, String>> _getAuthHeaders() async {
-    final token = await _authService.getToken();
+    final token = await AuthService.getToken();
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     };
@@ -235,7 +234,11 @@ class ApiService {
     }
   }
 
-  Future<void> submitReview(int menuItemId, double rating, String comment) async {
+  Future<void> submitReview({
+    required int menuItemId,
+    required double rating,
+    required String comment,
+  }) async {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({
       'menu_item': menuItemId,
@@ -249,6 +252,49 @@ class ApiService {
     );
     if (response.statusCode != 201) {
       throw Exception('Failed to submit review');
+    }
+  }
+
+  Future<void> submitOrderReview({
+    required int orderId,
+    required double rating,
+    required String comment,
+  }) async {
+    final headers = await _getAuthHeaders();
+    final body = jsonEncode({
+      'order': orderId,
+      'rating': rating,
+      'comment': comment,
+    });
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/order-reviews/'),
+      headers: headers,
+      body: body,
+    );
+    if (response.statusCode != 201) {
+      throw Exception('Failed to submit order review: ${response.body}');
+    }
+  }
+
+  Future<void> submitRiderReview({
+    required int orderId,
+    required int riderId,
+    required double rating,
+    required String comment,
+  }) async {
+    final headers = await _getAuthHeaders();
+    final body = jsonEncode({
+      'order': orderId,
+      'rating': rating,
+      'comment': comment,
+    });
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/rider-reviews/'),
+      headers: headers,
+      body: body,
+    );
+    if (response.statusCode != 201) {
+      throw Exception('Failed to submit rider review: ${response.body}');
     }
   }
 

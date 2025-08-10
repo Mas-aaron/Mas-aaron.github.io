@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/screens/cart_screen.dart';
 import 'package:food_delivery_app/screens/home_screen.dart';
-import 'package:food_delivery_app/screens/orders_screen.dart';
+import 'package:food_delivery_app/screens/order_history_screen.dart';
 import 'package:food_delivery_app/screens/profile_screen.dart';
 import 'package:food_delivery_app/screens/search_screen.dart';
 
@@ -18,7 +18,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
     const CartScreen(),
-    const OrdersScreen(),
+    const OrderHistoryScreen(),
     const SearchScreen(),
     const ProfileScreen(),
   ];

@@ -5,7 +5,7 @@ class Restaurant {
   final String phoneNumber;
   final String? imageUrl;
   final double? distance;
-  final double rating;
+  final double averageRating;
   final int deliveryTime;
   final double deliveryFee;
   final String cuisineType;
@@ -19,7 +19,7 @@ class Restaurant {
     required this.phoneNumber,
     this.imageUrl,
     this.distance,
-    required this.rating,
+    required this.averageRating,
     required this.deliveryTime,
     required this.deliveryFee,
     required this.cuisineType,
@@ -35,7 +35,7 @@ class Restaurant {
       phoneNumber: json['phone_number'] ?? 'No phone number',
       imageUrl: json['image_url'],
       distance: (json['distance'] as num?)?.toDouble(),
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0.0,
       deliveryTime: json['delivery_time'] ?? 30,
       deliveryFee: (json['delivery_fee'] as num?)?.toDouble() ?? 0.0,
       cuisineType: json['cuisine_type'] ?? 'Various',

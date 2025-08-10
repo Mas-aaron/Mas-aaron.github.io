@@ -40,22 +40,24 @@ class AuthService {
     }
   }
 
-  Future<bool> register(String username, String email, String password) async {
+      Future<bool> register(String username, String email, String password, String passwordConfirm) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/api/register/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
+            body: jsonEncode(<String, String>{
         'username': username,
         'email': email,
         'password': password,
+        'password2': passwordConfirm,
       }),
     );
 
-    if (response.statusCode == 201) {
+            if (response.statusCode == 201) {
       return true;
     } else {
+      // Optionally, log the error for debugging
       print('Failed to register: ${response.body}');
       return false;
     }
@@ -78,7 +80,7 @@ class AuthService {
     await prefs.remove('token');
   }
 
-  Future<String?> getToken() async {
+  static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }

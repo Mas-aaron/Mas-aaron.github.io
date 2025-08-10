@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import 'package:rider_app/models/order.dart';
+import 'package:rider_app/models/rider_review.dart';
 
 class ApiService {
     final String _baseUrl = baseUrl;
@@ -168,6 +169,27 @@ class ApiService {
     if (response.statusCode != 200) {
       final body = jsonDecode(response.body);
       throw Exception(body['error'] ?? 'Failed to complete order.');
+    }
+  }
+
+  Future<List<RiderReview>> fetchRiderReviews() async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/my-reviews/'),
+      headers: <String, String>{
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      return body.map((dynamic item) => RiderReview.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load rider reviews');
     }
   }
 }

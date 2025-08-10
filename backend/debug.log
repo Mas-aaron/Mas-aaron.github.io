@@ -963,3 +963,838 @@ Not Found: /api/cart/remove/
 Not Found: /api/cart/remove/
 Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1754730037689691%4c3c1fe64c3c1fe6
 Notification results for user 3: 1 successful, 0 failed
+Bad Request: /api/login/
+Not Found: /favicon.ico
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1754815692518919%4c3c1fe64c3c1fe6
+Notification results for user 3: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1754816798192699%4c3c1fe64c3c1fe6
+Notification results for user 3: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1754816907772637%4c3c1fe64c3c1fe6
+Notification results for user 3: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1754816942241819%4c3c1fe64c3c1fe6
+Notification results for user 3: 1 successful, 0 failed
+Not Found: /api/api/rider-reviews/
+Not Found: /api/api/rider-reviews/
+Internal Server Error: /api/restaurant-reviews/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: api_orderreview
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such table: api_orderreview
+Order 23 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 23 to group restaurant_5
+Not Found: /api/api/rider-reviews/
+Internal Server Error: /api/restaurant-reviews/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: api_orderreview
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such table: api_orderreview
+Order 24 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 24 to group restaurant_5
+Internal Server Error: /api/restaurant-reviews/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: api_orderreview
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such table: api_orderreview
+Sent new order notification for order 25 to group restaurant_5
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1754823387630714%4c3c1fe64c3c1fe6
+Notification results for user 3: 1 successful, 0 failed
+Not Found: /api/restaurant-reviews/
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1754823626824518%4c3c1fe64c3c1fe6
+Notification results for user 3: 1 successful, 0 failed
+Order 25 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 25 to group restaurant_5
+Order 25 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 25 to group restaurant_5
+Order 25 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 25 to group restaurant_5
+Sent 'Ready for Pickup' notification for order 25 to riders.
+Internal Server Error: /api/rider-orders/25/accept/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 843, in accept
+    order.rider = request.user
+    ^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 291, in __set__
+    raise ValueError(
+ValueError: Cannot assign "<User: aaronmasendi@gmail.com>": "Order.rider" must be a "RiderProfile" instance.
+Internal Server Error: /api/rider-orders/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 831, in get_queryset
+    return Order.objects.filter(rider=self.request.user).order_by('-created_at')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1563, in build_filter
+    self.check_related_objects(join_info.final_field, value, join_info.opts)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1372, in check_related_objects
+    self.check_query_object_type(value, opts, field)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1349, in check_query_object_type
+    raise ValueError(
+ValueError: Cannot query "aaronmasendi@gmail.com": Must be "RiderProfile" instance.
+Internal Server Error: /api/restaurants/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 234, in get_queryset
+    queryset = Restaurant.objects.filter(is_approved=True).annotate(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1649, in annotate
+    return self._annotate(args, kwargs, select=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1701, in _annotate
+    clone.query.add_annotation(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1218, in add_annotation
+    annotation = annotation.resolve_expression(self, allow_joins=True, reuse=None)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\expressions.py", line 300, in resolve_expression
+    expr.resolve_expression(query, allow_joins, reuse, summarize, for_save)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\expressions.py", line 902, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 2049, in resolve_ref
+    join_info = self.setup_joins(
+                ^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1900, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'orders' into field. Choices are: address, bills, categories, created_at, email, id, image_url, is_approved, latitude, longitude, name, order, order_protocol, owner, owner_id, phone_number, updated_at
+Sent new order notification for order 26 to group restaurant_5
+Order 26 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 26 to group restaurant_5
+Order 26 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 26 to group restaurant_5
+Order 26 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 26 to group restaurant_5
+Sent 'Ready for Pickup' notification for order 26 to riders.
+Internal Server Error: /api/bills/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 822, in get_queryset
+    return Bill.objects.filter(restaurant=restaurant).order_by('-created_at')
+           ^^^^
+NameError: name 'Bill' is not defined
+Internal Server Error: /api/bills/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 38, in list
+    queryset = self.filter_queryset(self.get_queryset())
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 822, in get_queryset
+    return Bill.objects.filter(restaurant=restaurant).order_by('-created_at')
+           ^^^^
+NameError: name 'Bill' is not defined
+Internal Server Error: /api/restaurants/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: api_orderreview.restaurant_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: api_orderreview.restaurant_id
+Internal Server Error: /api/restaurant/reviews/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: api_orderreview.restaurant_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 203, in get
+    return self.list(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 46, in list
+    return Response(serializer.data)
+                    ^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 715, in to_representation
+    return [
+           ^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: api_orderreview.restaurant_id
+Unauthorized: /api/orders/
+Unauthorized: /api/orders/
+Unauthorized: /api/devices/
+Unauthorized: /api/restaurant-orders/
+Unauthorized: /api/profile/customer/
+Unauthorized: /api/addresses/
+Unauthorized: /api/orders/
+Unauthorized: /api/cart/
+Unauthorized: /api/dietary-preferences/
+Internal Server Error: /api/rider/signup/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 194, in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 24, in perform_create
+    serializer.save()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\serializers.py", line 445, in create
+    RiderProfile.objects.create(user=user)
+    ^^^^^^^^^^^^
+NameError: name 'RiderProfile' is not defined
+Unauthorized: /api/restaurant-orders/
+Unauthorized: /api/restaurant-orders/
+Bad Request: /api/register/
+Bad Request: /api/register/
+Bad Request: /api/register/restaurant/
+Not Found: /favicon.ico
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754846526152041%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Not Found: /api/menu-items/create/
+Not Found: /api/menu-items/
+Not Found: /api/menu-items/
+Sent new order notification for order 1 to group restaurant_4
+Order 1 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 1 to group restaurant_4
+Order 1 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 1 to group restaurant_4
+Order 1 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 1 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 1 to riders.

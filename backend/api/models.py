@@ -1,5 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
+
+
+class Bill(models.Model):
+    restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE, related_name='bills')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('paid', 'Paid')], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f'Bill {self.id} for {self.restaurant.name} - {self.status}'
 
 
 class NotificationTemplate(models.Model):
@@ -137,7 +149,7 @@ class Order(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
-    rider = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_orders')
+    rider = models.ForeignKey('RiderProfile', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
@@ -148,6 +160,7 @@ class Order(models.Model):
     restaurant_lng = models.FloatField(null=True, blank=True)
     customer_lat = models.FloatField(null=True, blank=True)
     customer_lng = models.FloatField(null=True, blank=True)
+    is_billed = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Order {self.id} by {self.user.username}'
@@ -271,4 +284,33 @@ class Review(models.Model):
 
     def __str__(self):
         return f'Review for {self.menu_item.name} by {self.user.username}'
+
+
+class OrderReview(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews', null=True)
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='review')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.DecimalField(max_digits=2, decimal_places=1)
+    comment = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    reply_text = models.TextField(blank=True, null=True)
+    replied_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f'Review for Order #{self.order.id} by {self.user.username}'
+
+
+
+
+class RiderReview(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='rider_review')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='given_rider_reviews')
+    rider = models.ForeignKey(RiderProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews_received')
+    rating = models.DecimalField(max_digits=2, decimal_places=1)
+    comment = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Rider Review for Order #{self.order.id} by {self.user.username}'
+
 

@@ -10,7 +10,7 @@ class WebSocketService {
 
   void connect(String token) {
     final String wsUrl = webSocketUrl.replaceFirst('http', 'ws');
-    final Uri websocketUri = Uri.parse('$wsUrl/ws/orders/?token=$token');
+    final Uri websocketUri = Uri.parse('$wsUrl/ws/notifications/?token=$token');
     _channel = WebSocketChannel.connect(websocketUri);
 
     print('[WebSocket] Attempting to connect to $websocketUri');

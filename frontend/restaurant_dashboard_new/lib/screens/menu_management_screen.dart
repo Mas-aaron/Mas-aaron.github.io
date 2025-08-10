@@ -32,7 +32,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     });
   }
 
-  void _fetchCategories() async {
+  Future<void> _fetchCategories() async {
     try {
       final categories = await _menuService.getMenuCategories();
       setState(() {
@@ -225,7 +225,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
@@ -237,83 +237,86 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                   children: [
                     TextField(
                       controller: categoryNameController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'New Category Name',
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () async {
-                            if (categoryNameController.text.isNotEmpty) {
-                              try {
-                                await _menuService.addMenuCategory(categoryNameController.text);
-                                categoryNameController.clear();
-                                setState(() {}); // Rebuild to show the new category
-                                _fetchCategories(); // Refresh categories in the main screen
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to add category: $e')),
-                                );
-                              }
-                            }
-                          },
-                        ),
+                        border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: FutureBuilder<List<MenuCategory>>(
-                        future: _menuService.getMenuCategories(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          if (snapshot.hasError) {
-                            return Center(child: Text('Error: ${snapshot.error}'));
-                          }
-                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(child: Text('No categories found.'));
-                          }
-
-                          final categories = snapshot.data!;
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: categories.length,
-                            itemBuilder: (context, index) {
-                              final category = categories[index];
-                              return ListTile(
-                                title: Text(category.name),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.blue),
-                                      onPressed: () => _showEditCategoryDialog(category, () => setState(() {})),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _showDeleteCategoryConfirmation(category, () => setState(() {})),
-                                    ),
-                                  ],
-                                ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      child: const Text('Add Category'),
+                      onPressed: () async {
+                        if (categoryNameController.text.isNotEmpty) {
+                          try {
+                            await _menuService.addMenuCategory(categoryNameController.text);
+                            categoryNameController.clear();
+                            // Refresh the list of categories in the dialog
+                            await _fetchCategories(); 
+                            setState(() {}); // Rebuild the dialog UI
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to add category: $e')),
                               );
-                            },
-                          );
-                        },
-                      ),
+                            }
+                          }
+                        }
+                      },
                     ),
+                    const Divider(height: 32),
+                    _isLoadingCategories
+                        ? const Center(child: CircularProgressIndicator())
+                        : Expanded(
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _categories.length,
+                              itemBuilder: (context, index) {
+                                final category = _categories[index];
+                                return ListTile(
+                                  title: Text(category.name),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit),
+                                        onPressed: () {
+                                          _showEditCategoryDialog(category, () {
+                                            _fetchCategories();
+                                            setState(() {}); // Rebuild the dialog UI
+                                          });
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () {
+                                          _showDeleteCategoryConfirmation(category, () {
+                                            _fetchCategories();
+                                            setState(() {}); // Rebuild the dialog UI
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                   ],
                 ),
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Done'),
+                  child: const Text('Close'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
                 ),
               ],
             );
           },
         );
       },
-    );
+    ).then((_) => _fetchCategories()); // Also refresh when dialog is closed
   }
 
   void _showEditCategoryDialog(MenuCategory category, VoidCallback onUpdate) {

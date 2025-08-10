@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from django.conf import settings
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from django.db.models import F, FloatField, ExpressionWrapper, Sum, Count, Q
+from django.db.models import Avg, F, FloatField, ExpressionWrapper, Sum, Count, Q
 from django.db.models.functions import Radians, Power, Sin, Cos, Sqrt, ATan2, TruncMonth
 from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
@@ -24,22 +24,24 @@ from rest_framework.generics import RetrieveAPIView
 
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
+from django.utils import timezone
 
 from geopy.distance import geodesic
 
 from .permissions import IsCustomer, IsRestaurantOwner
 from .models import (
+    Bill,
     Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, 
     Order, OrderItem, Message, Notification, DietaryPreference, CustomerProfile, 
-    UserAddress, Review, Device, RiderProfile, NotificationTemplate
+    UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview
 )
 from .dispatch_service import find_and_assign_rider
-from .models import Cart
 from .serializers import (
+    RestaurantDashboardReviewSerializer,
+    BillSerializer,
     CartItemSerializer,
     CartSerializer,
     CartItemWriteSerializer,
-    CartSerializer,
     MenuCategorySerializer,
     MenuItemBulkUploadSerializer,
     MenuItemSerializer,
@@ -59,7 +61,10 @@ from .serializers import (
     UserAddressSerializer,
     CustomerProfileSerializer,
     ReviewSerializer,
+    OrderReviewSerializer,
+    RiderReviewSerializer,
     DeviceSerializer,
+    RestaurantOrderReviewSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -229,7 +234,9 @@ class RestaurantViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RestaurantSerializer
 
     def get_queryset(self):
-        queryset = Restaurant.objects.filter(is_approved=True)
+        queryset = Restaurant.objects.filter(is_approved=True).annotate(
+            average_rating=Avg('reviews__rating')
+        )
         lat = self.request.query_params.get('lat')
         lng = self.request.query_params.get('lng')
 
@@ -775,6 +782,41 @@ class CurrentUserView(APIView):
         return Response(serializer.data)
 
 
+class MenuItemViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows menu items to be viewed or edited.
+    """
+    serializer_class = MenuItemSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the menu items
+        for the currently authenticated restaurant.
+        """
+        try:
+            restaurant = self.request.user.restaurant_profile
+            return MenuItem.objects.filter(category__restaurant=restaurant)
+        except Restaurant.DoesNotExist:
+            return MenuItem.objects.none()
+        except AttributeError:
+            # Handle cases where user is not a restaurant owner or has no profile
+            return MenuItem.objects.none()
+
+    def perform_create(self, serializer):
+        """
+        Ensure the category belongs to the user's restaurant.
+        """
+        category = serializer.validated_data.get('category')
+        try:
+            restaurant = self.request.user.restaurant_profile
+            if category.restaurant != restaurant:
+                raise serializers.ValidationError("You can only add items to your own restaurant's categories.")
+            serializer.save()
+        except Restaurant.DoesNotExist:
+            raise serializers.ValidationError("User is not associated with a restaurant.")
+
+
 class MenuCategoryViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows restaurants to manage their menu categories.
@@ -807,6 +849,32 @@ class MenuCategoryViewSet(viewsets.ModelViewSet):
             pass
 
 
+class BillViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = BillSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            restaurant = Restaurant.objects.get(owner=user)
+            return Bill.objects.filter(restaurant=restaurant).order_by('-created_at')
+        except Restaurant.DoesNotExist:
+            return Bill.objects.none()
+
+
+class RestaurantReviewsView(generics.ListAPIView):
+    serializer_class = RestaurantDashboardReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            restaurant = Restaurant.objects.get(owner=user)
+            return OrderReview.objects.filter(order__restaurant=restaurant).order_by('-created_at')
+        except Restaurant.DoesNotExist:
+            return OrderReview.objects.none()
+
+
 class RestaurantProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = RestaurantSerializer
     permission_classes = [IsAuthenticated]
@@ -828,7 +896,11 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
         This view should return a list of all the orders
         assigned to the currently authenticated user (rider).
         """
-        return Order.objects.filter(rider=self.request.user).order_by('-created_at')
+        try:
+            rider_profile = self.request.user.rider_profile
+            return Order.objects.filter(rider=rider_profile).order_by('-created_at')
+        except RiderProfile.DoesNotExist:
+            return Order.objects.none()
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
@@ -840,9 +912,24 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
         except Order.DoesNotExist:
             return Response({'error': 'This order is no longer available.'}, status=status.HTTP_404_NOT_FOUND)
 
-        order.rider = request.user
+        try:
+            rider_profile = request.user.rider_profile
+        except RiderProfile.DoesNotExist:
+            return Response({'error': 'Rider profile not found for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        order.rider = rider_profile
         order.status = 'On the way'
         order.save()
+
+        # Notify customer via WebSocket
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f'track_{order.id}',
+            {
+                'type': 'order.status.update',
+                'order': OrderSerializer(order).data
+            }
+        )
 
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1007,3 +1094,99 @@ class CustomerProfileView(generics.RetrieveUpdateAPIView):
         """
         profile, created = CustomerProfile.objects.get_or_create(user=self.request.user)
         return profile
+
+
+class RestaurantOrderReviewViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = RestaurantOrderReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        try:
+            # Assuming the user model has a related 'restaurant' object
+            restaurant = Restaurant.objects.get(owner=user)
+            return OrderReview.objects.filter(restaurant=restaurant).order_by('-created_at')
+        except Restaurant.DoesNotExist:
+            return OrderReview.objects.none()
+
+    @action(detail=True, methods=['post'], url_path='reply')
+    def reply_to_review(self, request, pk=None):
+        review = self.get_object()
+        reply_text = request.data.get('reply_text')
+
+        if not reply_text:
+            return Response({'error': 'Reply text cannot be empty.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if review.reply_text:
+            return Response({'error': 'This review has already been replied to.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        review.reply_text = reply_text
+        review.replied_at = timezone.now()
+        review.save()
+
+        serializer = self.get_serializer(review)
+        return Response(serializer.data)
+
+
+class OrderReviewViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to create, view, and manage reviews for their orders.
+    """
+    serializer_class = OrderReviewSerializer
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get_queryset(self):
+        """
+        This view should only return reviews for the currently authenticated user.
+        """
+        return OrderReview.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        order_id = self.request.data.get('order')
+        try:
+            order = Order.objects.get(id=order_id, user=self.request.user)
+        except Order.DoesNotExist:
+            raise ValidationError("You can only review your own orders.")
+
+        if not order.status == Order.DELIVERED:
+            raise ValidationError("You can only review delivered orders.")
+
+        if OrderReview.objects.filter(order=order).exists():
+            raise ValidationError("This order has already been reviewed.")
+
+        serializer.save(user=self.request.user, restaurant=order.restaurant)
+
+
+class RiderReviewViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users to create, view, and manage reviews for riders.
+    """
+    serializer_class = RiderReviewSerializer
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get_queryset(self):
+        """
+        This view should only return rider reviews for the currently authenticated user.
+        """
+        return RiderReview.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class MyRiderReviewsView(generics.ListAPIView):
+    """
+    API endpoint that allows an authenticated rider to view their reviews.
+    """
+    serializer_class = RiderReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Returns reviews for the current rider.
+        """
+        try:
+            rider_profile = self.request.user.rider_profile
+            return RiderReview.objects.filter(rider=rider_profile).order_by('-created_at')
+        except RiderProfile.DoesNotExist:
+            return RiderReview.objects.none()

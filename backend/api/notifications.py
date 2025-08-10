@@ -72,12 +72,13 @@ def send_push_notification(user, title, body, data=None, image_url=None):
                 logger.error(f"Firebase error sending to device {device.id}: {str(e)}")
                 failure_count += 1
                 
-                # Handle specific error cases
-                error_code = e.code
-                if error_code == 'messaging/registration-token-not-registered' or error_code == 'messaging/invalid-registration-token':
+                # Handle specific error cases safely
+                if hasattr(e, 'code') and (e.code == 'messaging/registration-token-not-registered' or e.code == 'messaging/invalid-registration-token'):
                     device.is_active = False
                     device.save()
                     logger.warning(f"Deactivated invalid device token for user {user.id}: {device.token}")
+                else:
+                    logger.warning(f"Unhandled FirebaseError for device {device.id}. Error: {e}")
 
         logger.info(f"Notification results for user {user.id}: {success_count} successful, {failure_count} failed")
         return success_count > 0

@@ -18,7 +18,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> _initAuth() async {
-    _token = await _authService.getToken();
+    _token = await AuthService.getToken();
     notifyListeners();
   }
 

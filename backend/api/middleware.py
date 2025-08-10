@@ -10,7 +10,7 @@ def get_user_with_profile(token_key):
         token = Token.objects.select_related('user').get(key=token_key)
         user = token.user
         try:
-            user.restaurant_profile = Restaurant.objects.get(owner=user)
+            user.restaurant_profile = Restaurant.objects.filter(owner=user).first()
         except Restaurant.DoesNotExist:
             user.restaurant_profile = None
         return user

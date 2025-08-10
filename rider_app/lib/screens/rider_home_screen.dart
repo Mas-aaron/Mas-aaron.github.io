@@ -4,6 +4,7 @@ import 'package:rider_app/services/api_service.dart';
 import 'package:rider_app/services/websocket_service.dart';
 import 'package:rider_app/screens/available_orders_screen.dart';
 import 'package:rider_app/screens/order_list_screen.dart';
+import 'package:rider_app/screens/my_reviews_screen.dart';
 import 'package:rider_app/widgets/new_order_notification.dart';
 
 class RiderHomeScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
     _widgetOptions = <Widget>[
       AvailableOrdersScreen(apiService: _apiService),
       OrderListScreen(apiService: _apiService),
+      const MyReviewsScreen(),
     ];
     print("[RiderHomeScreen] initState CALLED");
     _initializeWebSocket();
@@ -121,6 +123,10 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'My Orders',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.star),
+            label: 'My Reviews',
           ),
         ],
         currentIndex: _selectedIndex,

@@ -74,17 +74,19 @@ class RestaurantCard extends StatelessWidget {
                   // Rating and delivery info
                   Row(
                     children: [
-                      Icon(
-                        Icons.star,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        restaurant.rating.toString(),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(width: 8),
+                      if (restaurant.averageRating > 0) ...[
+                        Icon(
+                          Icons.star,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          restaurant.averageRating.toStringAsFixed(1),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       const Icon(Icons.access_time, size: 16),
                       const SizedBox(width: 4),
                       Text(

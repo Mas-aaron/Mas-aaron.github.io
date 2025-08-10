@@ -13,22 +13,30 @@ class OnboardingService {
     return prefs.getString('token');
   }
 
-  Future<http.Response> signUpRestaurant(String name, String address, String phone, String email, String password) async {
+    Future<http.Response> signUpRestaurant({
+    required String name,
+    required String address,
+    required String phone,
+    required String email,
+    required String username,
+    required String password,
+    required String password2,
+  }) async {
     final response = await http.post(
             Uri.parse('$_baseUrl/register/restaurant/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode({
+            body: jsonEncode({
         'name': name,
         'address': address,
         'phone_number': phone,
         'email': email, // Restaurant's contact email
         'owner': {
-          'username': email, // Owner's username (using email)
-          'email': email,    // Owner's email
+          'username': username,
+          'email': email,
           'password': password,
-          'password2': password // Password confirmation
+          'password2': password2
         }
       }),
     );

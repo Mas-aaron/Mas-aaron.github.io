@@ -94,16 +94,18 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(
-                        Icons.star,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        widget.restaurant.rating.toString(),
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
+                      if (widget.restaurant.averageRating > 0) ...[
+                        Icon(
+                          Icons.star,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.restaurant.averageRating.toStringAsFixed(1),
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      ],
                       const SizedBox(width: 16),
                       Icon(
                         Icons.access_time,

@@ -5,9 +5,12 @@ from django.contrib.auth.models import User, Group
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import (
+    RiderProfile,
+    Bill,
     Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, Order, OrderItem, 
     Message, Notification, DietaryPreference, CustomerProfile, UserAddress, Review, Device
 )
+from .models import OrderReview, RiderReview
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +55,13 @@ class MenuItemBulkUploadSerializer(serializers.Serializer):
 
 class RestaurantSerializer(serializers.ModelSerializer):
     distance = serializers.FloatField(read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Restaurant
         fields = (
             'id', 'name', 'address', 'phone_number', 'image_url', 
-            'latitude', 'longitude', 'distance'
+            'latitude', 'longitude', 'distance', 'average_rating'
         )
 
 
@@ -195,7 +199,7 @@ class RestaurantOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'status', 'total_price', 'created_at', 'delivery_address', 'items')
+        fields = ('id', 'items', 'total_price', 'status', 'created_at', 'delivery_address', 'restaurant_name', 'rider_id')
 
 class CartItemWriteSerializer(serializers.ModelSerializer):
     """Serializer for writing (create/update) CartItem data."""
@@ -250,10 +254,37 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ('id', 'menu_item', 'menu_item_name', 'quantity', 'price')
 
+class OrderReviewSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = OrderReview
+        fields = ['id', 'order', 'user', 'rating', 'comment', 'created_at', 'reply_text', 'replied_at']
+        read_only_fields = ['id', 'created_at', 'reply_text', 'replied_at']
+
+    def validate_order(self, value):
+        """
+        Check that the order is delivered and belongs to the user.
+        """
+        if value.user != self.context['request'].user:
+            raise serializers.ValidationError("You can only review your own orders.")
+        if value.status.lower() != 'delivered':
+            raise serializers.ValidationError("You can only review delivered orders.")
+        if OrderReview.objects.filter(order=value).exists():
+            raise serializers.ValidationError("This order has already been reviewed.")
+        return value
+
+
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     restaurant = RestaurantSerializer(read_only=True)
+    review = serializers.SerializerMethodField()
     restaurant_name = serializers.SerializerMethodField(read_only=True)
+
+    def get_review(self, obj):
+        if hasattr(obj, 'review'):
+            return OrderReviewSerializer(obj.review).data
+        return None
 
     def get_restaurant_name(self, obj):
         if obj.restaurant:
@@ -318,11 +349,11 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'user', 'rider', 'restaurant', 'restaurant_name',
+            'id', 'user', 'rider_id', 'restaurant', 'restaurant_name',
             'total_price', 'status', 'created_at', 'delivery_address', 'items',
-            'restaurant_lat', 'restaurant_lng', 'customer_lat', 'customer_lng'
+            'restaurant_lat', 'restaurant_lng', 'customer_lat', 'customer_lng', 'review'
         ]
-        read_only_fields = ('user', 'rider', 'restaurant', 'restaurant_name', 'total_price', 'status', 'created_at', 'items')
+        read_only_fields = ('user', 'rider_id', 'restaurant', 'restaurant_name', 'total_price', 'status', 'created_at', 'items')
 
 
 class RiderNotificationOrderSerializer(serializers.ModelSerializer):
@@ -401,9 +432,16 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class DeviceSerializer(serializers.ModelSerializer):
+    """Serializer for the Device model."""
+    # By explicitly defining the token field here, we override the default
+    # which includes a UniqueValidator. This allows our custom view logic
+    # in DeviceViewSet to handle the creation/update idempotently without the
+    # serializer raising a premature validation error.
+    token = serializers.CharField(validators=[])
+
     class Meta:
         model = Device
-        fields = ('id', 'token', 'device_type', 'user')
+        fields = ('id', 'token', 'device_type', 'created_at')
         read_only_fields = ('user',)
 
 
@@ -510,3 +548,71 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerProfile
         fields = ('user', 'dietary_preferences', 'dietary_preference_ids')
+
+
+class RestaurantDashboardReviewSerializer(serializers.ModelSerializer):
+    """
+    Serializer for displaying order reviews on the restaurant dashboard.
+    Hides sensitive user information.
+    """
+    class Meta:
+        model = OrderReview
+        fields = ['id', 'rating', 'comment', 'created_at']
+
+
+class RestaurantOrderReviewSerializer(serializers.ModelSerializer):
+    customer_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    order_total = serializers.DecimalField(source='order.total', max_digits=10, decimal_places=2, read_only=True)
+    order_items_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderReview
+        fields = [
+            'id', 'rating', 'comment', 'created_at', 'reply_text', 'replied_at',
+            'customer_name', 'order_total', 'order_items_count', 'order'
+        ]
+        read_only_fields = fields
+
+    def get_order_items_count(self, obj):
+        return obj.order.items.count()
+
+
+
+
+
+
+class BillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bill
+        fields = ['id', 'restaurant', 'amount', 'status', 'created_at', 'paid_at']
+
+
+class RiderReviewSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    rider = serializers.ReadOnlyField(source='rider.id')
+    customer_name = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = RiderReview
+        fields = ['id', 'order', 'user', 'rider', 'customer_name', 'rating', 'comment', 'created_at']
+        read_only_fields = ['id', 'created_at', 'rider']
+
+    def validate_order(self, value):
+        """
+        Check that the order is delivered, belongs to the user, and has a rider.
+        """
+        if value.user != self.context['request'].user:
+            raise serializers.ValidationError("You can only review riders for your own orders.")
+        if value.status.lower() != 'delivered':
+            raise serializers.ValidationError("You can only review riders for delivered orders.")
+        if not hasattr(value, 'rider') or value.rider is None:
+             raise serializers.ValidationError("This order does not have a rider to review.")
+        if RiderReview.objects.filter(order=value).exists():
+            raise serializers.ValidationError("The rider for this order has already been reviewed.")
+        return value
+
+    def create(self, validated_data):
+        order = validated_data['order']
+        rider = order.rider
+        review = RiderReview.objects.create(rider=rider, **validated_data)
+        return review

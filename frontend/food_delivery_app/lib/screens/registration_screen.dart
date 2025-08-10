@@ -15,6 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordConfirmController = TextEditingController();
   final _authService = AuthService();
   String _errorMessage = '';
   bool _isLoading = false;
@@ -31,6 +32,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           _usernameController.text,
           _emailController.text,
           _passwordController.text,
+          _passwordConfirmController.text,
         );
         // Navigate away on success and show a confirmation message
         if (mounted) {
@@ -118,6 +120,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     validator: (value) {
                       if (value!.isEmpty) return 'Please enter a password';
                       if (value.length < 8) return 'Password must be at least 8 characters';
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  _buildTextFormField(
+                    controller: _passwordConfirmController,
+                    labelText: 'Confirm Password',
+                    obscureText: true,
+                    validator: (value) {
+                      if (value!.isEmpty) return 'Please confirm your password';
+                      if (value != _passwordController.text) return 'Passwords do not match';
                       return null;
                     },
                   ),

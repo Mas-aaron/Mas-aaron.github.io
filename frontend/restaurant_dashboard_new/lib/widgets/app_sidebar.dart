@@ -30,7 +30,7 @@ class _AppSidebarState extends State<AppSidebar> {
           ),
           _buildNavItem(Icons.dashboard_outlined, 'Dashboard', 0),
           _buildNavItem(Icons.receipt_long_rounded, 'Food Order', 1),
-          _buildNavItem(Icons.favorite_rounded, 'Favorite', 2),
+          _buildNavItem(Icons.star_border_rounded, 'Reviews', 2),
           _buildNavItem(Icons.restaurant_menu_outlined, 'Menu', 3),
           _buildNavItem(Icons.history_rounded, 'Order History', 4),
           _buildNavItem(Icons.wallet_rounded, 'Bills', 5),

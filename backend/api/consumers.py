@@ -150,3 +150,31 @@ class RestaurantConsumer(AsyncWebsocketConsumer):
         orders = Order.objects.filter(restaurant=self.restaurant, status__in=['pending', 'preparing'])
         serializer = OrderSerializer(orders, many=True)
         return serializer.data
+
+
+class NotificationConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.user = self.scope["user"]
+        if not self.user.is_authenticated:
+            await self.close()
+            return
+
+        self.room_group_name = f'user_{self.user.id}_notifications'
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+        print(f"User {self.user.username} connected to notifications channel.")
+
+    async def disconnect(self, close_code):
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+            print(f"User {self.user.username} disconnected from notifications channel.")
+
+    async def receive(self, text_data):
+        # This consumer is for broadcasting notifications from the server,
+        # so we don't expect to receive messages from clients.
+        pass
+
+    async def send_notification(self, event):
+        message = event['message']
+        await self.send(text_data=json.dumps(message))
+        print(f"Sent notification to user {self.user.username}: {message}")

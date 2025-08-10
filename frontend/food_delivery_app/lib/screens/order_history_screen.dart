@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:food_delivery_app/models/order.dart';
 import 'package:food_delivery_app/services/api_service.dart';
-import 'package:food_delivery_app/widgets/rating_dialog.dart';
+import 'package:food_delivery_app/models/order.dart';
+import 'package:food_delivery_app/models/order_review.dart';
+import 'package:food_delivery_app/screens/submit_review_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:food_delivery_app/models/order_item.dart';
+
 import 'package:food_delivery_app/screens/order_tracking_screen.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
@@ -29,80 +30,162 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     });
   }
 
-  void _showRatingDialog(BuildContext context, OrderItem item) {
-    showDialog(
-      context: context,
-      builder: (context) => RatingDialog(
-        mealName: item.menuItem.name,
-        onSubmit: (rating, comment) async {
-          try {
-            await apiService.submitReview(item.menuItem.id, rating, comment);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Review submitted successfully!'), backgroundColor: Colors.green),
-            );
-            // Optionally, refresh the order or item state to show it's been reviewed
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to submit review: ${e.toString()}'), backgroundColor: Colors.red),
-            );
-          }
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders'),
+        title: Text('My Orders', style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFFfe5722),
         elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async => _loadOrders(),
-        child: FutureBuilder<List<Order>>(
-          future: futureOrders,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error loading orders. Pull to refresh.'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
-                    SizedBox(height: 16),
-                    Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                  ],
-                ),
-              );
-            } else {
-              final orders = snapshot.data!;
-              return ListView.builder(
-                padding: EdgeInsets.all(8.0),
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  return _OrderCard(
-                    order: orders[index],
-                    onRate: (item) => _showRatingDialog(context, item),
-                  );
-                },
-              );
-            }
-          },
+      body: Container(
+        color: Colors.grey[100],
+        child: RefreshIndicator(
+          onRefresh: () async => _loadOrders(),
+          child: FutureBuilder<List<Order>>(
+            future: futureOrders,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFfe5722)),
+                ));
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 50, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text('Error loading orders', style: TextStyle(color: Colors.grey)),
+                      TextButton(
+                        onPressed: _loadOrders,
+                        child: Text('Retry', style: TextStyle(color: Color(0xFFfe5722))),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
+                      SizedBox(height: 16),
+                      Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                      SizedBox(height: 8),
+                      Text('Your orders will appear here', style: TextStyle(color: Colors.grey[500])),
+                    ],
+                  ),
+                );
+              } else {
+                final orders = snapshot.data!;
+                return ListView.separated(
+                  padding: EdgeInsets.all(16.0),
+                  itemCount: orders.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    return OrderCard(
+                      order: orders[index],
+                      onRefresh: _loadOrders,
+                    );
+                  },
+                );
+              }
+            },
+          ),
         ),
       ),
     );
   }
 }
 
-class _OrderCard extends StatelessWidget {
-  final Order order;
-  final Function(OrderItem) onRate;
+class OrderCard extends StatelessWidget {
+  Widget _buildReviewSection(Order order, BuildContext context) {
+    if (order.review == null) {
+      return SizedBox.shrink();
+    }
 
-  const _OrderCard({required this.order, required this.onRate});
+    final review = order.review!;
+
+    return Container(
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Your Review',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: List.generate(5, (index) {
+              return Icon(
+                index < review.rating ? Icons.star : Icons.star_border,
+                color: Colors.amber,
+                size: 20,
+              );
+            }),
+          ),
+          SizedBox(height: 4),
+          Text(
+            review.comment,
+            style: TextStyle(color: Colors.grey[700]),
+          ),
+          if (review.replyText != null && review.replyText!.isNotEmpty)
+            _buildRestaurantReply(review),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRestaurantReply(OrderReview review) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        color: Color(0xFFfe5722).withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Color(0xFFfe5722).withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Restaurant Reply',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Color(0xFFfe5722),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            review.replyText!,
+            style: TextStyle(color: Colors.grey[800]),
+          ),
+          SizedBox(height: 8),
+          if (review.repliedAt != null)
+            Text(
+              DateFormat.yMMMd().format(review.repliedAt!),
+              style: TextStyle(color: Colors.grey[500], fontSize: 12),
+            ),
+        ],
+      ),
+    );
+  }
+  final Order order;
+  final VoidCallback onRefresh;
+
+  const OrderCard({required this.order, required this.onRefresh});
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -111,7 +194,7 @@ class _OrderCard extends StatelessWidget {
       case 'pending':
       case 'preparing':
       case 'ready for pickup':
-        return Colors.orange;
+        return Color(0xFFfe5722);
       case 'cancelled':
         return Colors.red;
       default:
@@ -120,79 +203,155 @@ class _OrderCard extends StatelessWidget {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat.yMMMd().format(DateTime.parse(order.createdAt));
+    final formattedDate = DateFormat('MMM dd, yyyy - hh:mm a').format(DateTime.parse(order.createdAt));
+    final isDelivered = order.status.toLowerCase() == 'delivered';
+    final formatCurrency = NumberFormat.simpleCurrency(locale: 'en_US');
 
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
+      elevation: 0,
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
-        tilePadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              order.restaurant.name,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Order #${order.id} - $formattedDate',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '\$${order.totalPrice}',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(order.status),
-                    shape: BoxShape.circle,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      order.restaurant.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                SizedBox(width: 4),
-                Text(
-                  order.status,
-                  style: TextStyle(color: _getStatusColor(order.status), fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          ],
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(order.status).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      order.status,
+                      style: TextStyle(
+                        color: _getStatusColor(order.status),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Order #${order.id}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                  Text(
+                    formatCurrency.format(double.tryParse(order.totalPrice) ?? 0.0),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         children: [
-          Divider(height: 1),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(bottom: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Items:', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 8),
-                ...order.items.map((item) => _OrderItemRow(item: item, orderStatus: order.status, onRate: () => onRate(item))),
+                Divider(height: 1, color: Colors.grey[200]),
                 SizedBox(height: 12),
-                Text('Delivery Address:', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 4),
-                Text(order.deliveryAddress, style: TextStyle(color: Colors.grey[700])),
-                if (order.status.toLowerCase() != 'delivered' && order.status.toLowerCase() != 'cancelled') ...[
-                  SizedBox(height: 16),
-                  Center(
-                    child: ElevatedButton.icon(
-                      icon: Icon(Icons.location_on_outlined, size: 18),
-                      label: Text('Track Live Location'),
+                Text(
+                  'Order Items',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(height: 8),
+                ...order.items.map((item) => Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${item.quantity}x',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item.menuItem.name,
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      Text(
+                        formatCurrency.format(double.tryParse(item.price) ?? 0.0),
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                )),
+                _buildReviewSection(order, context),
+                SizedBox(height: 12),
+                if (isDelivered && order.review == null)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFfe5722),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () async {
+                        final result = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SubmitReviewScreen(
+                              orderId: order.id,
+                              riderId: order.riderId,
+                            ),
+                          ),
+                        );
+                        if (result == true) {
+                          onRefresh();
+                        }
+                      },
+                      child: Text('Rate This Order'),
+                    ),
+                  )
+                else if (!isDelivered && order.status.toLowerCase() != 'cancelled')
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Color(0xFFfe5722),
+                        side: BorderSide(color: Color(0xFFfe5722)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                      ),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -201,55 +360,12 @@ class _OrderCard extends StatelessWidget {
                           ),
                         );
                       },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      ),
+                      child: Text('Track Order'),
                     ),
                   ),
-                ],
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OrderItemRow extends StatelessWidget {
-  final OrderItem item;
-  final String orderStatus;
-  final VoidCallback onRate;
-
-  const _OrderItemRow({required this.item, required this.orderStatus, required this.onRate});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${item.quantity} x ${item.menuItem.name}'),
-                Text('\$${item.price}', style: TextStyle(color: Colors.grey[600])),
-              ],
-            ),
-          ),
-          if (orderStatus.toLowerCase() == 'delivered')
-            TextButton(
-              onPressed: onRate,
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text('Rate'),
-            ),
+          )
         ],
       ),
     );

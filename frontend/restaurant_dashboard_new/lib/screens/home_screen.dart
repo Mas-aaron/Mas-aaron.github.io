@@ -7,6 +7,9 @@ import 'package:restaurant_dashboard_new/widgets/app_sidebar.dart';
 import 'package:restaurant_dashboard_new/widgets/order_panel.dart';
 import 'package:restaurant_dashboard_new/screens/menu_management_screen.dart';
 import 'package:restaurant_dashboard_new/screens/notification_screen.dart';
+import 'package:restaurant_dashboard_new/screens/reviews_screen.dart';
+import 'package:restaurant_dashboard_new/screens/order_history_screen.dart';
+import 'package:restaurant_dashboard_new/screens/bills_screen.dart';
 import 'package:restaurant_dashboard_new/screens/order_management_screen.dart';
 import 'analytics_screen.dart';
 import 'package:restaurant_dashboard_new/utils/responsive.dart';
@@ -29,10 +32,10 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     const AnalyticsScreen(),
     const OrderManagementScreen(),
-    const Center(child: Text('Favorite Screen')),
+    ReviewsScreen(),
     const MenuManagementScreen(),
-    const Center(child: Text('Order History Screen')),
-    const Center(child: Text('Bills Screen')),
+    OrderHistoryScreen(),
+    BillsScreen(),
     const NotificationScreen(),
   ];
 

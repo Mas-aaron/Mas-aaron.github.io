@@ -19,7 +19,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   String _address = '';
   String _phone = '';
   String _email = '';
-  String _password = '';
+    String _password = '';
+  String _passwordConfirm = '';
   bool _isLoading = false;
 
   void _trySubmit() async {
@@ -33,12 +34,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
 
     try {
-      await _onboardingService.signUpRestaurant(
-        _name,
-        _address,
-        _phone,
-        _email,
-        _password,
+            await _onboardingService.signUpRestaurant(
+        name: _name,
+        address: _address,
+        phone: _phone,
+        email: _email,
+        username: _email, // Use email as username
+        password: _password,
+        password2: _passwordConfirm,
       );
       // Login after successful signup to get the auth token
       await Provider.of<AuthProvider>(context, listen: false).login(_email, _password);
@@ -149,8 +152,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       },
                       decoration: InputDecoration(labelText: 'Password'),
                       obscureText: true,
-                      onSaved: (value) {
+                                            onSaved: (value) {
                         _password = value!;
+                      },
+                    ),
+                    TextFormField(
+                      key: ValueKey('password_confirm'),
+                      validator: (value) {
+                        if (value != _password) {
+                          return 'Passwords do not match!';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(labelText: 'Confirm Password'),
+                      obscureText: true,
+                      onSaved: (value) {
+                        _passwordConfirm = value!;
                       },
                     ),
                     SizedBox(height: 12),
