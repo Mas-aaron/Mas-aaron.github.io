@@ -3,7 +3,7 @@ import 'package:food_delivery_app/screens/cart_screen.dart';
 import 'package:food_delivery_app/screens/home_screen.dart';
 import 'package:food_delivery_app/screens/order_history_screen.dart';
 import 'package:food_delivery_app/screens/profile_screen.dart';
-import 'package:food_delivery_app/screens/search_screen.dart';
+
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({Key? key}) : super(key: key);
@@ -19,7 +19,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const HomeScreen(),
     const CartScreen(),
     const OrderHistoryScreen(),
-    const SearchScreen(),
+
     const ProfileScreen(),
   ];
 
@@ -53,11 +53,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             activeIcon: Icon(Icons.receipt_long),
             label: 'Orders',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
-            label: 'Search',
-          ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),

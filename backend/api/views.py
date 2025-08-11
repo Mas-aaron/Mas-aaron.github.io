@@ -1148,7 +1148,7 @@ class OrderReviewViewSet(viewsets.ModelViewSet):
         except Order.DoesNotExist:
             raise ValidationError("You can only review your own orders.")
 
-        if not order.status == Order.DELIVERED:
+        if not order.status == 'Delivered':
             raise ValidationError("You can only review delivered orders.")
 
         if OrderReview.objects.filter(order=order).exists():

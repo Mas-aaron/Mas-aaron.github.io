@@ -254,7 +254,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
-        leading: const Icon(Icons.restaurant_menu, color: Colors.orange),
+        leading: Icon(Icons.restaurant_menu, color: Theme.of(context).primaryColor),
         title: const Text('Dietary Preferences'),
         children: [
           FutureBuilder<List<DietaryPreference>>(

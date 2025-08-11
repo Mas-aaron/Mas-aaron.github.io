@@ -1798,3 +1798,70 @@ Sent order status update for order 1 to group restaurant_4
 Order 1 status changed from Preparing to Ready for Pickup. Sending notifications.
 Sent order status update for order 1 to group restaurant_4
 Sent 'Ready for Pickup' notification for order 1 to riders.
+Sent new order notification for order 2 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754852380012262%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Not Found: /favicon.ico
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754890480914038%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 2 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 2 to group restaurant_4
+Order 2 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 2 to group restaurant_4
+Order 2 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 2 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 2 to riders.
+Sent 'Ready for Pickup' notification for order 2 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754891702829871%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 3 to group restaurant_4
+Order 3 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 3 to group restaurant_4
+Order 3 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 3 to group restaurant_4
+Order 3 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 3 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 3 to riders.
+Internal Server Error: /api/order-reviews/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 1151, in perform_create
+    if not order.status == Order.DELIVERED:
+                           ^^^^^^^^^^^^^^^
+AttributeError: type object 'Order' has no attribute 'DELIVERED'

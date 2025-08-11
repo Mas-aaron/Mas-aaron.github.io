@@ -30,26 +30,37 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      final success = await _apiService.login(
-        _usernameController.text,
-        _passwordController.text,
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (success) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const RiderHomeScreen()),
+      try {
+        final success = await _apiService.login(
+          _usernameController.text,
+          _passwordController.text,
         );
-      } else {
+
+        if (success) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const RiderHomeScreen()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login failed. Please check your credentials.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Login failed. Please check your credentials.'),
+          SnackBar(
+            content: Text('An error occurred: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }

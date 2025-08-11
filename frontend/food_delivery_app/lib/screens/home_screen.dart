@@ -6,6 +6,7 @@ import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/widgets/restaurant_card.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'restaurant_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +16,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Restaurant> _searchResults = [];
+  bool _isLoading = false;
+  bool _isSearching = false;
   final ApiService _apiService = ApiService();
   late Future<List<Restaurant>> _futureRestaurants;
 
@@ -28,6 +33,45 @@ class _HomeScreenState extends State<HomeScreen> {
       // No need to check for mounted here, as it's a post-frame callback.
       context.read<LocationProvider>().determineInitialLocation();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _searchRestaurants(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _isSearching = true;
+    });
+
+    try {
+      final restaurants = await _apiService.fetchRestaurants();
+      final results = restaurants
+          .where((restaurant) =>
+              restaurant.name.toLowerCase().contains(query.toLowerCase()) ||
+              restaurant.cuisineType.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+
+      setState(() {
+        _searchResults = results;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _navigateToSetLocationScreen(LocationProvider locationProvider) {
@@ -48,30 +92,43 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _apiService.testPushNotification();
-                    },
-                    child: const Text('Test Push Notification'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                    ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(context),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search restaurants or cuisine...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
                   ),
                 ),
+                onChanged: _searchRestaurants,
               ),
-              _buildCategories(),
-              _buildBanner(),
-              _buildTopPicks(),
-            ],
-          ),
+            ),
+            Expanded(
+              child: _isSearching
+                  ? _buildSearchResults()
+                  : SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildCategories(),
+                          _buildBanner(),
+                          _buildTopPicks(),
+                        ],
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );
@@ -144,18 +201,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search for restaurants, dishes...',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
             ],
           ),
         );
@@ -316,6 +361,42 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchResults() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
+      return const Center(child: Text('No restaurants found.'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _searchResults.length,
+      itemBuilder: (context, index) {
+        final restaurant = _searchResults[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              child: Icon(Icons.restaurant, color: Theme.of(context).primaryColor),
+            ),
+            title: Text(restaurant.name),
+            subtitle: Text(restaurant.cuisineType),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RestaurantDetailScreen(restaurant: restaurant),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

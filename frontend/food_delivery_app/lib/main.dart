@@ -6,7 +6,8 @@ import 'package:food_delivery_app/screens/home_screen.dart';
 import 'package:food_delivery_app/screens/main_navigation_screen.dart';
 import 'package:food_delivery_app/screens/login_screen.dart';
 import 'package:food_delivery_app/screens/register_screen.dart';
-import 'package:food_delivery_app/screens/welcome_screen.dart';
+import 'package:food_delivery_app/screens/splash_screen.dart';
+
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:food_delivery_app/services/push_notification_service.dart';
@@ -32,7 +33,11 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Food Delivery App',
         theme: ThemeData(
-          primarySwatch: Colors.deepOrange,
+          primaryColor: const Color(0xFFFE5722),
+        colorScheme: ColorScheme.fromSwatch().copyWith(
+          primary: const Color(0xFFFE5722),
+          secondary: const Color(0xFFFE5722),
+        ),
           scaffoldBackgroundColor: Colors.grey[50],
           fontFamily: 'Metropolis',
           inputDecorationTheme: InputDecorationTheme(
@@ -45,7 +50,7 @@ class MyApp extends StatelessWidget {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepOrange,
+              backgroundColor: const Color(0xFFFE5722),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -54,7 +59,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const WelcomeScreen(), // Set WelcomeScreen as the initial screen
+        home: const SplashScreen(), // Set SplashScreen as the initial screen
         routes: {
           '/auth': (context) => const AuthWrapper(), // Route to handle auth logic
           '/login': (context) => const LoginScreen(),
