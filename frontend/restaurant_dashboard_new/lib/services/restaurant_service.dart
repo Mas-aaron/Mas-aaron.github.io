@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_dashboard_new/models/restaurant.dart';
 import 'package:restaurant_dashboard_new/models/restaurant_review.dart';
 
 class RestaurantService {
-  final String _baseUrl = 'http://127.0.0.1:8000/api';
+  final String _baseUrl = 'http://10.4.45.57:8000/api';
 
   Future<Restaurant> getRestaurantProfile() async {
     final prefs = await SharedPreferences.getInstance();
@@ -30,7 +31,14 @@ class RestaurantService {
     }
   }
 
-  Future<Restaurant> updateRestaurantProfile(Restaurant restaurant) async {
+  Future<Restaurant> updateRestaurantProfile(
+    int restaurantId,
+    String name,
+    String address,
+    String phoneNumber,
+    String email,
+    XFile? imageFile,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
 
@@ -38,19 +46,34 @@ class RestaurantService {
       throw Exception('Authentication token not found');
     }
 
-    final response = await http.put(
+    var request = http.MultipartRequest(
+      'PUT',
       Uri.parse('$_baseUrl/profile/restaurant/'),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Token $token',
-      },
-      body: jsonEncode(restaurant.toJson()),
     );
+
+    request.headers['Authorization'] = 'Token $token';
+    request.fields['name'] = name;
+    request.fields['address'] = address;
+    request.fields['phone_number'] = phoneNumber;
+    request.fields['email'] = email;
+
+    if (imageFile != null) {
+      final bytes = await imageFile.readAsBytes();
+      final multipartFile = http.MultipartFile.fromBytes(
+        'image',
+        bytes,
+        filename: imageFile.name,
+      );
+      request.files.add(multipartFile);
+    }
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
       return Restaurant.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to update restaurant profile');
+      throw Exception('Failed to update restaurant profile: ${response.body}');
     }
   }
 

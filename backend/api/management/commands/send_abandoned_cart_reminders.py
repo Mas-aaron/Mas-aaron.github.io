@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta
 from api.models import Cart
-from api.utils import send_push_notification
+from api.notifications import send_push_notification
 
 class Command(BaseCommand):
     help = 'Finds carts that have been abandoned and sends a reminder notification to the user.'

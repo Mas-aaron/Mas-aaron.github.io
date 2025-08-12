@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_dashboard_new/models/notification.dart';
 
 class NotificationService {
-  final String _baseUrl = 'http://127.0.0.1:8000/api';
+  final String _baseUrl = 'http://10.4.45.57:8000/api';
 
   Future<List<Notification>> getNotifications() async {
     final prefs = await SharedPreferences.getInstance();

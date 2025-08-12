@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class OnboardingService {
   // Assumption: The base URL is stored in a central config file.
   // Using the local development server URL as a placeholder.
-    final String _baseUrl = 'http://127.0.0.1:8000/api';
+    final String _baseUrl = 'http://10.4.45.57:8000/api';
 
   // Assumption: The auth token is stored in SharedPreferences after login.
   Future<String?> _getToken() async {

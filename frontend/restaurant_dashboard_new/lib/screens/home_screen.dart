@@ -10,6 +10,7 @@ import 'package:restaurant_dashboard_new/screens/notification_screen.dart';
 import 'package:restaurant_dashboard_new/screens/reviews_screen.dart';
 import 'package:restaurant_dashboard_new/screens/order_history_screen.dart';
 import 'package:restaurant_dashboard_new/screens/bills_screen.dart';
+import 'package:restaurant_dashboard_new/screens/settings_screen.dart';
 import 'package:restaurant_dashboard_new/screens/order_management_screen.dart';
 import 'analytics_screen.dart';
 import 'package:restaurant_dashboard_new/utils/responsive.dart';
@@ -37,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     OrderHistoryScreen(),
     BillsScreen(),
     const NotificationScreen(),
+    const SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {

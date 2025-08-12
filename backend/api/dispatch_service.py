@@ -51,6 +51,6 @@ def find_and_assign_rider(order):
 
     if nearest_rider:
         order.rider = nearest_rider.user
-        order.status = 'Preparing' # Or another status indicating assignment
+        order.status = 'Rider Assigned'
         order.save()
         # TODO: Send a notification to the rider

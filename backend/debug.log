@@ -1865,3 +1865,90 @@ Traceback (most recent call last):
     if not order.status == Order.DELIVERED:
                            ^^^^^^^^^^^^^^^
 AttributeError: type object 'Order' has no attribute 'DELIVERED'
+Bad Request: /api/login/
+Sent new order notification for order 4 to group restaurant_4
+Order 4 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 4 to group restaurant_4
+Order 4 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 4 to group restaurant_4
+Order 4 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 4 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 4 to riders.
+Sent new order notification for order 5 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754904797076396%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754905103152024%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 6 to group restaurant_4
+Order 6 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 6 to group restaurant_4
+Order 6 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 6 to group restaurant_4
+Order 6 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 6 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 6 to riders.
+Sent new order notification for order 7 to group restaurant_4
+Bad Request: /api/login/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912522310813%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 7 status changed from Pending to Accepted. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912522563891%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 7 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912538134155%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 7 status changed from Accepted to Preparing. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912538360816%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 7 to group restaurant_4
+Order 7 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 7 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 7 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912590659392%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 5 status changed from Pending to Accepted. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912591219363%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 5 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912608656598%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 5 status changed from Accepted to Preparing. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912608911191%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 5 to group restaurant_4
+Order 5 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 5 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 5 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912641422946%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 7 status changed from Delivered to Rejected. Sending notifications.
+Sent order status update for order 7 to group restaurant_4
+Sent new order notification for order 8 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912733812992%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 8 status changed from Pending to Accepted. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912734062996%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 8 to group restaurant_4
+Not Found: /favicon.ico
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754912779135146%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754913732683861%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 9 to group restaurant_4
+Order 9 status changed from Pending to Rejected. Sending notifications.
+Sent order status update for order 9 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754913851524611%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 8 status changed from Accepted to Preparing. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754913851754146%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 8 to group restaurant_4
+Order 8 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 8 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 8 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754913873520622%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754916765280968%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Unauthorized: /api/menu-items/1/

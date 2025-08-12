@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:food_delivery_app/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:food_delivery_app/services/push_notification_service.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -26,13 +25,7 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
 
-      // Register device for push notifications
-      try {
-        await PushNotificationService().initialize();
-      } catch (e) {
-        print('Failed to register for push notifications: $e');
-        // We don't rethrow the error, so login can proceed
-      }
+      // Notification service is initialized in main.dart
       return token;
     } else {
       print('Failed to login: ${response.body}');

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/menu_service.dart';
 import '../models/menu_item.dart';
 import '../models/menu_category.dart';
+import 'package:image_picker/image_picker.dart';
+
+
 
 class MenuManagementScreen extends StatefulWidget {
   static const routeName = '/menu-management';
@@ -121,8 +124,9 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
             ElevatedButton.icon(
               onPressed: _showAddMenuItemDialog,
               icon: const Icon(Icons.add),
-              label: const Text('Add New Item'),
+              label: const Text('Add Menu Item'),
               style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -138,61 +142,101 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
       await _menuService.deleteMenuItem(id);
       _refreshMenuItems();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete item: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete item: $e')));
+      }
     }
   }
 
-  void _showEditMenuItemDialog(MenuItem item) {
+      void _showEditMenuItemDialog(MenuItem item) {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController(text: item.name);
     final descriptionController = TextEditingController(text: item.description);
     final priceController = TextEditingController(text: item.price.toString());
+    XFile? imageFile;
+    int? selectedCategoryId = item.category;
+    bool isAvailable = item.isAvailable;
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Edit Menu Item', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
-                  validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
+          title: const Text('Edit Menu Item'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              Future<void> pickImage() async {
+                final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+                if (pickedFile != null) {
+                                    setState(() {
+                    imageFile = pickedFile;
+                  });
+                }
+              }
+
+              return SizedBox(
+                width: 400, // Constrain width to prevent layout errors
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                                                                                                if (imageFile != null)
+                          Image.network(imageFile!.path, height: 150, fit: BoxFit.cover)
+                        else if (item.image != null && item.image!.isNotEmpty)
+                          Image.network(item.image!, height: 150, fit: BoxFit.cover),
+                        ElevatedButton(onPressed: pickImage, child: const Text('Change Image')),
+                        TextFormField(
+                          controller: nameController,
+                          decoration: const InputDecoration(labelText: 'Name'),
+                          validator: (value) => value!.isEmpty ? 'Enter a name' : null,
+                        ),
+                        TextFormField(
+                          controller: descriptionController,
+                          decoration: const InputDecoration(labelText: 'Description'),
+                          validator: (value) => value!.isEmpty ? 'Enter a description' : null,
+                        ),
+                        TextFormField(
+                          controller: priceController,
+                          decoration: const InputDecoration(labelText: 'Price'),
+                          keyboardType: TextInputType.number,
+                          validator: (value) => value!.isEmpty ? 'Enter a price' : null,
+                        ),
+                        DropdownButtonFormField<int>(
+                          value: selectedCategoryId,
+                          items: _categories.map((MenuCategory category) {
+                            return DropdownMenuItem<int>(
+                              value: category.id,
+                              child: Text(category.name),
+                            );
+                          }).toList(),
+                          onChanged: (newValue) {
+                            setState(() {
+                              selectedCategoryId = newValue;
+                            });
+                          },
+                          decoration: const InputDecoration(labelText: 'Category'),
+                          validator: (value) => value == null ? 'Select a category' : null,
+                        ),
+                        SwitchListTile(
+                          title: const Text('Available'),
+                          value: isAvailable,
+                          onChanged: (bool value) {
+                            setState(() {
+                              isAvailable = value;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
-                  validator: (value) => value!.isEmpty ? 'Please enter a description' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: priceController,
-                  decoration: const InputDecoration(labelText: 'Price', border: OutlineInputBorder()),
-                  keyboardType: TextInputType.number,
-                  validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
-                ),
-              ],
-            ),
+              );
+            },
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   try {
@@ -201,18 +245,22 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                       nameController.text,
                       descriptionController.text,
                       double.parse(priceController.text),
-                      true, // Assuming is_available is always true for now
+                      selectedCategoryId!,
+                      isAvailable,
+                      imageFile,
                     );
-                    Navigator.of(context).pop();
+                    if (mounted) Navigator.of(context).pop();
                     _refreshMenuItems();
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to update item: $e')),
-                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to update item: $e')),
+                      );
+                    }
                   }
                 }
               },
-              child: const Text('Update'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -221,128 +269,120 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   }
 
   void _showManageCategoriesDialog() {
-    final categoryNameController = TextEditingController();
-
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            void refreshCategories() {
+              _fetchCategories().then((_) => setState(() {}));
+            }
+
             return AlertDialog(
               title: const Text('Manage Categories'),
               content: SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: categoryNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'New Category Name',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      child: const Text('Add Category'),
-                      onPressed: () async {
-                        if (categoryNameController.text.isNotEmpty) {
-                          try {
-                            await _menuService.addMenuCategory(categoryNameController.text);
-                            categoryNameController.clear();
-                            // Refresh the list of categories in the dialog
-                            await _fetchCategories(); 
-                            setState(() {}); // Rebuild the dialog UI
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Failed to add category: $e')),
-                              );
-                            }
-                          }
-                        }
-                      },
-                    ),
-                    const Divider(height: 32),
-                    _isLoadingCategories
-                        ? const Center(child: CircularProgressIndicator())
-                        : Expanded(
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: _categories.length,
-                              itemBuilder: (context, index) {
-                                final category = _categories[index];
-                                return ListTile(
-                                  title: Text(category.name),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit),
-                                        onPressed: () {
-                                          _showEditCategoryDialog(category, () {
-                                            _fetchCategories();
-                                            setState(() {}); // Rebuild the dialog UI
-                                          });
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () {
-                                          _showDeleteCategoryConfirmation(category, () {
-                                            _fetchCategories();
-                                            setState(() {}); // Rebuild the dialog UI
-                                          });
-                                        },
-                                      ),
-                                    ],
+                width: 400, // Constrain width
+                child: _isLoadingCategories
+                    ? const Center(child: CircularProgressIndicator())
+                    : SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: _categories.map((category) {
+                            return ListTile(
+                              title: Text(category.name),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.blue),
+                                    onPressed: () => _showEditCategoryDialog(category, refreshCategories),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                  ],
-                ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _showDeleteCategoryConfirmation(category, refreshCategories),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
               ),
               actions: [
                 TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Close'),
+                ),
+                ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    final nameController = TextEditingController();
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Add Category'),
+                        content: TextField(
+                          controller: nameController,
+                          decoration: const InputDecoration(labelText: 'Category Name'),
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (nameController.text.isNotEmpty) {
+                                try {
+                                  await _menuService.addMenuCategory(nameController.text);
+                                  if (mounted) Navigator.of(context).pop();
+                                  refreshCategories();
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Failed to add category: $e')),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            child: const Text('Add'),
+                          ),
+                        ],
+                      ),
+                    );
                   },
+                  child: const Text('Add Category'),
                 ),
               ],
             );
           },
         );
       },
-    ).then((_) => _fetchCategories()); // Also refresh when dialog is closed
+    );
   }
 
   void _showEditCategoryDialog(MenuCategory category, VoidCallback onUpdate) {
-    final editController = TextEditingController(text: category.name);
+    final nameController = TextEditingController(text: category.name);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Edit Category'),
         content: TextField(
-          controller: editController,
+          controller: nameController,
           decoration: const InputDecoration(labelText: 'Category Name'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
-              if (editController.text.isNotEmpty) {
+              if (nameController.text.isNotEmpty) {
                 try {
-                  await _menuService.updateMenuCategory(category.id, editController.text);
-                  Navigator.of(context).pop();
+                  await _menuService.updateMenuCategory(category.id, nameController.text);
+                  if (mounted) Navigator.of(context).pop();
                   onUpdate();
-                  _fetchCategories(); // Refresh categories in the main screen
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to update category: $e')),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to update category: $e')),
+                    );
+                  }
                 }
               }
             },
@@ -357,8 +397,8 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Category'),
-        content: Text('Are you sure you want to delete "${category.name}"? This action cannot be undone.'),
+        title: const Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete the category "${category.name}"? This action cannot be undone.'),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
           ElevatedButton(
@@ -366,13 +406,14 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
             onPressed: () async {
               try {
                 await _menuService.deleteMenuCategory(category.id);
-                Navigator.of(context).pop();
+                if (mounted) Navigator.of(context).pop();
                 onUpdate();
-                _fetchCategories(); // Refresh categories in the main screen
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Failed to delete category: $e')),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete category: $e')),
+                  );
+                }
               }
             },
             child: const Text('Delete'),
@@ -382,114 +423,123 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     );
   }
 
-
-  void _showAddMenuItemDialog() {
+      void _showAddMenuItemDialog() {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController();
     final descriptionController = TextEditingController();
     final priceController = TextEditingController();
-
-    // Reset selected category ID for the new dialog
-    _selectedCategoryId = _categories.isNotEmpty ? _categories.first.id : null;
+    XFile? imageFile;
+    int? selectedCategoryId;
 
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Text('Add New Menu Item'),
-              content: Form(
-                key: formKey,
-                child: SingleChildScrollView(
+        return StatefulBuilder(builder: (context, setState) {
+          Future<void> pickImage() async {
+            final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+            if (pickedFile != null) {
+                            setState(() {
+                imageFile = pickedFile;
+              });
+            }
+          }
+
+          return AlertDialog(
+            title: const Text('Add New Menu Item'),
+            content: SizedBox(
+              width: 400, // Constrain width to prevent layout errors
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                                                                  if (imageFile != null)
+                        Image.network(imageFile!.path, height: 150, fit: BoxFit.cover)
+                      else
+                        Container(
+                          height: 150,
+                          color: Colors.grey[200],
+                          child: const Center(child: Text('No Image Selected')),
+                        ),
+                      ElevatedButton(onPressed: pickImage, child: const Text('Select Image')),
                       TextFormField(
                         controller: nameController,
-                        decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
-                        validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
+                        decoration: const InputDecoration(labelText: 'Name'),
+                        validator: (value) => value!.isEmpty ? 'Enter a name' : null,
                       ),
-                      const SizedBox(height: 16),
                       TextFormField(
                         controller: descriptionController,
-                        decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
-                        validator: (value) => value!.isEmpty ? 'Please enter a description' : null,
+                        decoration: const InputDecoration(labelText: 'Description'),
+                        validator: (value) => value!.isEmpty ? 'Enter a description' : null,
                       ),
-                      const SizedBox(height: 16),
                       TextFormField(
                         controller: priceController,
-                        decoration: const InputDecoration(labelText: 'Price', border: OutlineInputBorder()),
+                        decoration: const InputDecoration(labelText: 'Price'),
                         keyboardType: TextInputType.number,
-                        validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
+                        validator: (value) => value!.isEmpty ? 'Enter a price' : null,
                       ),
-                      const SizedBox(height: 16),
-                      _isLoadingCategories
-                          ? const Center(child: CircularProgressIndicator())
-                          : DropdownButtonFormField<int>(
-                              value: _selectedCategoryId,
-                              decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
-                              items: _categories.map((category) {
-                                return DropdownMenuItem<int>(
-                                  value: category.id,
-                                  child: Text(category.name),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedCategoryId = value;
-                                });
-                              },
-                              validator: (value) => value == null ? 'Please select a category' : null,
-                            ),
+                      DropdownButtonFormField<int>(
+                        value: selectedCategoryId,
+                        items: _categories.map((MenuCategory category) {
+                          return DropdownMenuItem<int>(
+                            value: category.id,
+                            child: Text(category.name),
+                          );
+                        }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedCategoryId = newValue;
+                          });
+                        },
+                        decoration: const InputDecoration(labelText: 'Category'),
+                        validator: (value) => value == null ? 'Select a category' : null,
+                      ),
                     ],
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  onPressed: () async {
-                    if (formKey.currentState!.validate()) {
-                      if (_selectedCategoryId == null) {
+                onPressed: () async {
+                  if (formKey.currentState!.validate()) {
+                    if (selectedCategoryId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select a category first.')),
+                      );
+                      return;
+                    }
+                    try {
+                      await _menuService.addMenuItem(
+                        nameController.text,
+                        descriptionController.text,
+                        double.parse(priceController.text),
+                        selectedCategoryId!,
+                        imageFile,
+                      );
+                      if (mounted) Navigator.of(context).pop();
+                      _refreshMenuItems();
+                    } catch (e) {
+                      if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please select a category first.')),
+                          SnackBar(content: Text('Failed to add item: $e')),
                         );
-                        return;
-                      }
-                      try {
-                        await _menuService.addMenuItem(
-                          nameController.text,
-                          descriptionController.text,
-                          double.parse(priceController.text),
-                          _selectedCategoryId!,
-                        );
-                        if (mounted) Navigator.of(context).pop();
-                        _refreshMenuItems();
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to add item: $e')),
-                          );
-                        }
                       }
                     }
-                  },
-                  child: const Text('Add Item'),
-                ),
-              ],
-            );
-          },
-        );
+                  }
+                },
+                child: const Text('Add Item'),
+              ),
+            ],
+          );
+        });
       },
     );
   }
@@ -513,7 +563,7 @@ class _MenuItemCard extends StatelessWidget {
           ClipRRect(
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             child: Image.network(
-              item.imageUrl ?? 'https://via.placeholder.com/300x150', // Use real image URL or placeholder
+              item.image ?? 'https://via.placeholder.com/300x150', // Use real image URL or placeholder
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,

@@ -6,16 +6,19 @@ import 'package:food_delivery_app/screens/home_screen.dart';
 import 'package:food_delivery_app/screens/main_navigation_screen.dart';
 import 'package:food_delivery_app/screens/login_screen.dart';
 import 'package:food_delivery_app/screens/register_screen.dart';
+import 'package:food_delivery_app/screens/order_tracking_loader_screen.dart';
 import 'package:food_delivery_app/screens/splash_screen.dart';
 
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:food_delivery_app/services/push_notification_service.dart';
+import 'package:food_delivery_app/services/notification_service.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await PushNotificationService().initialize();
+  await NotificationService(navigatorKey: navigatorKey).initialize();
   runApp(const MyApp());
 }
 
@@ -31,6 +34,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'Food Delivery App',
         theme: ThemeData(
           primaryColor: const Color(0xFFFE5722),
@@ -65,6 +69,10 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/home': (context) => const HomeScreen(),
+          '/order-details': (context) {
+            final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+            return OrderTrackingLoaderScreen(orderId: args['orderId']);
+          },
         },
       ),
     );

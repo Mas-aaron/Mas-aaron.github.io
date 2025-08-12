@@ -19,6 +19,38 @@ if not firebase_admin._apps:
     except Exception as e:
         logger.error(f"Failed to initialize Firebase Admin SDK: {e}")
 
+def send_order_status_notification(order):
+    """
+    Sends a push notification to the customer based on the order's current status.
+    """
+    user = order.user
+    status = order.status
+    title = ''
+    body = ''
+
+    if status == 'Pending':
+        title = '✅ Order Placed!'
+        body = f"Thank you for your order from {order.restaurant.name}. We'll notify you once it's confirmed."
+    elif status == 'Accepted':
+        title = '🎉 Order Confirmed!'
+        body = f"We're preparing your delicious meal from {order.restaurant.name}."
+    elif status == 'Preparing':
+        title = '👨‍🍳 It\'s Cooking!'
+        body = f"{order.restaurant.name} is preparing your order."
+    elif status == 'Rider Assigned':
+        title = '🚴 Rider Assigned!'
+        body = f"A rider is on the way to {order.restaurant.name} to pick up your order."
+    elif status == 'Out for Delivery':
+        title = '🚀 On The Way!'
+        body = f"Your order from {order.restaurant.name} is out for delivery."
+    elif status == 'Delivered':
+        title = '✅ Delivered!'
+        body = f"Enjoy your meal from {order.restaurant.name}! Don't forget to rate your experience."
+
+    if title and body:
+        data = {'orderId': str(order.id), 'status': status}
+        send_push_notification(user, title, body, data=data)
+
 def send_push_notification(user, title, body, data=None, image_url=None):
     """
     Send push notification to a user's devices

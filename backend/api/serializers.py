@@ -53,9 +53,22 @@ class MenuItemBulkUploadSerializer(serializers.Serializer):
         return {'created': created, 'updated': updated}
 
 
+class RestaurantProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the restaurant owner to view and update their profile.
+    """
+    image = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = Restaurant
+        fields = ('id', 'name', 'address', 'phone_number', 'image', 'order_protocol')
+        read_only_fields = ('id',)
+
+
 class RestaurantSerializer(serializers.ModelSerializer):
     distance = serializers.FloatField(read_only=True)
     average_rating = serializers.FloatField(read_only=True)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Restaurant
@@ -63,6 +76,12 @@ class RestaurantSerializer(serializers.ModelSerializer):
             'id', 'name', 'address', 'phone_number', 'image_url', 
             'latitude', 'longitude', 'distance', 'average_rating'
         )
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -109,7 +128,7 @@ class RestaurantSignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Restaurant
-        fields = ('id', 'owner', 'name', 'address', 'phone_number', 'email', 'image_url', 'order_protocol')
+        fields = ('id', 'owner', 'name', 'address', 'phone_number', 'email', 'image', 'order_protocol')
 
     def create(self, validated_data):
         owner_data = validated_data.pop('owner')
@@ -584,8 +603,12 @@ class RestaurantOrderReviewSerializer(serializers.ModelSerializer):
 class BillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bill
-        fields = ['id', 'restaurant', 'amount', 'status', 'created_at', 'paid_at']
+        fields = '__all__'
 
+class DeviceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Device
+        fields = ['token']
 
 class RiderReviewSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())

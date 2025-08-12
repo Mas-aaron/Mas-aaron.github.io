@@ -4,7 +4,8 @@ class MenuItem {
   final String description;
   final double price;
   final bool isAvailable;
-  final String? imageUrl;
+  final String? image;
+  final int category;
 
   MenuItem({
     required this.id,
@@ -12,7 +13,8 @@ class MenuItem {
     required this.description,
     required this.price,
     this.isAvailable = true,
-    this.imageUrl,
+    this.image,
+    required this.category,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
@@ -22,7 +24,8 @@ class MenuItem {
       description: json['description'],
       price: double.parse(json['price'].toString()),
       isAvailable: json['is_available'] ?? true,
-      imageUrl: json['image'],
+      image: json['image'],
+      category: json['category'],
     );
   }
 }

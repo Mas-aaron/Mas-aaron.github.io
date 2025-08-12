@@ -11,6 +11,8 @@ import '../models/menu_category.dart';
 import '../models/menu_item.dart';
 import '../models/review.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class ApiService {
   final String _baseUrl = baseUrl;
 
@@ -335,7 +337,13 @@ class ApiService {
     }
   }
 
-    Future<Cart> getCart() async {
+  Future<void> logout() async {
+    // Implement logout logic
+  }
+
+
+
+  Future<Cart> getCart() async {
     final headers = await _getAuthHeaders();
     // Assuming the endpoint for the cart is /api/cart/. This is a standard REST convention.
     final response = await http.get(Uri.parse('$_baseUrl/api/cart/'), headers: headers);

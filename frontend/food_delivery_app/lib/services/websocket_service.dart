@@ -24,7 +24,7 @@ class WebSocketService {
       return;
     }
 
-    final uri = Uri.parse('$kWebSocketUrl/ws/notifications/?token=$token');
+        final uri = Uri.parse('$websocketUrl/ws/notifications/?token=$token');
 
     try {
       _channel = IOWebSocketChannel.connect(uri);

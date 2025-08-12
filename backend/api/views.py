@@ -1,5 +1,5 @@
 import requests
-from .utils import send_push_notification
+from .notifications import send_push_notification, send_order_status_notification
 from .models import NotificationTemplate
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
@@ -54,6 +54,7 @@ from .serializers import (
     RestaurantOrderSerializer,
     RestaurantSerializer,
     RestaurantSignUpSerializer,
+    RestaurantProfileSerializer,
     MenuCategoryCRUDSerializer,
     UserSerializer,
     RiderSignUpSerializer,
@@ -117,8 +118,6 @@ class DeviceViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-from django.utils import timezone
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -446,14 +445,9 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
             if old_status != new_status:
                 logger.info(f"Order {order.id} status changed from {old_status} to {new_status}. Sending notifications.")
                 
-                # Generic status update for customer
+                # Send rich, templated notification to the customer
                 if order.user:
-                    send_push_notification(
-                        order.user,
-                        f"Order #{order.id} Update",
-                        f"Your order status is now: {order.get_status_display()}",
-                        data={'orderId': str(order.id), 'status': new_status}
-                    )
+                    send_order_status_notification(order)
 
                 # Broadcast the status update to the restaurant's dashboard via WebSocket
                 channel_layer = get_channel_layer()
@@ -500,6 +494,7 @@ class CreateUserView(generics.CreateAPIView):
 
 class RestaurantSignUpView(generics.CreateAPIView):
     queryset = User.objects.all()
+    parser_classes = [MultiPartParser, FormParser]
     serializer_class = RestaurantSignUpSerializer
     permission_classes = [AllowAny]
 
@@ -786,6 +781,7 @@ class MenuItemViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows menu items to be viewed or edited.
     """
+    parser_classes = [MultiPartParser, FormParser]
     serializer_class = MenuItemSerializer
     permission_classes = [IsAuthenticated, IsRestaurantOwner]
 
@@ -877,6 +873,7 @@ class RestaurantReviewsView(generics.ListAPIView):
 
 class RestaurantProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = RestaurantSerializer
+    parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
@@ -1094,6 +1091,19 @@ class CustomerProfileView(generics.RetrieveUpdateAPIView):
         """
         profile, created = CustomerProfile.objects.get_or_create(user=self.request.user)
         return profile
+
+
+class RestaurantProfileView(generics.RetrieveUpdateAPIView):
+    """
+    Allows authenticated restaurant owners to view and update their restaurant profile.
+    """
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+    serializer_class = RestaurantProfileSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self):
+        # The IsRestaurantOwner permission ensures request.user.restaurant_profile exists
+        return self.request.user.restaurant_profile
 
 
 class RestaurantOrderReviewViewSet(viewsets.ReadOnlyModelViewSet):

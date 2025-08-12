@@ -42,10 +42,12 @@ if DEBUG:
         '127.0.0.1',
         'localhost',
         '10.4.42.205',
-        '10.5.55.169', # For physical device testing
+        '10.5.55.166', # For physical device testing
+        '10.5.55.166',
         '10.4.45.164',
         '10.4.45.158',
         '10.5.55.25',
+        '10.4.45.57',
         '10.8.85.240',
         '10.4.42.205',
 
@@ -174,6 +176,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 

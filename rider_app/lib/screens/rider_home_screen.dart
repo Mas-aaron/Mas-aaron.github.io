@@ -29,7 +29,6 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
       OrderListScreen(apiService: _apiService),
       const MyReviewsScreen(),
     ];
-    print("[RiderHomeScreen] initState CALLED");
     _initializeWebSocket();
   }
 
@@ -46,12 +45,9 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
 
   void _connectWebSocket() async {
     try {
-      print('[WebSocket] Attempting to connect...');
       final token = await ApiService.getToken();
       if (token != null) {
         _webSocketService.connect(token);
-      } else {
-        print('[WebSocket] Auth Token is null. Cannot connect.');
       }
     } catch (e) {
       print('[WebSocket] Error connecting: $e');
@@ -69,15 +65,19 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
               OverlaySupportEntry.of(context)!.dismiss();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Order accepted!'),
+                  content: Text('Order accepted successfully!'),
                   backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
                 ),
               );
             } catch (e) {
-              print('Failed to accept order: $e');
               OverlaySupportEntry.of(context)!.dismiss();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to accept order: $e')),
+                SnackBar(
+                  content: Text('Failed to accept order: $e'),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
               );
             }
           },
@@ -99,7 +99,6 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
 
   @override
   void dispose() {
-    print("[RiderHomeScreen] dispose CALLED");
     _webSocketService.disconnect();
     super.dispose();
   }
@@ -107,31 +106,120 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Rider App'),
+        title: const Text(
+          'Rider Dashboard',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
         centerTitle: true,
-      ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt),
-            label: 'Available Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'My Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.star),
-            label: 'My Reviews',
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () {},
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: const EdgeInsets.all(12),
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
+          child: BottomNavigationBar(
+            items: [
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  child: const Icon(Icons.local_shipping_outlined),
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFfe5722).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.local_shipping),
+                ),
+                label: 'Available',
+              ),
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  child: const Icon(Icons.history_outlined),
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFfe5722).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.history),
+                ),
+                label: 'My Orders',
+              ),
+              BottomNavigationBarItem(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  child: const Icon(Icons.star_outline),
+                ),
+                activeIcon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFfe5722).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.star),
+                ),
+                label: 'Reviews',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: const Color(0xFFfe5722),
+            unselectedItemColor: Colors.grey[600],
+            showSelectedLabels: true,
+            showUnselectedLabels: true,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            onTap: _onItemTapped,
+            selectedLabelStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 12,
+            ),
+          ),
+        ),
       ),
     );
   }

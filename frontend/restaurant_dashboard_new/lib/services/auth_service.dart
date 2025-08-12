@@ -5,7 +5,7 @@ import 'package:restaurant_dashboard_new/models/message.dart'; // Contains the U
 
 class AuthService {
   // TODO: Move this to a constants file
-  final String _baseUrl = 'http://localhost:8001/api';
+  final String _baseUrl = 'http://10.4.45.57:8000/api';
 
   Future<String> login(String username, String password) async {
     final response = await http.post(

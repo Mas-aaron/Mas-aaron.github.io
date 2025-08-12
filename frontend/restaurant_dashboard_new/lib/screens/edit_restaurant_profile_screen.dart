@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:restaurant_dashboard_new/models/restaurant.dart';
 import 'package:restaurant_dashboard_new/services/restaurant_service.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EditRestaurantProfileScreen extends StatefulWidget {
   final Restaurant restaurant;
@@ -21,6 +24,7 @@ class _EditRestaurantProfileScreenState extends State<EditRestaurantProfileScree
   late TextEditingController _emailController;
 
   bool _isLoading = false;
+  XFile? _imageFile;
 
   @override
   void initState() {
@@ -40,6 +44,15 @@ class _EditRestaurantProfileScreenState extends State<EditRestaurantProfileScree
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    }
+  }
+
   Future<void> _saveProfile() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -47,16 +60,14 @@ class _EditRestaurantProfileScreenState extends State<EditRestaurantProfileScree
       });
 
       try {
-        final updatedRestaurant = Restaurant(
-          id: widget.restaurant.id,
-          name: _nameController.text,
-          address: _addressController.text,
-          phoneNumber: _phoneController.text,
-          email: _emailController.text,
-          orderProtocol: widget.restaurant.orderProtocol, // Assuming this is not editable here
+        await _restaurantService.updateRestaurantProfile(
+          widget.restaurant.id,
+          _nameController.text,
+          _addressController.text,
+          _phoneController.text,
+          _emailController.text,
+          _imageFile,
         );
-
-        await _restaurantService.updateRestaurantProfile(updatedRestaurant);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -92,6 +103,30 @@ class _EditRestaurantProfileScreenState extends State<EditRestaurantProfileScree
           key: _formKey,
           child: ListView(
             children: [
+              const SizedBox(height: 20),
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundImage: _imageFile != null
+                          ? NetworkImage(_imageFile!.path)
+                          : (widget.restaurant.image != null && widget.restaurant.image!.isNotEmpty
+                              ? NetworkImage(widget.restaurant.image!)
+                              : const AssetImage('assets/placeholder.png')) as ImageProvider,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: IconButton(
+                        icon: const Icon(Icons.camera_alt),
+                        onPressed: _pickImage,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Restaurant Name'),

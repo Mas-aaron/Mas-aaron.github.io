@@ -1,12 +1,15 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+
+
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:restaurant_dashboard_new/models/menu_category.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/menu_item.dart';
 
 class MenuService {
-  final String _baseUrl = 'http://127.0.0.1:8000/api';
+  final String _baseUrl = 'http://10.4.45.57:8000/api';
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -50,10 +53,9 @@ class MenuService {
     }
   }
 
-  Future<http.Response> addMenuItem(String name, String description, double price, int categoryId) async {
+    Future<http.Response> addMenuItem(String name, String description, double price, int categoryId, XFile? imageFile) async {
     final token = await _getToken();
-    var request = http.MultipartRequest(
-        'POST', Uri.parse('$_baseUrl/menu-items/'));
+    var request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/menu-items/'));
 
     request.headers['Authorization'] = 'Token $token';
 
@@ -61,6 +63,16 @@ class MenuService {
     request.fields['description'] = description;
     request.fields['price'] = price.toString();
     request.fields['category'] = categoryId.toString();
+
+    if (imageFile != null) {
+      final bytes = await imageFile.readAsBytes();
+      final multipartFile = http.MultipartFile.fromBytes(
+        'image',
+        bytes,
+        filename: imageFile.name,
+      );
+      request.files.add(multipartFile);
+    }
 
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
@@ -72,21 +84,30 @@ class MenuService {
     }
   }
 
-  Future<http.Response> updateMenuItem(int id, String name, String description, double price, bool isAvailable) async {
+    Future<http.Response> updateMenuItem(int id, String name, String description, double price, int categoryId, bool isAvailable, XFile? imageFile) async {
     final token = await _getToken();
-    final response = await http.put(
-      Uri.parse('$_baseUrl/menu/items/$id/'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Token $token',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'name': name,
-        'description': description,
-        'price': price.toString(),
-        'is_available': isAvailable,
-      }),
-    );
+    var request = http.MultipartRequest('PUT', Uri.parse('$_baseUrl/menu-items/$id/'));
+
+    request.headers['Authorization'] = 'Token $token';
+
+    request.fields['name'] = name;
+    request.fields['description'] = description;
+    request.fields['price'] = price.toString();
+    request.fields['category'] = categoryId.toString();
+    request.fields['is_available'] = isAvailable.toString();
+
+    if (imageFile != null) {
+      final bytes = await imageFile.readAsBytes();
+      final multipartFile = http.MultipartFile.fromBytes(
+        'image',
+        bytes,
+        filename: imageFile.name,
+      );
+      request.files.add(multipartFile);
+    }
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
       return response;
@@ -98,7 +119,7 @@ class MenuService {
   Future<http.Response> deleteMenuItem(int id) async {
     final token = await _getToken();
     final response = await http.delete(
-      Uri.parse('$_baseUrl/menu/items/$id/'),
+      Uri.parse('$_baseUrl/menu-items/$id/'),
       headers: <String, String>{
         'Authorization': 'Token $token',
       },

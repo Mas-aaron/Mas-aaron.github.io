@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/menu_category.dart';
 
 
-const String backendUrl = 'http://10.5.55.25:8000';
+const String backendUrl = 'http://10.4.45.57:8000';
 
 class CategoryService {
   Future<String?> _getToken() async {

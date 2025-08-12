@@ -5,6 +5,7 @@ class Restaurant {
   final String phoneNumber;
   final String email;
   final String orderProtocol;
+  final String? image;
 
   Restaurant({
     required this.id,
@@ -13,16 +14,18 @@ class Restaurant {
     required this.phoneNumber,
     required this.email,
     required this.orderProtocol,
+    this.image,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
     return Restaurant(
-      id: json['id'],
-      name: json['name'],
-      address: json['address'],
-      phoneNumber: json['phone_number'],
-      email: json['email'],
-      orderProtocol: json['order_protocol'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? 'No Name Provided',
+      address: json['address'] ?? 'No Address Provided',
+      phoneNumber: json['phone_number'] ?? 'No Phone Provided',
+      email: json['email'] ?? 'No Email Provided',
+      orderProtocol: json['order_protocol'] ?? 'http',
+      image: json['image'],
     );
   }
 
@@ -33,6 +36,7 @@ class Restaurant {
       'phone_number': phoneNumber,
       'email': email,
       'order_protocol': orderProtocol,
+      'image': image,
     };
   }
 }

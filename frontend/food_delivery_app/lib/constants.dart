@@ -1,20 +1,12 @@
-// lib/constants.dart
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-const String kApiBaseUrl = 'http://10.5.55.25:8000/api';
-const String kWebSocketUrl = 'ws://10.5.55.25:8000';
-
-const String googleMapsApiKey = 'AIzaSyB2_rwYdL9Tr_LWV7PDfn83n8-2_6KVahs';
-// Production URLs
-
-// const String baseUrl = 'https://mas-aarongithubio-production.up.railway.app/api';
-// const String webSocketUrl = 'wss://mas-aarongithubio-production.up.railway.app/ws/tracking/';
+const String googleMapsApiKey = 'AIzaSyB2_rwYdL9Tr_LWV7PDfn83n8-2_6KVahs'; // Replace with your key
 
 // --- LOCAL DEVELOPMENT --- 
-// IMPORTANT: Replace with your computer's actual IP address on your local network.
-//const String _localIpAddress = 'localhost'; // Use localhost for web development
-//const String baseUrl = 'http://$_localIpAddress:8001/api';
-//const String webSocketUrl = 'ws://$_localIpAddress:8001/ws/tracking/';
+// Use '10.4.45.57' for physical device, 10.0.2.2 for Android Emulator
+// IMPORTANT: Replace with your computer's local IP address for physical device/emulator testing.
+// Find it by running 'ipconfig' (Windows) or 'ifconfig' (macOS/Linux) in your terminal.
+const String _localIpAddress = kIsWeb ? '127.0.0.1' : '10.4.45.57';
 
-// TODO: Replace with your actual Rialway URL
-const String baseUrl = 'http://10.8.85.240:8000';
-const String websocketUrl = 'ws://10.8.85.240:8000';
+const String baseUrl = 'http://$_localIpAddress:8000';
+const String websocketUrl = 'ws://$_localIpAddress:8000';

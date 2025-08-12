@@ -78,7 +78,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   }
 
   void _initWebSocket() {
-    final uri = Uri.parse('$kWebSocketUrl/ws/tracking/${widget.order.id}/');
+        final uri = Uri.parse('$websocketUrl/ws/tracking/${widget.order.id}/');
     _channel = WebSocketChannel.connect(uri);
 
     _channel.stream.listen((message) {

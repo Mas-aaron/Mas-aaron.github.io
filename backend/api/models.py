@@ -1,5 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from model_utils.tracker import FieldTracker
+
 from django.conf import settings
 
 
@@ -47,7 +51,7 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
-    image_url = models.URLField(max_length=200, blank=True, null=True)
+    image = models.ImageField(upload_to='restaurants/', blank=True, null=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
@@ -84,7 +88,6 @@ class MenuItem(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=6, decimal_places=2)
-    image_url = models.URLField(max_length=200, blank=True, null=True)
     image = models.ImageField(upload_to='menu_images/', null=True, blank=True)
     available_breakfast = models.BooleanField(default=True)
     available_lunch = models.BooleanField(default=True)
@@ -161,9 +164,17 @@ class Order(models.Model):
     customer_lat = models.FloatField(null=True, blank=True)
     customer_lng = models.FloatField(null=True, blank=True)
     is_billed = models.BooleanField(default=False)
+    tracker = FieldTracker()
 
     def __str__(self):
         return f'Order {self.id} by {self.user.username}'
+
+@receiver(post_save, sender=Order)
+def order_status_changed(sender, instance, created, **kwargs):
+    # Send notification on order creation OR subsequent status change
+    if created or instance.tracker.has_changed('status'):
+        from .notifications import send_order_status_notification
+        send_order_status_notification(instance)
 
 class RiderProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='rider_profile')

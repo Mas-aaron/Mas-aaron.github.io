@@ -35,6 +35,7 @@ class _AppSidebarState extends State<AppSidebar> {
           _buildNavItem(Icons.history_rounded, 'Order History', 4),
           _buildNavItem(Icons.wallet_rounded, 'Bills', 5),
           _buildNavItem(Icons.notifications_outlined, 'Notification', 6),
+          _buildNavItem(Icons.settings_outlined, 'Settings', 7),
           const Spacer(),
           _buildUpgradeCard(),
         ],
