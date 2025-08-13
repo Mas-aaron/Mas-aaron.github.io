@@ -2928,3 +2928,63 @@ Not Found: /api/api/login/
 Not Found: /api/api/login/
 Not Found: /api/api/login/
 Not Found: /api/api/cart/
+Not Found: /api/api/cart/
+Not Found: /api/api/cart/
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755092978762402%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755092978979403%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 30 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755092996371711%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755092996584572%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 30 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 30 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755092999599194%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755092999815120%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 30 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 30 to group restaurant_4
+Not Found: /favicon.ico
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755093198908484%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755093199145753%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755093199383450%334de02b334de02b
+Notification results for user 5: 1 successful, 0 failed
+Order 30 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 30 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 30 to riders.
+Order 29 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 29 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 29 to riders.
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755098218176829%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755098218381669%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 31 to group restaurant_4
+Restaurant 4: Total orders found: 27
+Restaurant 4: Pending statuses being checked: ['Pending', 'Accepted', 'Preparing', 'Ready for Pickup']
+Restaurant 4: Calculated pending orders count: 10
+Restaurant 4: Pending orders found (IDs and Statuses): [{'id': 10, 'status': 'Ready for Pickup'}, {'id': 11, 'status': 'Ready for Pickup'}, {'id': 12, 'status': 'Ready for Pickup'}, {'id': 19, 'status': 'Ready for Pickup'}, {'id': 20, 'status': 'Ready for Pickup'}, {'id': 21, 'status': 'Ready for Pickup'}, {'id': 25, 'status': 'Ready for Pickup'}, {'id': 26, 'status': 'Ready for Pickup'}, {'id': 29, 'status': 'Ready for Pickup'}, {'id': 31, 'status': 'Pending'}]
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755098726515966%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755098726733371%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 32 to group restaurant_4
+Restaurant 4: Total orders found: 28
+Restaurant 4: Pending statuses being checked: ['Pending', 'Accepted', 'Preparing', 'Ready for Pickup']
+Restaurant 4: Calculated pending orders count: 11
+Restaurant 4: Pending orders found (IDs and Statuses): [{'id': 10, 'status': 'Ready for Pickup'}, {'id': 11, 'status': 'Ready for Pickup'}, {'id': 12, 'status': 'Ready for Pickup'}, {'id': 19, 'status': 'Ready for Pickup'}, {'id': 20, 'status': 'Ready for Pickup'}, {'id': 21, 'status': 'Ready for Pickup'}, {'id': 25, 'status': 'Ready for Pickup'}, {'id': 26, 'status': 'Ready for Pickup'}, {'id': 29, 'status': 'Ready for Pickup'}, {'id': 31, 'status': 'Pending'}, {'id': 32, 'status': 'Pending'}]
+Restaurant 4: Total orders found: 28
+Restaurant 4: Pending statuses being checked: ['Pending', 'Accepted', 'Preparing', 'Ready for Pickup']
+Restaurant 4: Calculated pending orders count: 11
+Restaurant 4: Pending orders found (IDs and Statuses): [{'id': 10, 'status': 'Ready for Pickup'}, {'id': 11, 'status': 'Ready for Pickup'}, {'id': 12, 'status': 'Ready for Pickup'}, {'id': 19, 'status': 'Ready for Pickup'}, {'id': 20, 'status': 'Ready for Pickup'}, {'id': 21, 'status': 'Ready for Pickup'}, {'id': 25, 'status': 'Ready for Pickup'}, {'id': 26, 'status': 'Ready for Pickup'}, {'id': 29, 'status': 'Ready for Pickup'}, {'id': 31, 'status': 'Pending'}, {'id': 32, 'status': 'Pending'}]

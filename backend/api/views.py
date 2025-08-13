@@ -640,12 +640,21 @@ class DashboardAnalyticsView(APIView):
             return Response({"error": "No restaurant associated with this user."}, status=status.HTTP_404_NOT_FOUND)
 
         # 1. Calculate Header Stats
+        today = datetime.now().date()
         completed_orders = Order.objects.filter(restaurant=restaurant, status='Delivered')
         total_income = completed_orders.aggregate(total=Sum('total_price'))['total'] or 0
 
         all_orders = Order.objects.filter(restaurant=restaurant)
         total_orders_count = all_orders.count()
-        pending_orders_count = all_orders.filter(status='Preparing').count()
+
+        # Calculate today's stats
+        todays_orders = all_orders.filter(created_at__date=today)
+        daily_income = todays_orders.filter(status='Delivered').aggregate(total=Sum('total_price'))['total'] or 0
+        daily_orders_count = todays_orders.count()
+
+        # Calculate pending orders from the complete list
+        pending_statuses = ['Pending', 'Accepted', 'Preparing']
+        pending_orders_count = all_orders.filter(status__in=pending_statuses).count()
 
         # 2. Calculate Order Rate (e.g., last 12 months)
         order_rate_data = (
@@ -668,13 +677,17 @@ class DashboardAnalyticsView(APIView):
         # 3. Calculate Popular Food Items
         popular_items_data = (
             OrderItem.objects.filter(order__restaurant=restaurant)
-            .values('menu_item__name')
+            .values('menu_item__name', 'menu_item__image')
             .annotate(count=Count('id'))
             .order_by('-count')[:5]  # Top 5 items
         )
 
         popular_items = [
-            {"name": item['menu_item__name'], "count": item['count']}
+            {
+                "name": item['menu_item__name'],
+                "count": item['count'],
+                "image": request.build_absolute_uri(f"/media/{item['menu_item__image']}") if item['menu_item__image'] else None,
+            }
             for item in popular_items_data
         ]
 
@@ -683,6 +696,8 @@ class DashboardAnalyticsView(APIView):
             'total_income': total_income,
             'total_orders': total_orders_count,
             'pending_orders': pending_orders_count,
+            'daily_income': daily_income,
+            'daily_orders': daily_orders_count,
             'order_rate': order_rate,
             'popular_items': popular_items,
         }

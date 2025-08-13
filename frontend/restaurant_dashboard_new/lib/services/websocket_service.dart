@@ -17,7 +17,7 @@ class WebSocketService {
       return;
     }
     // URL for the restaurant dashboard WebSocket
-                final url = 'ws://10.5.55.25:8000/ws/restaurant/orders/?token=$token';
+                final url = 'ws://10.5.55.25:8001/ws/restaurant/orders/?token=$token';
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
       _isConnected = true;

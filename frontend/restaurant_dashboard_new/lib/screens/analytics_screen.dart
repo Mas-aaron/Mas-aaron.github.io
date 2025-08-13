@@ -1,51 +1,106 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:restaurant_dashboard_new/models/analytics_data.dart';
+import 'package:restaurant_dashboard_new/services/analytics_service.dart';
 import 'package:restaurant_dashboard_new/utils/responsive.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
 
   @override
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  final AnalyticsService _analyticsService = AnalyticsService();
+  AnalyticsData? _analyticsData;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAnalyticsData();
+  }
+
+  Future<void> _fetchAnalyticsData() async {
+    try {
+      final data = await _analyticsService.getAnalyticsData();
+      setState(() {
+        _analyticsData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Failed to load analytics. Please check your connection and ensure the server is running.\n\nError: $_error',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
+    if (_analyticsData == null) {
+      return const Center(child: Text('No analytics data available.'));
+    }
+
     return Container(
       color: const Color(0xFFF7F7F7),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Responsive(
-          mobile: _buildMobileLayout(),
-          desktop: _buildDesktopLayout(),
+          mobile: _buildMobileLayout(_analyticsData!),
+          desktop: _buildDesktopLayout(_analyticsData!),
         ),
       ),
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(AnalyticsData data) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPositiveReviewCard(),
+        _buildHeader(data),
+        const SizedBox(height: 24),
+        _buildPositiveReviewCard(data),
         const SizedBox(height: 24),
         _buildDiscountVoucherCard(),
         const SizedBox(height: 24),
         _buildCategorySection(),
         const SizedBox(height: 24),
-        _buildPopularDishesSection(),
+        _buildPopularDishesSection(data),
       ],
     );
   }
 
-  Widget _buildDesktopLayout() {
+  Widget _buildDesktopLayout(AnalyticsData data) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(),
+        _buildHeader(data),
         const SizedBox(height: 24),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               flex: 3,
-              child: _buildPositiveReviewCard(),
+              child: _buildPositiveReviewCard(data),
             ),
             const SizedBox(width: 24),
             Expanded(
@@ -57,55 +112,61 @@ class AnalyticsScreen extends StatelessWidget {
         const SizedBox(height: 24),
         _buildCategorySection(),
         const SizedBox(height: 24),
-        _buildPopularDishesSection(),
+        _buildPopularDishesSection(data),
       ],
     );
   }
 
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildHeader(AnalyticsData data) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'What do you want to eat today?',
-              prefixIcon: const Icon(Icons.search, color: Colors.grey),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 24),
-        Row(
+        const Text('Dashboard Analytics', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 24),
+        Wrap(
+          spacing: 24,
+          runSpacing: 24,
           children: [
-            IconButton(icon: const Icon(Icons.shopping_bag_outlined), onPressed: () {}),
-            IconButton(icon: const Icon(Icons.notifications_none_outlined), onPressed: () {}),
-            const SizedBox(width: 8),
-            CircleAvatar(
-              child: ClipOval(
-                child: Image.network(
-                  'https://i.pravatar.cc/150?img=3',
-                  fit: BoxFit.cover,
-                  width: 40,
-                  height: 40,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(Icons.person, color: Colors.grey);
-                  },
-                ),
-              ),
-            ),
+            _buildInfoCard('Total Revenue', '\$${data.totalIncome.toStringAsFixed(2)}', Icons.monetization_on, Colors.green),
+            _buildInfoCard('Total Orders', data.totalOrders.toString(), Icons.receipt_long, Colors.blue),
+            _buildInfoCard('Today\'s Revenue', '\$${data.dailyIncome.toStringAsFixed(2)}', Icons.today, Colors.purple),
+            _buildInfoCard('Today\'s Orders', data.dailyOrders.toString(), Icons.event, Colors.teal),
+            _buildInfoCard('Pending Orders', data.pendingOrders.toString(), Icons.hourglass_top, Colors.orange),
           ],
-        )
+        ),
       ],
     );
   }
 
-  Widget _buildPositiveReviewCard() {
+  Widget _buildInfoCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5)],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircleAvatar(
+            backgroundColor: color.withOpacity(0.1),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(color: Colors.grey)),
+              Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPositiveReviewCard(AnalyticsData data) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -115,57 +176,37 @@ class AnalyticsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Positive Review', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              Text('20, 08:22 AM', style: TextStyle(color: Colors.grey)),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              const Text('3.678', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
-              const Text('Reviews', style: TextStyle(color: Colors.grey, height: 2.5)),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.arrow_upward, color: Colors.green, size: 16),
-                    Text('+15%', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          const Text('Monthly Order Rate', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
           SizedBox(
             height: 200,
             child: BarChart(
               BarChartData(
-                alignment: BarChartAlignment.spaceBetween,
-                borderData: FlBorderData(show: false),
-                gridData: const FlGridData(show: false),
+                alignment: BarChartAlignment.spaceAround,
+                maxY: (data.orderRate.map((e) => e.orders).reduce((a, b) => a > b ? a : b) * 1.2).toDouble(), // Add 20% padding to max Y
+                barTouchData: BarTouchData(enabled: false),
                 titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  show: true,
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      getTitlesWidget: _reviewChartBottomTitleWidgets,
-                      reservedSize: 30,
+                      reservedSize: 38,
+                      getTitlesWidget: (double value, TitleMeta meta) {
+                        final month = data.orderRate[value.toInt()].month;
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(month, style: const TextStyle(fontSize: 12)),
+                        );
+                      },
                     ),
                   ),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                barGroups: _getBarGroups(),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                barGroups: _getBarGroups(data.orderRate),
               ),
             ),
           ),
@@ -174,80 +215,50 @@ class AnalyticsScreen extends StatelessWidget {
     );
   }
 
-  List<BarChartGroupData> _getBarGroups() {
-    final barRods = [
-      _makeBarRodData(toY: 15, color: Colors.redAccent),
-      _makeBarRodData(toY: 10, color: Colors.orangeAccent),
-      _makeBarRodData(toY: 8, color: Colors.redAccent),
-      _makeBarRodData(toY: 12, color: Colors.orangeAccent, isTouched: true),
-      _makeBarRodData(toY: 6, color: Colors.redAccent),
-      _makeBarRodData(toY: 13, color: Colors.orangeAccent),
-      _makeBarRodData(toY: 16, color: Colors.redAccent),
-    ];
-    return List.generate(barRods.length, (index) {
-      return BarChartGroupData(x: index, barRods: [barRods[index]]);
-    });
-  }
-
-  BarChartRodData _makeBarRodData({required double toY, required Color color, bool isTouched = false}) {
-    return BarChartRodData(
-      toY: toY,
-      color: isTouched ? Colors.amber : color,
-      width: 20,
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(6),
-        topRight: Radius.circular(6),
-      ),
-    );
-  }
-
-  static SideTitleWidget _reviewChartBottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(color: Colors.grey, fontSize: 12);
-    Widget text;
-    switch (value.toInt()) {
-      case 0: text = const Text('Mon', style: style); break;
-      case 1: text = const Text('Tue', style: style); break;
-      case 2: text = const Text('Wed', style: style); break;
-      case 3: text = const Text('Thu', style: style); break;
-      case 4: text = const Text('Fri', style: style); break;
-      case 5: text = const Text('Sat', style: style); break;
-      case 6: text = const Text('Sun', style: style); break;
-      default: text = const Text('', style: style); break;
-    }
-    return SideTitleWidget(
-      space: 8.0,
-      meta: meta, //margin of titles
-      child: text,
-    );
+  List<BarChartGroupData> _getBarGroups(List<OrderRate> orderRates) {
+    return orderRates.asMap().entries.map((entry) {
+      final index = entry.key;
+      final data = entry.value;
+      return BarChartGroupData(
+        x: index,
+        barRods: [
+          BarChartRodData(
+            toY: data.orders.toDouble(),
+            color: Colors.blue.shade300,
+            width: 15,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(6),
+              topRight: Radius.circular(6),
+            ),
+          ),
+        ],
+      );
+    }).toList();
   }
 
   Widget _buildCategorySection() {
+    final categories = [
+      {'icon': Icons.fastfood_outlined, 'label': 'All'},
+      {'icon': Icons.local_pizza_outlined, 'label': 'Pizza'},
+      {'icon': Icons.cake_outlined, 'label': 'Dessert'},
+      {'icon': Icons.local_drink_outlined, 'label': 'Drink'},
+      {'icon': Icons.set_meal_outlined, 'label': 'Asian'},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Category', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            TextButton(
-              onPressed: () {},
-              child: const Text('View all >', style: TextStyle(color: Colors.orange)),
-            ),
-          ],
-        ),
+        const Text('Category', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         SizedBox(
           height: 100,
-          child: ListView(
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            children: [
-              _buildCategoryItem(Icons.bakery_dining, 'Bakery'),
-              _buildCategoryItem(Icons.fastfood, 'Burger'),
-              _buildCategoryItem(Icons.local_cafe, 'Beverage'),
-              _buildCategoryItem(Icons.set_meal, 'Chicken'),
-              _buildCategoryItem(Icons.local_pizza, 'Pizza'),
-              _buildCategoryItem(Icons.ramen_dining, 'Seafood'),
-            ],
+            itemCount: categories.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              return _buildCategoryItem(categories[index]['icon'] as IconData, categories[index]['label'] as String);
+            },
           ),
         ),
       ],
@@ -255,63 +266,44 @@ class AnalyticsScreen extends StatelessWidget {
   }
 
   Widget _buildCategoryItem(IconData icon, String label) {
-    return Container(
-      width: 80,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 32, color: Colors.orangeAccent),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12)),
-        ],
-      ),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(icon, size: 30, color: Colors.orangeAccent),
+        ),
+        const SizedBox(height: 8),
+        Text(label),
+      ],
     );
   }
 
-  Widget _buildPopularDishesSection() {
-    final List<Map<String, String>> popularDishesData = [
-      {'name': 'Fish Burger', 'price': '5.59', 'imageUrl': 'https://i.pravatar.cc/150?img=5', 'rating': '4.9'},
-      {'name': 'Beef Burger', 'price': '6.29', 'imageUrl': 'https://i.pravatar.cc/150?img=6', 'rating': '4.8'},
-      {'name': 'Cheese Burger', 'price': '4.99', 'imageUrl': 'https://i.pravatar.cc/150?img=7', 'rating': '4.9'},
-      {'name': 'Chicken Pizza', 'price': '8.99', 'imageUrl': 'https://i.pravatar.cc/150?img=8', 'rating': '4.7'},
-      {'name': 'Veggie Delight', 'price': '5.29', 'imageUrl': 'https://i.pravatar.cc/150?img=9', 'rating': '4.6'},
-      {'name': 'Spicy Wings', 'price': '7.49', 'imageUrl': 'https://i.pravatar.cc/150?img=10', 'rating': '4.8'},
-    ];
+  Widget _buildPopularDishesSection(AnalyticsData data) {
+    if (data.popularItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Popular Dishes', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            TextButton(
-              onPressed: () {},
-              child: const Text('View all >', style: TextStyle(color: Colors.orange)),
-            ),
-          ],
-        ),
+        const Text('Popular Dishes', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         Responsive(
-          mobile: SizedBox(
-            height: 220,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: popularDishesData.length,
-              itemBuilder: (context, index) {
-                final dish = popularDishesData[index];
-                return Container(
-                  width: 160,
-                  margin: const EdgeInsets.only(right: 16),
-                  child: _buildPopularDishItem(dish['name']!, dish['price']!, dish['imageUrl']!, dish['rating']!),
-                );
-              },
-            ),
+          mobile: ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: data.popularItems.length,
+            itemBuilder: (context, index) {
+              final dish = data.popularItems[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: _buildPopularDishItem(dish),
+              );
+            },
           ),
           desktop: GridView.builder(
             shrinkWrap: true,
@@ -322,10 +314,10 @@ class AnalyticsScreen extends StatelessWidget {
               crossAxisSpacing: 20,
               mainAxisSpacing: 20,
             ),
-            itemCount: popularDishesData.length,
+            itemCount: data.popularItems.length,
             itemBuilder: (context, index) {
-              final dish = popularDishesData[index];
-              return _buildPopularDishItem(dish['name']!, dish['price']!, dish['imageUrl']!, dish['rating']!);
+              final dish = data.popularItems[index];
+              return _buildPopularDishItem(dish);
             },
           ),
         ),
@@ -333,53 +325,36 @@ class AnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPopularDishItem(String name, String price, String imageUrl, String rating) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Stack(
+  Widget _buildPopularDishItem(PopularItem dish) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                imageUrl, 
-                height: 120, 
-                width: double.infinity, 
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.fastfood, color: Colors.grey, size: 50);
-                },
-              ),
+              borderRadius: BorderRadius.circular(8.0),
+              child: dish.image != null
+                  ? Image.network(
+                      dish.image!,
+                      height: 60,
+                      width: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.fastfood, color: Colors.orange, size: 50);
+                      },
+                    )
+                  : const Icon(Icons.fastfood, color: Colors.orange, size: 50),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.redAccent,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-              ),
-              child: const Text('15% Off', style: TextStyle(color: Colors.white, fontSize: 10)),
-            ),
+            const SizedBox(height: 8),
+            Text(dish.name, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            const SizedBox(height: 4),
+            Text('${dish.count} orders', style: const TextStyle(color: Colors.grey)),
           ],
         ),
-        const SizedBox(height: 8),
-        Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('\$$price', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
-            Row(
-              children: [
-                const Icon(Icons.star, color: Colors.amber, size: 16),
-                Text(rating, style: const TextStyle(fontSize: 12)),
-              ],
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 

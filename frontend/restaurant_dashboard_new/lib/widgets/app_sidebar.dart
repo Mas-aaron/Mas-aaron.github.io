@@ -24,7 +24,7 @@ class _AppSidebarState extends State<AppSidebar> {
           const Padding(
             padding: EdgeInsets.only(left: 16.0, bottom: 32.0),
             child: Text(
-              'GoMeal.',
+              'FortExpress.',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
           ),
