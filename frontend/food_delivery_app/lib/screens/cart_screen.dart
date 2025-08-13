@@ -17,8 +17,12 @@ class _CartScreenState extends State<CartScreen> {
     super.initState();
     // Fetch cart data when the screen is initialized
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CartProvider>(context, listen: false).fetchCart();
+      _refreshCart();
     });
+  }
+
+  Future<void> _refreshCart() async {
+    await Provider.of<CartProvider>(context, listen: false).fetchCart();
   }
 
   void _placeOrder(Cart cart) {
@@ -64,23 +68,27 @@ class _CartScreenState extends State<CartScreen> {
 
           final cart = cartProvider.cart!;
 
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: cart.items.length,
-                  itemBuilder: (context, index) {
-                    final item = cart.items[index];
-                    return _CartItemCard(item: item);
-                  },
+          return RefreshIndicator(
+            onRefresh: _refreshCart,
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(), // Ensure the list is always scrollable
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: cart.items.length,
+                    itemBuilder: (context, index) {
+                      final item = cart.items[index];
+                      return _CartItemCard(item: item);
+                    },
+                  ),
                 ),
-              ),
-              _OrderSummaryCard(
-                cart: cart,
-                onPlaceOrder: () => _placeOrder(cart),
-              ),
-            ],
+                _OrderSummaryCard(
+                  cart: cart,
+                  onPlaceOrder: () => _placeOrder(cart),
+                ),
+              ],
+            ),
           );
         },
       ),

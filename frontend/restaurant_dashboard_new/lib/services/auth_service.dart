@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_dashboard_new/models/message.dart'; // Contains the User model
+import '../constants.dart';
 
 class AuthService {
-  // TODO: Move this to a constants file
-  final String _baseUrl = 'http://10.4.45.57:8000/api';
+  final String _apiBaseUrl = baseUrl;
 
   Future<String> login(String username, String password) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/login/'), // Corrected login endpoint
+      Uri.parse('$_apiBaseUrl/login/'), // Corrected login endpoint
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: jsonEncode({
         'username': username,
@@ -51,7 +51,7 @@ class AuthService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/me/'),
+      Uri.parse('$_apiBaseUrl/me/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',

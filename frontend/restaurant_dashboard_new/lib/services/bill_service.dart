@@ -14,7 +14,7 @@ class BillService {
     }
 
     final response = await http.get(
-      Uri.parse('$baseUrl/api/bills/'),
+      Uri.parse('$baseUrl/bills/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',

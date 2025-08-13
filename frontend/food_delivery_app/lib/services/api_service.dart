@@ -40,17 +40,17 @@ class ApiService {
     }
 
     final requestBody = jsonEncode({
-      'token': fcmToken,
-      'device_type': deviceType,
+      'registration_id': fcmToken,
+      'type': deviceType,
     });
 
     print('--- Registering Device ---');
-    print('URL: $_baseUrl/api/devices/');
+        print('URL: $_baseUrl/devices/');
     print('Headers: $headers');
     print('Body: $requestBody');
 
-    final response = await http.post(
-      Uri.parse('$_baseUrl/api/devices/'),
+        final response = await http.post(
+      Uri.parse('$_baseUrl/devices/'),
       headers: headers,
       body: requestBody,
     );
@@ -74,17 +74,17 @@ class ApiService {
     }
 
     final requestBody = jsonEncode({
-      'token': fcmToken,
+      'registration_id': fcmToken,
     });
 
     print('--- Unregistering Device ---');
-    print('URL: $_baseUrl/api/devices/unregister/');
+        print('URL: $_baseUrl/devices/unregister/');
     print('Headers: $headers');
     print('Body: $requestBody');
 
     try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/api/devices/unregister/'),
+            final response = await http.post(
+        Uri.parse('$_baseUrl/devices/unregister/'),
         headers: headers,
         body: requestBody,
       );
@@ -101,7 +101,7 @@ class ApiService {
   }
 
   Future<List<Restaurant>> fetchRestaurants({double? lat, double? lng}) async {
-    String url = '$_baseUrl/api/restaurants/';
+        String url = '$_baseUrl/restaurants/';
     if (lat != null && lng != null) {
       url += '?lat=$lat&lng=$lng';
     }
@@ -116,7 +116,7 @@ class ApiService {
 
   Future<List<Order>> fetchOrders() async {
     final headers = await _getAuthHeaders();
-    final response = await http.get(Uri.parse('$_baseUrl/api/orders/'), headers: headers);
+        final response = await http.get(Uri.parse('$_baseUrl/orders/'), headers: headers);
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       return body.map((dynamic item) => Order.fromJson(item)).toList();
@@ -126,7 +126,7 @@ class ApiService {
   }
 
   Future<List<MenuCategory>> fetchMenu(int restaurantId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/api/restaurants/$restaurantId/menu/'));
+        final response = await http.get(Uri.parse('$_baseUrl/restaurants/$restaurantId/menu/'));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       return body.map((dynamic item) => MenuCategory.fromJson(item)).toList();
@@ -136,7 +136,7 @@ class ApiService {
   }
 
   Future<List<MenuItem>> fetchMenuItems(int restaurantId, {List<int>? dietaryPreferenceIds}) async {
-    var uri = Uri.parse('$_baseUrl/api/restaurants/$restaurantId/menu-items/');
+    var uri = Uri.parse('$_baseUrl/restaurants/$restaurantId/menu-items/');
     if (dietaryPreferenceIds != null && dietaryPreferenceIds.isNotEmpty) {
       final queryParameters = {
         'dietary_preferences': dietaryPreferenceIds.map((id) => id.toString()).toList(),
@@ -154,7 +154,7 @@ class ApiService {
 
   Future<List<CartItem>> getCartItems() async {
     final headers = await _getAuthHeaders();
-    final response = await http.get(Uri.parse('$_baseUrl/api/cart-items/'), headers: headers);
+    final response = await http.get(Uri.parse('$_baseUrl/cart-items/'), headers: headers);
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       return body.map((dynamic item) => CartItem.fromJson(item)).toList();
@@ -166,7 +166,7 @@ class ApiService {
   Future<CartItem> addToCart(int menuItemId, int quantity) async {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({'menu_item_id': menuItemId, 'quantity': quantity});
-    final response = await http.post(Uri.parse('$_baseUrl/api/cart-items/'), headers: headers, body: body);
+    final response = await http.post(Uri.parse('$_baseUrl/cart/add/'), headers: headers, body: body);
     if (response.statusCode == 201 || response.statusCode == 200) {
       return CartItem.fromJson(jsonDecode(response.body));
     } else {
@@ -177,7 +177,7 @@ class ApiService {
   Future<CartItem> updateCartItem(int cartItemId, int quantity) async {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({'quantity': quantity});
-    final response = await http.patch(Uri.parse('$_baseUrl/api/cart-items/$cartItemId/'), headers: headers, body: body);
+    final response = await http.put(Uri.parse('$_baseUrl/cart-items/$cartItemId/'), headers: headers, body: body);
     if (response.statusCode == 200) {
       return CartItem.fromJson(jsonDecode(response.body));
     } else {
@@ -187,7 +187,7 @@ class ApiService {
 
   Future<void> deleteCartItem(int cartItemId) async {
     final headers = await _getAuthHeaders();
-    final response = await http.delete(Uri.parse('$_baseUrl/api/cart-items/$cartItemId/'), headers: headers);
+        final response = await http.delete(Uri.parse('$_baseUrl/cart-items/$cartItemId/'), headers: headers);
     if (response.statusCode != 204) {
       throw Exception('Failed to delete cart item');
     }
@@ -200,7 +200,7 @@ class ApiService {
       'customer_lat': latitude,
       'customer_lng': longitude,
     });
-    final response = await http.post(Uri.parse('$_baseUrl/api/orders/'), headers: headers, body: body);
+        final response = await http.post(Uri.parse('$_baseUrl/orders/'), headers: headers, body: body);
     if (response.statusCode == 201) {
       return Order.fromJson(jsonDecode(response.body));
     } else {
@@ -212,7 +212,7 @@ class ApiService {
 
   Future<Order> getOrderDetails(int orderId) async {
     final headers = await _getAuthHeaders();
-    final response = await http.get(Uri.parse('$_baseUrl/api/orders/$orderId/'), headers: headers);
+        final response = await http.get(Uri.parse('$_baseUrl/orders/$orderId/'), headers: headers);
     if (response.statusCode == 200) {
       return Order.fromJson(jsonDecode(response.body));
     } else {
@@ -248,7 +248,7 @@ class ApiService {
       'comment': comment,
     });
     final response = await http.post(
-      Uri.parse('$_baseUrl/api/reviews/'),
+            Uri.parse('$_baseUrl/reviews/'),
       headers: headers,
       body: body,
     );
@@ -269,7 +269,7 @@ class ApiService {
       'comment': comment,
     });
     final response = await http.post(
-      Uri.parse('$_baseUrl/api/order-reviews/'),
+            Uri.parse('$_baseUrl/order-reviews/'),
       headers: headers,
       body: body,
     );
@@ -291,7 +291,7 @@ class ApiService {
       'comment': comment,
     });
     final response = await http.post(
-      Uri.parse('$_baseUrl/api/rider-reviews/'),
+            Uri.parse('$_baseUrl/rider-reviews/'),
       headers: headers,
       body: body,
     );
@@ -301,7 +301,7 @@ class ApiService {
   }
 
   Future<List<Review>> getReviews(int menuItemId) async {
-    final response = await http.get(Uri.parse('$_baseUrl/api/reviews/?menu_item_id=$menuItemId'));
+        final response = await http.get(Uri.parse('$_baseUrl/reviews/?menu_item_id=$menuItemId'));
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       return body.map((dynamic item) => Review.fromJson(item)).toList();
@@ -318,12 +318,12 @@ class ApiService {
     }
 
     print('--- Sending Test Notification ---');
-    print('URL: $_baseUrl/api/test-notification/');
+        print('URL: $_baseUrl/test-notification/');
     print('Headers: $headers');
 
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/api/test-notification/'),
+                Uri.parse('$_baseUrl/test-notification/'),
         headers: headers,
       );
 
@@ -346,7 +346,7 @@ class ApiService {
   Future<Cart> getCart() async {
     final headers = await _getAuthHeaders();
     // Assuming the endpoint for the cart is /api/cart/. This is a standard REST convention.
-    final response = await http.get(Uri.parse('$_baseUrl/api/cart/'), headers: headers);
+        final response = await http.get(Uri.parse('$_baseUrl/cart/'), headers: headers);
 
     if (response.statusCode == 200) {
       return Cart.fromJson(jsonDecode(response.body));
@@ -359,7 +359,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({'cart_item_id': cartItemId});
     final response = await http.post(
-      Uri.parse('$_baseUrl/api/cart/remove/'),
+            Uri.parse('$_baseUrl/cart/remove/'),
       headers: headers,
       body: body,
     );
@@ -373,7 +373,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({'quantity': quantity});
     final response = await http.put(
-      Uri.parse('$_baseUrl/api/cart/update/$cartItemId/'),
+            Uri.parse('$_baseUrl/cart/update/$cartItemId/'),
       headers: headers,
       body: body,
     );

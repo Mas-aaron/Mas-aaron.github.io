@@ -1952,3 +1952,979 @@ Notification results for user 4: 1 successful, 0 failed
 Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754916765280968%4c3c1fe64c3c1fe6
 Notification results for user 4: 1 successful, 0 failed
 Unauthorized: /api/menu-items/1/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754998660717602%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Internal Server Error: /api/orders/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 410, in perform_create
+    order_data = RestaurantOrderSerializer(order).data
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\serializers.py", line 83, in get_image_url
+    return request.build_absolute_uri(obj.image.url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'build_absolute_uri'
+Bad Request: /api/orders/
+Bad Request: /api/orders/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754999075283890%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Internal Server Error: /api/orders/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 302, in connect_check_health
+    await self.retry.call_with_retry(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\retry.py", line 71, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 755, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 1121, in create_connection
+    raise exceptions[0]
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 1103, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 1006, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\selector_events.py", line 651, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\selector_events.py", line 691, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 412, in perform_create
+    async_to_sync(channel_layer.group_send)(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 262, in __call__
+    return call_result.result()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 302, in main_wrap
+    result = await awaitable
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\channels_redis\core.py", line 518, in group_send
+    await connection.zremrangebyscore(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\client.py", line 672, in execute_command
+    conn = self.connection or await pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 1141, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 1174, in ensure_connection
+    await connection.connect()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 296, in connect
+    await self.connect_check_health(check_health=True)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 310, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. Connect call failed ('127.0.0.1', 6379).
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1754999333830089%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 12 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755000031075318%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 12 status changed from Pending to Accepted. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755000031312777%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Internal Server Error: /api/orders/12/update-status/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 233, in patch
+    return self.partial_update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 82, in partial_update
+    return self.update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 456, in update
+    updated_order_data = RestaurantOrderSerializer(order).data
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\serializers.py", line 83, in get_image_url
+    return request.build_absolute_uri(obj.image.url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'build_absolute_uri'
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755000241661594%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 11 status changed from Pending to Accepted. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755000241897106%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 11 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755000670045596%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 13 to group restaurant_4
+Not Found: /favicon.ico
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005411670361%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 14 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005430948535%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 14 status changed from Pending to Accepted. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005431174800%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 14 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005443547638%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 14 status changed from Accepted to Preparing. Sending notifications.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005443760342%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent order status update for order 14 to group restaurant_5
+Order 14 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 14 to group restaurant_5
+Internal Server Error: /api/orders/14/update-status/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 233, in patch
+    return self.partial_update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 82, in partial_update
+    return self.update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 483, in update
+    {'type': 'new_order_message', 'order': order_serializer.data}
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\serializers.py", line 83, in get_image_url
+    return request.build_absolute_uri(obj.image.url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'build_absolute_uri'
+Internal Server Error: /api/orders/14/update-status/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 233, in patch
+    return self.partial_update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 82, in partial_update
+    return self.update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 483, in update
+    {'type': 'new_order_message', 'order': order_serializer.data}
+                                           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\serializers.py", line 83, in get_image_url
+    return request.build_absolute_uri(obj.image.url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'build_absolute_uri'
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005843295182%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 15 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005875976313%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 15 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 15 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755005879615334%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 15 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 15 to group restaurant_5
+Order 15 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 15 to group restaurant_5
+Sent 'Ready for Pickup' notification for order 15 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755007343554889%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755007343847958%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 16 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755007357298109%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755007357488944%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 16 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 16 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755007362777591%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755007362980074%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 16 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 16 to group restaurant_5
+Order 16 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 16 to group restaurant_5
+Sent 'Ready for Pickup' notification for order 16 to riders.
+Internal Server Error: /api/rider-orders/15/accept/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 928, in accept
+    }
+      
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 573, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\serializers.py", line 540, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\serializers.py", line 83, in get_image_url
+    if request:
+           ^^^^^
+AttributeError: 'NoneType' object has no attribute 'build_absolute_uri'
+Not Found: /api/rider-orders/15/accept/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755007748842662%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755007749047343%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755008338445594%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755008338668305%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 17 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755008362035602%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755008362239337%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 17 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 17 to group restaurant_5
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755008366647236%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755008366862444%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 17 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 17 to group restaurant_5
+Bad Request: /api/devices/
+Bad Request: /api/login/
+Order 17 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 17 to group restaurant_5
+Sent 'Ready for Pickup' notification for order 17 to riders.
+Internal Server Error: /api/devices/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 97, in create
+    device, created = Device.objects.update_or_create(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 988, in update_or_create
+    obj, created = self.select_for_update().get_or_create(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 946, in get_or_create
+    return self.get(**kwargs), False
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 619, in get
+    clone = self._chain() if self.query.combinator else self.filter(*args, **kwargs)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1526, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1333, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1805, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'registration_id' into field. Choices are: created_at, device_type, id, is_active, token, updated_at, user, user_id
+Bad Request: /api/devices/
+Bad Request: /api/devices/
+Bad Request: /api/devices/
+Bad Request: /api/devices/
+Bad Request: /api/devices/
+Not Found: /api/api/login/
+Not Found: /api/api/login/
+Not Found: /api/api/restaurant-orders/
+Not Found: /api/api/restaurants/dashboard-menu/
+Not Found: /api/api/menu-categories/
+Not Found: /api/api/restaurant-orders/
+Not Found: /api/api/bills/
+Not Found: /api/api/notifications/
+Not Found: /api/api/notifications/
+Not Found: /api/api/menu-categories/
+Not Found: /api/api/restaurants/dashboard-menu/
+Not Found: /api/api/restaurant/dashboard-reviews/
+Not Found: /api/api/menu-categories/
+Not Found: /api/api/restaurants/dashboard-menu/
+Not Found: /api/api/restaurant-orders/
+Not Found: /api/api/restaurant-orders/
+Not Found: /api/api/restaurant-orders/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755067348927081%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755067349137308%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 13 status changed from Pending to Accepted. Sending notifications.
+Internal Server Error: /api/orders/13/update-status/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 302, in connect_check_health
+    await self.retry.call_with_retry(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\retry.py", line 71, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 755, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 1121, in create_connection
+    raise exceptions[0]
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 1103, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 1006, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\selector_events.py", line 651, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\asyncio\selector_events.py", line 691, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\generics.py", line 233, in patch
+    return self.partial_update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\mixins.py", line 82, in partial_update
+    return self.update(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 460, in update
+    async_to_sync(channel_layer.group_send)(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 262, in __call__
+    return call_result.result()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 302, in main_wrap
+    result = await awaitable
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\channels_redis\core.py", line 518, in group_send
+    await connection.zremrangebyscore(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\client.py", line 672, in execute_command
+    conn = self.connection or await pool.get_connection()
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 1141, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 1174, in ensure_connection
+    await connection.connect()
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 296, in connect
+    await self.connect_check_health(check_health=True)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\redis\asyncio\connection.py", line 310, in connect_check_health
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. Connect call failed ('127.0.0.1', 6379).
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755067496274068%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755067496483329%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 13 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 13 to group restaurant_4
+Order 13 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 13 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 13 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755067678545491%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755067678756573%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 12 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 12 to group restaurant_4
+Order 12 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 12 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 12 to riders.
+Bad Request: /api/login/
+Bad Request: /api/login/
+Not Found: /ws/rider/available_orders/
+Not Found: /favicon.ico
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755071686459072%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755071686671621%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 10 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 10 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755071699834319%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755071700070881%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 10 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 10 to group restaurant_4
+Order 10 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 10 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 10 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755071894858265%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755071895082629%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072147941267%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072148528124%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 11 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 11 to group restaurant_4
+Order 11 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 11 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 11 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072532915190%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072533130600%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 18 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072568028119%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072568288556%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 18 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 18 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072583951187%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072584164684%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 18 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 18 to group restaurant_4
+Order 18 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 18 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 18 to riders.
+Not Found: /api/cart/remove/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072786423253%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072786618565%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 19 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072846776833%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072847616741%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 19 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 19 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072852137874%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072857698302%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 19 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 19 to group restaurant_4
+Order 19 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 19 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 19 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755072987452156%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755072987715061%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 20 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073003691384%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073004211681%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 20 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 20 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073012326194%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073012570806%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 20 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 20 to group restaurant_4
+Order 20 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 20 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 20 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073179681014%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073179917085%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 21 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073231775996%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073231992831%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 21 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 21 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073237218771%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073237430517%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 21 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 21 to group restaurant_4
+Order 21 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 21 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 21 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073448677840%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073448949050%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 22 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073470831796%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073471134824%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 22 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 22 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073478843339%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073479061799%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 22 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 22 to group restaurant_4
+Order 22 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 22 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 22 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073633941258%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073634302547%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 23 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073669186984%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073669419633%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 23 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 23 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755073740726626%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755073741445767%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 23 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 23 to group restaurant_4
+Order 23 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 23 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 23 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755074032012646%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755074032333075%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 24 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755074938495555%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755074938725491%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 24 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 24 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755074941904577%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755074942106053%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 24 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 24 to group restaurant_4
+Order 24 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 24 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 24 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755074982190431%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755074982403415%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755075836645749%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755075836857537%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 25 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755075924787649%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755075925027309%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 26 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755075932258662%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755075932483346%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 25 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 25 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755075935672615%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755075935876931%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 26 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 26 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755075948409155%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755075948631743%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 26 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 26 to group restaurant_4
+Order 26 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 26 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 26 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755075961128754%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755075961406309%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 25 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 25 to group restaurant_4
+Order 25 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 25 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 25 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076072861931%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076073866580%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 27 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076209982804%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076210213328%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 27 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 27 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076220491299%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076220696987%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 27 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 27 to group restaurant_4
+Order 27 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 27 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 27 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076322415415%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076322647294%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 28 to group restaurant_4
+Not Found: /devices/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076834158774%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076834410271%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 28 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 28 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076887007776%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076887232304%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 29 to group restaurant_4
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076913766801%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076913977918%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 28 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 28 to group restaurant_4
+Order 28 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 28 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 28 to riders.
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755076939523114%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755076939852165%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 29 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 29 to group restaurant_4
+Not Found: /api/api/devices/
+Not Found: /api/api/devices/
+Successfully sent message to device 1: projects/fortexpress-5641c/messages/0:1755077279350021%4c3c1fe64c3c1fe6
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755077279619683%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 29 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 29 to group restaurant_4
+Not Found: /api/api/devices/
+Not Found: /api/api/addresses/
+Not Found: /api/api/dietary-preferences/
+Not Found: /api/api/profile/customer/
+Not Found: /api/api/cart/
+Not Found: /api/api/cart/
+Not Found: /api/api/cart/
+Not Found: /api/api/cart/add/
+Not Found: /api/api/cart/add/
+Not Found: /api/api/cart/
+Not Found: /api/api/cart/
+Not Found: /api/api/cart/add/
+Not Found: /api/api/login/
+Not Found: /api/api/login/
+Not Found: /api/api/login/
+Not Found: /api/api/cart/

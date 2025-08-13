@@ -23,6 +23,31 @@ class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<Restaurant>> _futureRestaurants;
 
+  Future<void> _refreshData() async {
+    // When refreshing, clear any active search
+    _searchController.clear();
+
+    // Create a list of futures to wait for
+    final List<Future> refreshFutures = [
+      // Re-fetch location without waiting for it to complete here
+      context.read<LocationProvider>().determineInitialLocation(),
+      // Re-fetch restaurants and assign the future to a variable
+      _apiService.fetchRestaurants().then((restaurants) {
+        if (mounted) {
+          setState(() {
+            // Update the future that the FutureBuilder is listening to
+            _futureRestaurants = Future.value(restaurants);
+            _isSearching = false;
+            _searchResults = [];
+          });
+        }
+      })
+    ];
+
+    // Wait for all refresh operations to complete
+    await Future.wait(refreshFutures);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -115,18 +140,22 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: _isSearching
-                  ? _buildSearchResults()
-                  : SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildCategories(),
-                          _buildBanner(),
-                          _buildTopPicks(),
-                        ],
+              child: RefreshIndicator(
+                onRefresh: _refreshData,
+                child: _isSearching
+                    ? _buildSearchResults()
+                    : SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildCategories(),
+                            _buildBanner(),
+                            _buildTopPicks(),
+                          ],
+                        ),
                       ),
-                    ),
+              ),
             ),
           ],
         ),

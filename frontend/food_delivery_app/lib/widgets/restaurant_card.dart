@@ -9,97 +9,61 @@ class RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RestaurantDetailScreen(restaurant: restaurant),
-            ),
-          );
-        },
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => RestaurantDetailScreen(restaurant: restaurant),
+        ));
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 3,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Restaurant image
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: AspectRatio(
-                aspectRatio: 16 / 9,
-                child: restaurant.imageUrl != null
-                    ? Image.network(
-                        restaurant.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.restaurant, size: 40),
-                        ),
-                      )
-                    : Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.restaurant, size: 40),
+            SizedBox(
+              height: 150,
+              width: double.infinity,
+              child: (restaurant.imageUrl != null && restaurant.imageUrl!.isNotEmpty)
+                  ? Image.network(
+                      restaurant.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: Icon(Icons.restaurant, color: Colors.grey, size: 50),
                       ),
-              ),
+                    )
+                  : const Center(
+                      child: Icon(Icons.restaurant, color: Colors.grey, size: 50),
+                    ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Restaurant name
                   Text(
                     restaurant.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
-                  // Cuisine type
                   Text(
                     restaurant.cuisineType,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
-                  // Rating and delivery info
                   Row(
                     children: [
-                      if (restaurant.averageRating > 0) ...[
-                        Icon(
-                          Icons.star,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          restaurant.averageRating.toStringAsFixed(1),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      const Icon(Icons.access_time, size: 16),
+                      Icon(Icons.star, color: Colors.amber, size: 20),
                       const SizedBox(width: 4),
-                      Text(
-                        '${restaurant.deliveryTime} min',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      Text(restaurant.averageRating.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(width: 8),
-                      const Icon(Icons.delivery_dining, size: 16),
+                      Icon(Icons.timer_outlined, color: Colors.grey, size: 18),
                       const SizedBox(width: 4),
-                      Text(
-                        '\$${restaurant.deliveryFee}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      Text('${restaurant.deliveryTime} min'),
+                      const Spacer(),
+                      Text('\$${restaurant.deliveryFee.toStringAsFixed(2)} Delivery', style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
                 ],

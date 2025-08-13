@@ -14,7 +14,7 @@ class OrderService {
     }
 
     final response = await http.get(
-      Uri.parse('$baseUrl/api/restaurant-orders/'),
+      Uri.parse('$baseUrl/restaurant-orders/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',
@@ -39,7 +39,7 @@ class OrderService {
     }
 
     final response = await http.patch(
-      Uri.parse('$baseUrl/api/orders/$orderId/update-status/'),
+      Uri.parse('$baseUrl/orders/$orderId/update-status/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',

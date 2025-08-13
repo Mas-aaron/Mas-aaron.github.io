@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:restaurant_dashboard_new/models/restaurant.dart';
 import 'package:restaurant_dashboard_new/services/restaurant_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -110,10 +111,13 @@ class _EditRestaurantProfileScreenState extends State<EditRestaurantProfileScree
                     CircleAvatar(
                       radius: 60,
                       backgroundImage: _imageFile != null
-                          ? NetworkImage(_imageFile!.path)
+                          ? (kIsWeb ? NetworkImage(_imageFile!.path) : FileImage(File(_imageFile!.path))) as ImageProvider
                           : (widget.restaurant.image != null && widget.restaurant.image!.isNotEmpty
                               ? NetworkImage(widget.restaurant.image!)
-                              : const AssetImage('assets/placeholder.png')) as ImageProvider,
+                              : null),
+                      child: (_imageFile == null && (widget.restaurant.image == null || widget.restaurant.image!.isEmpty))
+                          ? const Icon(Icons.store, size: 60)
+                          : null,
                     ),
                     Positioned(
                       bottom: 0,

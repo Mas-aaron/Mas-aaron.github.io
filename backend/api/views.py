@@ -73,51 +73,54 @@ logger = logging.getLogger(__name__)
 # --- Device and Notification Views ---
 
 class DeviceViewSet(viewsets.ModelViewSet):
+    """Handles device registration for push notifications."""
     serializer_class = DeviceSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Device.objects.all()
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user, is_active=True)
+        """Ensures users can only see their own devices."""
+        return Device.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        token = request.data.get('token')
-        device_type = request.data.get('device_type')
-        
-        if not token or not device_type:
+        """Handles device registration. Updates existing device or creates a new one."""
+        registration_id = request.data.get('registration_id')
+        device_type = request.data.get('type')
+
+        if not registration_id or not device_type:
             return Response(
-                {'error': 'Both token and device_type are required'},
+                {"error": "Both registration_id and type are required."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        try:
-            # Try to get existing device (active or inactive)
-            device = Device.objects.get(
-                Q(user=request.user, token=token) |
-                Q(token=token, is_active=False)
-            )
-            
-            # Reactivate if inactive
-            if not device.is_active:
-                device.is_active = True
-                device.user = request.user
-            
-            # Update device type if changed
-            if device.device_type != device_type:
-                device.device_type = device_type
-            
-            device.save()
-            serializer = self.get_serializer(device)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            
-        except Device.DoesNotExist:
-            # Create new device
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        # Use update_or_create for idempotent device registration.
+        # Match the model fields: 'token' and 'device_type'.
+        device, created = Device.objects.update_or_create(
+            user=request.user, 
+            token=registration_id,
+            defaults={'device_type': device_type, 'is_active': True}
+        )
+
+        serializer = self.get_serializer(device)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(serializer.data, status=status_code)
+
+    @action(detail=False, methods=['post'])
+    def unregister(self, request):
+        """Unregisters a device by marking it as inactive."""
+        registration_id = request.data.get('registration_id')
+        if not registration_id:
+            return Response({'error': 'Device registration_id not provided'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Match the model field 'token' for filtering.
+        updated_count = Device.objects.filter(
+            user=request.user, 
+            token=registration_id
+        ).update(is_active=False)
+
+        if updated_count == 0:
+            return Response({'error': 'Device not found for this user.'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -407,7 +410,7 @@ class OrderListCreateView(generics.ListCreateAPIView):
         channel_layer = get_channel_layer()
         if channel_layer:
             restaurant_id = order.restaurant.id
-            order_data = RestaurantOrderSerializer(order).data
+            order_data = RestaurantOrderSerializer(order, context={'request': self.request}).data
             # The order data must be dumped to a JSON string to be sent through the channel layer.
             async_to_sync(channel_layer.group_send)(
                 f'restaurant_{restaurant_id}',
@@ -445,15 +448,15 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
             if old_status != new_status:
                 logger.info(f"Order {order.id} status changed from {old_status} to {new_status}. Sending notifications.")
                 
-                # Send rich, templated notification to the customer
-                if order.user:
-                    send_order_status_notification(order)
+                # The generic notification was removed to prevent duplicates.
+                # Specific notifications are handled below and in other views.
 
                 # Broadcast the status update to the restaurant's dashboard via WebSocket
                 channel_layer = get_channel_layer()
                 if channel_layer and order.restaurant:
                     restaurant_group_name = f'restaurant_{order.restaurant.id}'
-                    updated_order_data = RestaurantOrderSerializer(order).data
+                    serializer = RestaurantOrderSerializer(order, context={'request': request})
+                    updated_order_data = serializer.data
                     async_to_sync(channel_layer.group_send)(
                         restaurant_group_name,
                         {
@@ -1034,48 +1037,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-class DeviceViewSet(viewsets.ModelViewSet):
-    """ViewSet for the Device model, handles device registration for push notifications."""
-    queryset = Device.objects.all()
-    serializer_class = DeviceSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        """Handles device registration. Updates existing device or creates a new one."""
-        token = request.data.get('token')
-        device_type = request.data.get('device_type') 
-
-        if not token or not device_type:
-            return Response(
-                {"error": "Both token and device_type are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Use update_or_create to handle existing devices gracefully.
-        device, created = Device.objects.update_or_create(
-            token=token,
-            defaults={
-                'user': request.user,
-                'device_type': device_type
-            }
-        )
-
-        serializer = self.get_serializer(device)
-        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(serializer.data, status=status_code)
-
-    @action(detail=False, methods=['post'])
-    def unregister(self, request):
-        """Unregister a device by deleting it."""
-        token = request.data.get('token')
-        if not token:
-            return Response({'error': 'Device token not provided'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Unregistering should remove the device token from the system.
-        devices_deleted, _ = Device.objects.filter(token=token).delete()
-
-        # Always return a success response to the client.
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CustomerProfileView(generics.RetrieveUpdateAPIView):

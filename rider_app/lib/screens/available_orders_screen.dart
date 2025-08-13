@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:rider_app/models/order.dart';
 import 'package:rider_app/services/api_service.dart';
 
@@ -13,6 +14,7 @@ class AvailableOrdersScreen extends StatefulWidget {
 
 class _AvailableOrdersScreenState extends State<AvailableOrdersScreen> {
   late Future<List<Order>> _availableOrdersFuture;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -27,22 +29,28 @@ class _AvailableOrdersScreenState extends State<AvailableOrdersScreen> {
   }
 
   Future<void> _acceptOrder(int orderId) async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       await widget.apiService.acceptOrder(orderId);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Order accepted! Check \'My Deliveries\'.'),
-          backgroundColor: Colors.green,
-        ),
+        const SnackBar(content: Text('Order accepted successfully!')),
       );
       _loadAvailableOrders(); // Refresh the list to remove the accepted order
+    } on http.ClientException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Order is no longer available.')),
+      );
+      _loadAvailableOrders(); // Refresh the list
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to accept order: ${e.toString().replaceFirst("Exception: ", "")}'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('An unexpected error occurred: ${e.toString()}')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -69,8 +77,14 @@ class _AvailableOrdersScreenState extends State<AvailableOrdersScreen> {
                   title: Text('Order #${order.id}'),
                   subtitle: Text('From: ${order.restaurantName}\nTo: ${order.deliveryAddress}'),
                   trailing: ElevatedButton(
-                    onPressed: () => _acceptOrder(order.id),
-                    child: const Text('Accept'),
+                    onPressed: _isLoading ? null : () => _acceptOrder(order.id),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2.0, color: Colors.white),
+                          )
+                        : const Text('Accept'),
                   ),
                 ),
               );

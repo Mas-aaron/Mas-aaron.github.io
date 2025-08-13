@@ -172,6 +172,30 @@ class ApiService {
     }
   }
 
+  Future<void> registerDevice(String fcmToken, String deviceType) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/devices/'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Token $token',
+      },
+      body: jsonEncode({
+        'registration_id': fcmToken,
+        'type': deviceType,
+      }),
+    );
+
+    if (response.statusCode != 201 && response.statusCode != 200) {
+        print('Failed to register device: ${response.body}');
+      throw Exception('Failed to register device.');
+    }
+  }
+
   Future<List<RiderReview>> fetchRiderReviews() async {
     final token = await getToken();
     if (token == null) {

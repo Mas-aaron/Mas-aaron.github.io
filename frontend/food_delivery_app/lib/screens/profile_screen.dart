@@ -26,11 +26,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _loadProfileData() {
+    _profileFuture = _profileService.getCustomerProfile();
+    _addressesFuture = _profileService.getAddresses();
+    _allPreferencesFuture = _profileService.getDietaryPreferences();
+    setState(() {});
+  }
+
+  Future<void> _refreshProfileData() async {
+    final newProfileFuture = _profileService.getCustomerProfile();
+    final newAddressesFuture = _profileService.getAddresses();
+    final newAllPreferencesFuture = _profileService.getDietaryPreferences();
+
     setState(() {
-      _profileFuture = _profileService.getCustomerProfile();
-      _addressesFuture = _profileService.getAddresses();
-      _allPreferencesFuture = _profileService.getDietaryPreferences();
+      _profileFuture = newProfileFuture;
+      _addressesFuture = newAddressesFuture;
+      _allPreferencesFuture = newAllPreferencesFuture;
     });
+
+    // Wait for all futures to complete for the refresh indicator
+    await Future.wait([newProfileFuture, newAddressesFuture, newAllPreferencesFuture]);
   }
 
   Future<void> _showAddressFormDialog({UserAddress? address}) async {
@@ -124,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadProfileData,
+            onPressed: _refreshProfileData,
           ),
         ],
       ),
@@ -141,8 +155,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           final profile = snapshot.data!;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+          return RefreshIndicator(
+            onRefresh: _refreshProfileData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
                 _buildProfileHeader(profile),
@@ -154,7 +171,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildLogoutButton(context),
               ],
             ),
-          );
+          ),
+        );
         },
       ),
     );

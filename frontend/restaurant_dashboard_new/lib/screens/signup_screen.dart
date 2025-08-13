@@ -13,6 +13,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
   final _onboardingService = OnboardingService();
 
   String _name = '';
@@ -22,6 +23,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     String _password = '';
   String _passwordConfirm = '';
   bool _isLoading = false;
+  bool _isPasswordObscured = true;
+  bool _isConfirmPasswordObscured = true;
 
   void _trySubmit() async {
     final isValid = _formKey.currentState?.validate();
@@ -49,7 +52,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       // Navigate to home screen or show success message
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/home'); // Assuming '/home' route exists
-    } catch (error) {
+    } catch (error, stackTrace) {
+      // Log the detailed error to the console
+      print('Sign-up failed: $error');
+      print('Stack trace: $stackTrace');
       // Show error dialog
       showDialog(
         context: context,
@@ -71,6 +77,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -150,22 +162,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Password'),
-                      obscureText: true,
-                                            onSaved: (value) {
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordObscured ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordObscured = !_isPasswordObscured;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: _isPasswordObscured,
+                                            controller: _passwordController,
+                      onSaved: (value) {
                         _password = value!;
                       },
                     ),
                     TextFormField(
                       key: ValueKey('password_confirm'),
                       validator: (value) {
-                        if (value != _password) {
+                        if (value != _passwordController.text) {
                           return 'Passwords do not match!';
                         }
                         return null;
                       },
-                      decoration: InputDecoration(labelText: 'Confirm Password'),
-                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isConfirmPasswordObscured ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isConfirmPasswordObscured = !_isConfirmPasswordObscured;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: _isConfirmPasswordObscured,
                       onSaved: (value) {
                         _passwordConfirm = value!;
                       },

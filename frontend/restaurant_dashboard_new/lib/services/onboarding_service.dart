@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../constants.dart';
 
 class OnboardingService {
   // Assumption: The base URL is stored in a central config file.
   // Using the local development server URL as a placeholder.
-    final String _baseUrl = 'http://10.4.45.57:8000/api';
+    final String _apiBaseUrl = baseUrl;
 
   // Assumption: The auth token is stored in SharedPreferences after login.
   Future<String?> _getToken() async {
@@ -23,7 +24,7 @@ class OnboardingService {
     required String password2,
   }) async {
     final response = await http.post(
-            Uri.parse('$_baseUrl/register/restaurant/'),
+            Uri.parse('$_apiBaseUrl/register/restaurant/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -55,7 +56,7 @@ class OnboardingService {
   Future<String> getOrderProtocol() async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('$_baseUrl/order-protocol/'),
+      Uri.parse('$_apiBaseUrl/order-protocol/'),
       headers: <String, String>{
         'Authorization': 'Token $token',
       },
@@ -71,7 +72,7 @@ class OnboardingService {
   Future<http.Response> updateOrderProtocol(String protocol) async {
     final token = await _getToken();
     final response = await http.put(
-      Uri.parse('$_baseUrl/order-protocol/'),
+      Uri.parse('$_apiBaseUrl/order-protocol/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',

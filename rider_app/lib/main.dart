@@ -1,10 +1,14 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:rider_app/screens/login_screen.dart';
+import 'package:rider_app/services/push_notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await PushNotificationService().initialize();
   await SharedPreferences.getInstance();
   runApp(const RiderApp());
 }

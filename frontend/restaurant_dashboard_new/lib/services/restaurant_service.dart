@@ -4,9 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_dashboard_new/models/restaurant.dart';
 import 'package:restaurant_dashboard_new/models/restaurant_review.dart';
+import '../constants.dart';
 
 class RestaurantService {
-  final String _baseUrl = 'http://10.4.45.57:8000/api';
+  final String _apiBaseUrl = baseUrl;
 
   Future<Restaurant> getRestaurantProfile() async {
     final prefs = await SharedPreferences.getInstance();
@@ -17,7 +18,7 @@ class RestaurantService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/profile/restaurant/'),
+      Uri.parse('$_apiBaseUrl/profile/restaurant/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',
@@ -48,7 +49,7 @@ class RestaurantService {
 
     var request = http.MultipartRequest(
       'PUT',
-      Uri.parse('$_baseUrl/profile/restaurant/'),
+      Uri.parse('$_apiBaseUrl/profile/restaurant/'),
     );
 
     request.headers['Authorization'] = 'Token $token';
@@ -86,7 +87,7 @@ class RestaurantService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/restaurant/dashboard-reviews/'),
+      Uri.parse('$_apiBaseUrl/restaurant/dashboard-reviews/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',
@@ -112,7 +113,7 @@ class RestaurantService {
     }
 
     final response = await http.post(
-      Uri.parse('$_baseUrl/restaurant/dashboard-reviews/$reviewId/reply/'),
+      Uri.parse('$_apiBaseUrl/restaurant/dashboard-reviews/$reviewId/reply/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',

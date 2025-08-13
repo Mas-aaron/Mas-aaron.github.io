@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:overlay_support/overlay_support.dart';
 
-import '../widgets/order_notification.dart';
-import 'package:restaurant_dashboard_new/services/websocket_service.dart';
+import '../services/auth_service.dart';
+import '../services/websocket_service.dart';
 import 'package:restaurant_dashboard_new/widgets/app_sidebar.dart';
 import 'package:restaurant_dashboard_new/widgets/order_panel.dart';
 import 'package:restaurant_dashboard_new/screens/menu_management_screen.dart';
@@ -55,19 +54,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _initializeWebSocket() {
     _webSocketService = WebSocketService(
-      onInitialOrders: (orders) {},
-      onNewOrder: (order) {
-        if (!mounted) return;
-        showOverlayNotification(
-          (context) {
-            return OrderNotification(order: order);
-          },
-          duration: const Duration(seconds: 8),
-        );
+      onMessageReceived: (data) {
+        if (data['type'] == 'new_orders' && data['orders'] is List && (data['orders'] as List).isNotEmpty) {
+          // The backend sends a list, so we take the first order.
+          final order = (data['orders'] as List).first;
+          _showNewOrderNotification(order);
+        }
       },
-      onOrderUpdate: (order) {},
     );
-    _webSocketService.connect();
+    _connectWebSocket();
+  }
+
+  void _connectWebSocket() async {
+    try {
+      final authService = AuthService();
+      final token = await authService.getToken();
+      if (token != null) {
+        _webSocketService.connect(token);
+      }
+    } catch (e) {
+      print('[WebSocket] Error connecting: $e');
+    }
+  }
+
+  void _showNewOrderNotification(Map<String, dynamic> order) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('New order received! ID: ${order['id']}'),
+        backgroundColor: Colors.blue,
+        duration: const Duration(seconds: 5),
+      ),
+    );
+    // You might want to refresh the order list here
+    // For example, by calling a method on your OrderPanel/OrderList widget
   }
 
   @override

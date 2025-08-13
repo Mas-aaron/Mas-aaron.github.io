@@ -23,7 +23,7 @@ class ProfileService {
 
   Future<CustomerProfile> getCustomerProfile() async {
     final headers = await _getAuthHeaders();
-    final response = await http.get(Uri.parse('$_baseUrl/api/profile/customer/'), headers: headers);
+    final response = await http.get(Uri.parse('$_baseUrl/profile/customer/'), headers: headers);
 
     if (response.statusCode == 200) {
       return CustomerProfile.fromJson(jsonDecode(response.body));
@@ -35,7 +35,7 @@ class ProfileService {
   Future<CustomerProfile> updateCustomerProfile(List<int> dietaryPreferenceIds) async {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({'dietary_preference_ids': dietaryPreferenceIds});
-    final response = await http.patch(Uri.parse('$_baseUrl/api/profile/customer/'), headers: headers, body: body);
+    final response = await http.patch(Uri.parse('$_baseUrl/profile/customer/'), headers: headers, body: body);
 
     if (response.statusCode == 200) {
       return CustomerProfile.fromJson(jsonDecode(response.body));
@@ -46,7 +46,7 @@ class ProfileService {
 
   Future<List<UserAddress>> getAddresses() async {
     final headers = await _getAuthHeaders();
-    final response = await http.get(Uri.parse('$_baseUrl/api/addresses/'), headers: headers);
+    final response = await http.get(Uri.parse('$_baseUrl/addresses/'), headers: headers);
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
@@ -58,7 +58,7 @@ class ProfileService {
 
   Future<UserAddress> addAddress(UserAddress address) async {
     final headers = await _getAuthHeaders();
-    final response = await http.post(Uri.parse('$_baseUrl/api/addresses/'), headers: headers, body: jsonEncode(address.toJson()));
+    final response = await http.post(Uri.parse('$_baseUrl/addresses/'), headers: headers, body: jsonEncode(address.toJson()));
 
     if (response.statusCode == 201) {
       return UserAddress.fromJson(jsonDecode(response.body));
@@ -69,7 +69,7 @@ class ProfileService {
 
   Future<UserAddress> updateAddress(int addressId, UserAddress address) async {
     final headers = await _getAuthHeaders();
-    final response = await http.put(Uri.parse('$_baseUrl/api/addresses/$addressId/'), headers: headers, body: jsonEncode(address.toJson()));
+    final response = await http.put(Uri.parse('$_baseUrl/addresses/$addressId/'), headers: headers, body: jsonEncode(address.toJson()));
 
     if (response.statusCode == 200) {
       return UserAddress.fromJson(jsonDecode(response.body));
@@ -80,7 +80,7 @@ class ProfileService {
 
   Future<void> deleteAddress(int addressId) async {
     final headers = await _getAuthHeaders();
-    final response = await http.delete(Uri.parse('$_baseUrl/api/addresses/$addressId/'), headers: headers);
+    final response = await http.delete(Uri.parse('$_baseUrl/addresses/$addressId/'), headers: headers);
 
     if (response.statusCode != 204) {
       throw Exception('Failed to delete address');
@@ -89,7 +89,7 @@ class ProfileService {
 
   Future<List<DietaryPreference>> getDietaryPreferences() async {
     final headers = await _getAuthHeaders();
-    final response = await http.get(Uri.parse('$_baseUrl/api/dietary-preferences/'), headers: headers);
+    final response = await http.get(Uri.parse('$_baseUrl/dietary-preferences/'), headers: headers);
 
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);

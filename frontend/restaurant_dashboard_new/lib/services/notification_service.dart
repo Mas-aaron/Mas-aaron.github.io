@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_dashboard_new/models/notification.dart';
+import '../constants.dart';
 
 class NotificationService {
-  final String _baseUrl = 'http://10.4.45.57:8000/api';
+  final String _apiBaseUrl = baseUrl;
 
   Future<List<Notification>> getNotifications() async {
     final prefs = await SharedPreferences.getInstance();
@@ -15,7 +16,7 @@ class NotificationService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/notifications/'),
+      Uri.parse('$_apiBaseUrl/notifications/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',

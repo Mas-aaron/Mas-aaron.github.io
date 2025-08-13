@@ -2,10 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:restaurant_dashboard_new/models/message.dart';
+import '../constants.dart';
 
 class MessageService {
-  final String _baseUrl = 'http://10.4.45.57:8000/api';
-
   Future<List<Message>> getMessages() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -15,7 +14,7 @@ class MessageService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/messages/'),
+      Uri.parse('$baseUrl/messages/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',
@@ -40,7 +39,7 @@ class MessageService {
     }
 
     final response = await http.post(
-      Uri.parse('$_baseUrl/messages/'),
+      Uri.parse('$baseUrl/messages/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',

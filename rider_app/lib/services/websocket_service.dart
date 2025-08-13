@@ -9,8 +9,10 @@ class WebSocketService {
   WebSocketService({required this.onMessageReceived});
 
   void connect(String token) {
-    final String wsUrl = webSocketUrl.replaceFirst('http', 'ws');
-    final Uri websocketUri = Uri.parse('$wsUrl/ws/notifications/?token=$token');
+    // Construct the final URL by appending the path and token to the base WebSocket URL.
+    final String finalWsUrl = '$webSocketUrl/ws/rider/available_orders/?token=$token';
+    final Uri websocketUri = Uri.parse(finalWsUrl);
+
     _channel = WebSocketChannel.connect(websocketUri);
 
     print('[WebSocket] Attempting to connect to $websocketUri');
@@ -21,12 +23,6 @@ class WebSocketService {
         try {
           final data = jsonDecode(message) as Map<String, dynamic>;
 
-          // Normalize message type for consistency
-          if (data['type'] == 'new_order') {
-            data['type'] = 'new.order';
-            print("[WebSocket Normalized]: Type to 'new.order'");
-          }
-          
           onMessageReceived(data);
         } catch (e) {
           print('[WebSocket Error] Failed to decode or process message: $e');

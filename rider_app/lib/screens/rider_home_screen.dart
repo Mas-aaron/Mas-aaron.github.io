@@ -35,7 +35,7 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
   void _initializeWebSocket() {
     _webSocketService = WebSocketService(
       onMessageReceived: (data) {
-        if (data['type'] == 'new.order') {
+        if (data['type'] == 'new_order') {
           _showNewOrderNotification(data['order']);
         }
       },
@@ -59,36 +59,43 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
       (context) {
         return NewOrderNotificationCard(
           order: order,
-          onAccept: () async {
-            try {
-              await _apiService.acceptOrder(order['id']);
-              OverlaySupportEntry.of(context)!.dismiss();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Order accepted successfully!'),
-                  backgroundColor: Colors.green,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            } catch (e) {
-              OverlaySupportEntry.of(context)!.dismiss();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to accept order: $e'),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
+          onAccept: () => _acceptOrderAndNavigate(context, order['id'] as int),
           onDecline: () {
             OverlaySupportEntry.of(context)!.dismiss();
           },
         );
       },
-      duration: const Duration(seconds: 15),
+      duration: const Duration(hours: 1),
       position: NotificationPosition.top,
     );
+  }
+
+  void _acceptOrderAndNavigate(BuildContext overlayContext, int orderId) async {
+    OverlaySupportEntry.of(overlayContext)!.dismiss();
+
+    try {
+      await _apiService.acceptOrder(orderId);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Order accepted successfully!"),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      _onItemTapped(1);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
   }
 
   void _onItemTapped(int index) {

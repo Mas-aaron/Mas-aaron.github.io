@@ -41,14 +41,17 @@ if DEBUG:
         '10.0.2.2',
         '127.0.0.1',
         'localhost',
-        '10.4.42.205',
-        '10.5.55.166', # For physical device testing
+        '10.5.55.25',
+        '10.4.45.158',
+        '10.5.55.169',
+        '10.32.141.42',
         '10.5.55.166',
         '10.4.45.164',
         '10.4.45.158',
         '10.5.55.25',
         '10.4.45.57',
         '10.8.85.240',
+        '10.32.141.42',
         '10.4.42.205',
 
     ]
@@ -114,6 +117,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'food_delivery.wsgi.application'
 ASGI_APPLICATION = 'food_delivery.asgi.application'
+
+# Channels settings for development
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 # Database

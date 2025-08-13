@@ -7,9 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:restaurant_dashboard_new/models/menu_category.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/menu_item.dart';
+import '../constants.dart';
 
 class MenuService {
-  final String _baseUrl = 'http://10.4.45.57:8000/api';
+  final String _apiBaseUrl = baseUrl;
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -20,7 +21,7 @@ class MenuService {
     final token = await _getToken();
     final cacheBuster = DateTime.now().millisecondsSinceEpoch;
     final response = await http.get(
-      Uri.parse('$_baseUrl/restaurants/dashboard-menu/?_=$cacheBuster'),
+      Uri.parse('$_apiBaseUrl/restaurants/dashboard-menu/?_=$cacheBuster'),
       headers: <String, String>{
         'Authorization': 'Token $token',
       },
@@ -38,7 +39,7 @@ class MenuService {
   Future<List<MenuCategory>> getMenuCategories() async {
     final token = await _getToken();
     final response = await http.get(
-      Uri.parse('$_baseUrl/menu-categories/'), // Corrected endpoint
+      Uri.parse('$_apiBaseUrl/menu-categories/'), // Corrected endpoint
       headers: {
         'Authorization': 'Token $token',
       },
@@ -55,7 +56,7 @@ class MenuService {
 
     Future<http.Response> addMenuItem(String name, String description, double price, int categoryId, XFile? imageFile) async {
     final token = await _getToken();
-    var request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/menu-items/'));
+    var request = http.MultipartRequest('POST', Uri.parse('$_apiBaseUrl/menu-items/'));
 
     request.headers['Authorization'] = 'Token $token';
 
@@ -86,7 +87,7 @@ class MenuService {
 
     Future<http.Response> updateMenuItem(int id, String name, String description, double price, int categoryId, bool isAvailable, XFile? imageFile) async {
     final token = await _getToken();
-    var request = http.MultipartRequest('PUT', Uri.parse('$_baseUrl/menu-items/$id/'));
+    var request = http.MultipartRequest('PUT', Uri.parse('$_apiBaseUrl/menu-items/$id/'));
 
     request.headers['Authorization'] = 'Token $token';
 
@@ -119,7 +120,7 @@ class MenuService {
   Future<http.Response> deleteMenuItem(int id) async {
     final token = await _getToken();
     final response = await http.delete(
-      Uri.parse('$_baseUrl/menu-items/$id/'),
+      Uri.parse('$_apiBaseUrl/menu-items/$id/'),
       headers: <String, String>{
         'Authorization': 'Token $token',
       },
@@ -134,7 +135,7 @@ class MenuService {
 
     Future<void> addMenuCategory(String name) async {
     final token = await _getToken();
-    final url = Uri.parse('$_baseUrl/menu-categories/');
+    final url = Uri.parse('$_apiBaseUrl/menu-categories/');
     final headers = <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
       'Authorization': 'Token $token',
@@ -168,7 +169,7 @@ class MenuService {
   Future<void> updateMenuCategory(int id, String name) async {
     final token = await _getToken();
     final response = await http.put(
-      Uri.parse('$_baseUrl/menu-categories/$id/'),
+      Uri.parse('$_apiBaseUrl/menu-categories/$id/'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',
@@ -186,7 +187,7 @@ class MenuService {
   Future<void> deleteMenuCategory(int id) async {
     final token = await _getToken();
     final response = await http.delete(
-      Uri.parse('$_baseUrl/menu-categories/$id/'),
+      Uri.parse('$_apiBaseUrl/menu-categories/$id/'),
       headers: <String, String>{
         'Authorization': 'Token $token',
       },

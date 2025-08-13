@@ -36,7 +36,7 @@ class CartProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/cart/'),
+        Uri.parse('$baseUrl/cart/'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Token $token',
@@ -96,7 +96,7 @@ class CartProvider with ChangeNotifier {
     bool success = false;
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/cart/add/'),
+        Uri.parse('$baseUrl/cart/add/'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Token $token',
@@ -132,7 +132,7 @@ class CartProvider with ChangeNotifier {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/cart/remove/'),
+        Uri.parse('$baseUrl/cart/remove/'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Token $token',
@@ -163,7 +163,7 @@ class CartProvider with ChangeNotifier {
 
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/cart/clear/'),
+        Uri.parse('$baseUrl/cart/clear/'),
         headers: {
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Token $token',

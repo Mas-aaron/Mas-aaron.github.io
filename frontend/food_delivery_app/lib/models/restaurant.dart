@@ -1,3 +1,5 @@
+import 'package:food_delivery_app/constants.dart';
+
 class Restaurant {
   final int id;
   final String name;
@@ -28,12 +30,17 @@ class Restaurant {
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {
+    String? imageUrl = json['image_url'];
+    if (imageUrl != null && imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
+      imageUrl = '$baseUrl$imageUrl';
+    }
+
     return Restaurant(
       id: json['id'] ?? 0,
       name: json['name'] ?? 'Unknown Restaurant',
       address: json['address'] ?? 'No address',
       phoneNumber: json['phone_number'] ?? 'No phone number',
-      imageUrl: json['image_url'],
+      imageUrl: imageUrl,
       distance: (json['distance'] as num?)?.toDouble(),
       averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0.0,
       deliveryTime: json['delivery_time'] ?? 30,

@@ -1,11 +1,8 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/menu_category.dart';
-
-
-const String backendUrl = 'http://10.4.45.57:8000';
+import '../constants.dart'; // Use the central constants file
 
 class CategoryService {
   Future<String?> _getToken() async {
@@ -15,8 +12,9 @@ class CategoryService {
 
   Future<List<MenuCategory>> getCategories() async {
     final token = await _getToken();
+    // Use baseUrl from constants.dart and the correct endpoint
     final response = await http.get(
-      Uri.parse('$backendUrl/api/menu-categories/'),
+      Uri.parse('$baseUrl/menu-categories/'),
       headers: {'Authorization': 'Token $token'},
     );
 
@@ -31,7 +29,7 @@ class CategoryService {
   Future<MenuCategory> createCategory(String name) async {
     final token = await _getToken();
     final response = await http.post(
-      Uri.parse('$backendUrl/api/menu-categories/'),
+      Uri.parse('$baseUrl/menu-categories/'),
       headers: {
         'Authorization': 'Token $token',
         'Content-Type': 'application/json; charset=UTF-8',
@@ -51,7 +49,7 @@ class CategoryService {
   Future<void> updateCategory(int id, String name) async {
     final token = await _getToken();
     final response = await http.put(
-      Uri.parse('$backendUrl/api/menu-categories/$id/'),
+      Uri.parse('$baseUrl/menu-categories/$id/'),
       headers: {
         'Authorization': 'Token $token',
         'Content-Type': 'application/json; charset=UTF-8',
@@ -69,7 +67,7 @@ class CategoryService {
   Future<void> deleteCategory(int id) async {
     final token = await _getToken();
     final response = await http.delete(
-      Uri.parse('$backendUrl/api/menu-categories/$id/'),
+      Uri.parse('$baseUrl/menu-categories/$id/'),
       headers: {'Authorization': 'Token $token'},
     );
 

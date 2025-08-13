@@ -1,11 +1,5 @@
-// lib/constants.dart
-
 const String googleMapsApiKey = 'AIzaSyB2_rwYdL9Tr_LWV7PDfn83n8-2_6KVahs';
-// TODO: Replace with your actual Rialway URL
-//const String backendUrl = 'http://10.4.42.205:8000';
-//const String websocketUrl = 'ws://10.4.42.205:8000';
 
-// IMPORTANT: Replace with your computer's actual IP address on your local network.
-const String _localIpAddress = 'localhost'; // Use localhost for web development
-const String baseUrl = 'http://10.4.45.57:8000/api';
-const String webSocketUrl = 'ws://10.4.45.57:8000';
+// Backend configuration
+const String baseUrl = 'http://10.5.55.25:8001/api';
+const String webSocketUrl = 'ws://10.5.55.25:8001';
