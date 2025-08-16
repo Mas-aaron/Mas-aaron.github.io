@@ -82,38 +82,17 @@ class CartProvider with ChangeNotifier {
   }
 
   Future<bool> addToCart(int menuItemId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    if (token == null) {
-      _error = 'You are not logged in.';
-      notifyListeners();
-      return false;
-    }
-
     _isLoading = true;
     notifyListeners();
 
     bool success = false;
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/cart/add/'),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Token $token',
-        },
-        body: json.encode({'menu_item_id': menuItemId, 'quantity': 1}),
-      );
-
-      if (response.statusCode == 200) {
-        await fetchCart(); // Refresh cart state
-        _error = null;
-        success = true;
-      } else {
-        _error = 'Failed to add item to cart.';
-        success = false;
-      }
+      await _apiService.addToCart(menuItemId, 1); // Use ApiService
+      await fetchCart(); // Refresh cart state
+      _error = null;
+      success = true;
     } catch (e) {
-      _error = 'An error occurred while adding to cart: $e';
+      _error = 'Failed to add item to cart: $e';
       success = false;
     }
 

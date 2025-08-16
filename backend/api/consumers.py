@@ -86,8 +86,9 @@ class TrackingConsumer(AsyncWebsocketConsumer):
             )
 
     async def location_broadcast(self, event):
+        # This is the event that broadcasts to the client.
         await self.send(text_data=json.dumps({
-            'type': 'location_update',
+            'type': 'rider_location',  # Changed from 'location_update' to match client expectation
             'latitude': event['latitude'],
             'longitude': event['longitude']
         }))

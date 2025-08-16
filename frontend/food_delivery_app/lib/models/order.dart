@@ -41,8 +41,8 @@ class Order {
       createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
       restaurant: Restaurant.fromJson(json['restaurant'] ?? {}),
       deliveryAddress: json['delivery_address'] ?? 'No address provided',
-      deliveryLat: double.tryParse(json['delivery_lat']?.toString() ?? '0.0') ?? 0.0,
-      deliveryLng: double.tryParse(json['delivery_lng']?.toString() ?? '0.0') ?? 0.0,
+      deliveryLat: (json['customer_lat'] as num?)?.toDouble() ?? 0.0,
+      deliveryLng: (json['customer_lng'] as num?)?.toDouble() ?? 0.0,
       items: itemsList,
       review: json['review'] != null ? OrderReview.fromJson(json['review']) : null,
     );

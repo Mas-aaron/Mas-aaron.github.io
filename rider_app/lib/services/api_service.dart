@@ -106,6 +106,26 @@ class ApiService {
     }
   }
 
+  Future<Order> getOrderDetails(int orderId) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/rider-orders/$orderId/'),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return Order.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load order details');
+    }
+  }
+
   Future<List<Order>> getAssignedOrders() async {
     final token = await getToken();
     if (token == null) {

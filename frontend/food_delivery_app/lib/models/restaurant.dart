@@ -46,8 +46,8 @@ class Restaurant {
       deliveryTime: json['delivery_time'] ?? 30,
       deliveryFee: (json['delivery_fee'] as num?)?.toDouble() ?? 0.0,
       cuisineType: json['cuisine_type'] ?? 'Various',
-      lat: double.tryParse(json['lat']?.toString() ?? '0.0') ?? 0.0,
-      lng: double.tryParse(json['lng']?.toString() ?? '0.0') ?? 0.0,
+      lat: double.tryParse(json['latitude']?.toString() ?? '0.0') ?? 0.0,
+      lng: double.tryParse(json['longitude']?.toString() ?? '0.0') ?? 0.0,
     );
   }
 }

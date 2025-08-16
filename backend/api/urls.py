@@ -41,6 +41,7 @@ custom_urlpatterns = [
 
     # Order URLs
     path('orders/', api_views.OrderListCreateView.as_view(), name='order-list-create'),
+    path('orders/<int:pk>/', api_views.OrderDetailView.as_view(), name='order-detail'),
     path('orders/<int:pk>/update-status/', api_views.OrderUpdateStatusView.as_view(), name='order-update-status'),
 
     # Restaurant URLs

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery_app/providers/location_provider.dart';
+import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:provider/provider.dart';
 import '../models/cart.dart';
 import '../providers/cart_provider.dart';
@@ -16,17 +18,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isLoading = false;
 
   Future<void> _placeOrder() async {
+    final locationProvider = Provider.of<LocationProvider>(context, listen: false);
+    final position = locationProvider.currentPosition;
+    final address = locationProvider.currentAddress;
+
+    if (position == null || address == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please set a delivery address first.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
-    // Placeholder address and coordinates
-    const address = 'M6PX+X58, Fort Portal, Uganda';
-    const latitude = 0.6549;
-    const longitude = 30.2794;
-
     final success = await Provider.of<CartProvider>(context, listen: false)
-        .placeOrder(address, latitude, longitude);
+        .placeOrder(address, position.latitude, position.longitude);
 
     setState(() {
       _isLoading = false;
@@ -55,7 +63,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         padding: const EdgeInsets.all(16.0),
         children: [
           _buildSectionTitle('Delivery Address'),
-          _buildAddressCard('M6PX+X58, Fort Portal, Uganda'),
+          _buildAddressCard(),
           const SizedBox(height: 24),
           _buildSectionTitle('Payment Method'),
           _buildPaymentCard(),
@@ -78,13 +86,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildAddressCard(String address) {
+  Widget _buildAddressCard() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: const Icon(Icons.location_on_outlined),
-        title: Text(address),
-        trailing: TextButton(onPressed: () {}, child: const Text('Change')),
+      child: Consumer<LocationProvider>(
+        builder: (context, locationProvider, child) {
+          final address = locationProvider.currentAddress ?? 'No address selected';
+          return ListTile(
+            leading: const Icon(Icons.location_on_outlined),
+            title: Text(address),
+            trailing: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SetLocationScreen()),
+                );
+              },
+              child: const Text('Change'),
+            ),
+          );
+        },
       ),
     );
   }

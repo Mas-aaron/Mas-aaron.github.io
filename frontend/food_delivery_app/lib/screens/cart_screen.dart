@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:food_delivery_app/providers/location_provider.dart';
+import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../models/cart.dart';
@@ -212,7 +214,7 @@ class _OrderSummaryCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildAddressSection(),
+            _buildAddressSection(context),
             const SizedBox(height: 16),
             _buildPriceRow('Subtotal', cart.totalPrice),
             const SizedBox(height: 8),
@@ -240,15 +242,32 @@ class _OrderSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressSection() {
+  Widget _buildAddressSection(BuildContext context) {
+    final locationProvider = Provider.of<LocationProvider>(context);
+    final address = locationProvider.currentAddress ?? 'No address set. Tap to select.';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Delivery Address',
-          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Delivery Address',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SetLocationScreen()),
+                );
+              },
+              child: const Text('Change'),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
@@ -256,9 +275,9 @@ class _OrderSummaryCard extends StatelessWidget {
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Text(
-            'M6PX+X58, Fort Portal, Uganda', // Placeholder address
-            style: TextStyle(fontSize: 16),
+          child: Text(
+            address,
+            style: const TextStyle(fontSize: 16),
           ),
         ),
       ],

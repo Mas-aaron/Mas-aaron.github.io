@@ -15,44 +15,53 @@ class SetLocationScreen extends StatefulWidget {
 }
 
 class _SetLocationScreenState extends State<SetLocationScreen> {
-  GoogleMapController? _mapController;
-  LatLng _currentPosition = const LatLng(37.7749, -122.4194); // Default to SF
+  LatLng? _currentPosition;
   final Set<Marker> _markers = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    if (widget.initialPosition != null) {
-      _currentPosition = widget.initialPosition!;
-    } else {
-      _fetchInitialLocation();
-    }
-    _updateMarker();
+    _initializeLocation();
   }
 
-  void _fetchInitialLocation() async {
-    try {
-      final position = await LocationService.getCurrentLocation();
-      if (position != null && mounted) {
-        setState(() {
-          _currentPosition = LatLng(position.latitude, position.longitude);
-          _mapController?.animateCamera(CameraUpdate.newLatLng(_currentPosition));
-          _updateMarker();
-        });
+  void _initializeLocation() async {
+    LatLng positionToSet;
+    if (widget.initialPosition != null) {
+      positionToSet = widget.initialPosition!;
+    } else {
+      try {
+        final position = await LocationService.getCurrentLocation();
+        if (position != null) {
+          positionToSet = LatLng(position.latitude, position.longitude);
+        } else {
+          // Fallback to default if service returns null
+          positionToSet = const LatLng(37.7749, -122.4194);
+        }
+      } catch (e) {
+        print("Error fetching initial location: $e");
+        // Fallback to default on error
+        positionToSet = const LatLng(37.7749, -122.4194);
       }
-    } catch (e) {
-      print("Error fetching initial location: $e");
-      // Keep default location if fetching fails
+    }
+
+    if (mounted) {
+      setState(() {
+        _currentPosition = positionToSet;
+        _isLoading = false;
+        _updateMarker();
+      });
     }
   }
 
   void _updateMarker() {
+    if (_currentPosition == null) return;
     setState(() {
       _markers.clear();
       _markers.add(
         Marker(
           markerId: const MarkerId('user_location'),
-          position: _currentPosition,
+          position: _currentPosition!,
           draggable: true,
           onDragEnd: (newPosition) {
             setState(() {
@@ -66,19 +75,20 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
   }
 
   void _onConfirmLocation() {
+    if (_currentPosition == null) return; // Don't proceed if location isn't set
+
     // Create a Position object from the selected LatLng.
-    // The other fields are not critical for our address lookup logic.
     final newPosition = Position(
-      latitude: _currentPosition.latitude,
-      longitude: _currentPosition.longitude,
+      latitude: _currentPosition!.latitude,
+      longitude: _currentPosition!.longitude,
       timestamp: DateTime.now(),
       accuracy: 100.0, // Placeholder accuracy
       altitude: 0.0,
       heading: 0.0,
       speed: 0.0,
       speedAccuracy: 0.0,
-      altitudeAccuracy: 0.0, // Add this line for null safety
-      headingAccuracy: 0.0, // Add this line for null safety
+      altitudeAccuracy: 0.0, 
+      headingAccuracy: 0.0, 
     );
 
     // Update the provider, which will notify listeners (like HomeScreen and CartScreen)
@@ -97,31 +107,44 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
       ),
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _currentPosition,
-              zoom: 15.0,
-            ),
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
-            },
-            markers: _markers,
-          ),
-          Positioned(
-            bottom: 30,
-            left: 20,
-            right: 20,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onPressed: _onConfirmLocation,
-              child: const Text('Confirm Location', style: TextStyle(fontSize: 16)),
-            ),
-          ),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _currentPosition == null
+                  ? const Center(child: Text('Could not determine location.'))
+                  : Stack(
+                      children: [
+                        Positioned.fill(
+                          child: GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target: _currentPosition!,
+                              zoom: 15.0,
+                            ),
+                            markers: _markers,
+                            onCameraMove: (CameraPosition position) {
+                              setState(() {
+                                _currentPosition = position.target;
+                                _updateMarker();
+                              });
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 30,
+                          left: 20,
+                          right: 20,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: _onConfirmLocation,
+                            child: const Text('Confirm Location', style: TextStyle(fontSize: 16)),
+                          ),
+                        ),
+                      ],
+                    ),
         ],
       ),
     );

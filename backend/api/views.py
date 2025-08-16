@@ -476,15 +476,37 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
                             data={'orderId': str(order.id), 'status': new_status}
                         )
 
-            # If order is ready, notify available riders
+            # If order is ready, notify available riders via WebSocket and Push Notification
             if new_status == 'Ready for Pickup':
+                # 1. Notify via WebSocket (existing functionality)
                 channel_layer = get_channel_layer()
                 order_serializer = RestaurantOrderSerializer(order)
                 async_to_sync(channel_layer.group_send)(
                     'riders_available',
                     {'type': 'new_order_message', 'order': order_serializer.data}
                 )
-                logger.info(f"Sent 'Ready for Pickup' notification for order {order.id} to riders.")
+                logger.info(f"Sent 'Ready for Pickup' WebSocket message for order {order.id} to riders_available group.")
+
+                # 2. Send Push Notifications to all available riders
+                try:
+                    available_riders = RiderProfile.objects.filter(is_available=True)
+                    if not available_riders.exists():
+                        logger.warning(f"Order {order.id} is ready, but no riders are currently available.")
+                    else:
+                        notification_title = "New Delivery Available!"
+                        notification_body = f"Order #{order.id} from {order.restaurant.name} is ready for pickup."
+                        notification_data = {'orderId': str(order.id), 'status': new_status}
+                        
+                        for rider_profile in available_riders:
+                            send_push_notification(
+                                user=rider_profile.user,
+                                title=notification_title,
+                                body=notification_body,
+                                data=notification_data
+                            )
+                        logger.info(f"Sent push notifications for order {order.id} to {available_riders.count()} available riders.")
+                except Exception as e:
+                    logger.error(f"Failed to send 'Ready for Pickup' push notifications for order {order.id}: {e}", exc_info=True)
 
         return response
 

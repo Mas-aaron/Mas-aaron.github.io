@@ -55,6 +55,12 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   @override
   void initState() {
     super.initState();
+    // Log the incoming order details to debug coordinate issues
+    print('--- Order Tracking Screen ---');
+    print('Order ID: ${widget.order.id}');
+    print('Restaurant Coords: (${widget.order.restaurantLat}, ${widget.order.restaurantLng})');
+    print('Customer Coords: (${widget.order.customerLat}, ${widget.order.customerLng})');
+    print('---------------------------');
     _initializeScreen();
   }
 
@@ -118,7 +124,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       return;
     }
 
-    final wsUrl = Uri.parse('$webSocketUrl${widget.order.id}/?token=$token');
+    final wsUrl = Uri.parse('$webSocketUrl/ws/tracking/${widget.order.id}/?token=$token');
     _channel = WebSocketChannel.connect(wsUrl);
 
     // Assume the connection is active immediately and handle errors reactively.
@@ -174,7 +180,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
     // Add a 'type' to help the backend distinguish message types
     final data = jsonEncode({
-      'type': 'rider_location_update',
+      'type': 'rider_location_update', // Corrected to match backend consumer
       'latitude': locationData.latitude,
       'longitude': locationData.longitude,
     });
@@ -327,21 +333,29 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Default to a central location if no coordinates are available yet
-    final initialLat = widget.order.restaurantLat ?? 37.422;
-    final initialLng = widget.order.restaurantLng ?? -122.084;
+    // Show a loader if we don't have coordinates yet.
+    if (widget.order.restaurantLat == null || widget.order.restaurantLng == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Loading Route...'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     final CameraPosition initialCameraPosition = CameraPosition(
-      target: LatLng(initialLat, initialLng),
+      target: LatLng(widget.order.restaurantLat!, widget.order.restaurantLng!),
       zoom: 12,
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Delivery Route'),
+        title: const Text('Delivery Route'),
         actions: [
           IconButton(
-            icon: Icon(Icons.my_location),
+            icon: const Icon(Icons.my_location),
             onPressed: () {
               if (_currentLocation != null && _shouldBroadcast()) {
                 _animateCameraToPosition(LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!));

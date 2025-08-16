@@ -48,12 +48,33 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     title: Text('Order #${order.id}'),
                     subtitle: Text('Status: ${order.status}'),
                     trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => OrderTrackingScreen(order: order, apiService: widget.apiService),
-                        ),
+                    onTap: () async {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (BuildContext context) {
+                          return const Center(child: CircularProgressIndicator());
+                        },
                       );
+
+                      try {
+                        final detailedOrder = await widget.apiService.getOrderDetails(order.id);
+                        Navigator.of(context).pop(); // Dismiss the loading dialog
+
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => OrderTrackingScreen(
+                              order: detailedOrder,
+                              apiService: widget.apiService,
+                            ),
+                          ),
+                        );
+                      } catch (e) {
+                        Navigator.of(context).pop(); // Dismiss the loading dialog
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to load order details: $e')),
+                        );
+                      }
                     },
                   ),
                 );

@@ -10,9 +10,9 @@
         android:label="food_delivery_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-                <meta-data
-            android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyB2_rwYdL9Tr_LWV7PDfn83n8-2_6KVahs" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDZCsX_zwQr3jB9XdByRX4Si2kjZVFQCCY" />
         <meta-data
             android:name="com.google.android.maps.v2.MAP_ID"
             android:value="8f815a7312a988aac294db09" />

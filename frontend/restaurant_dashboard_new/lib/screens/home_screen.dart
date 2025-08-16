@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   late WebSocketService _webSocketService;
+  ScaffoldMessengerState? _scaffoldMessengerState;
 
   final List<Widget> _screens = [
     const AnalyticsScreen(),
@@ -44,6 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cache the ScaffoldMessengerState
+    _scaffoldMessengerState = ScaffoldMessenger.of(context);
   }
 
   @override
@@ -79,7 +87,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showNewOrderNotification(Map<String, dynamic> order) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+    // Use the cached ScaffoldMessengerState
+    _scaffoldMessengerState?.showSnackBar(
       SnackBar(
         content: Text('New order received! ID: ${order['id']}'),
         backgroundColor: Colors.blue,
@@ -92,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _webSocketService.disconnect();
+    _webSocketService.disconnect(); // Disconnect first to prevent errors
     super.dispose();
   }
 

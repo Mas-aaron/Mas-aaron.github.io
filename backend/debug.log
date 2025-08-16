@@ -2988,3 +2988,211 @@ Restaurant 4: Total orders found: 28
 Restaurant 4: Pending statuses being checked: ['Pending', 'Accepted', 'Preparing', 'Ready for Pickup']
 Restaurant 4: Calculated pending orders count: 11
 Restaurant 4: Pending orders found (IDs and Statuses): [{'id': 10, 'status': 'Ready for Pickup'}, {'id': 11, 'status': 'Ready for Pickup'}, {'id': 12, 'status': 'Ready for Pickup'}, {'id': 19, 'status': 'Ready for Pickup'}, {'id': 20, 'status': 'Ready for Pickup'}, {'id': 21, 'status': 'Ready for Pickup'}, {'id': 25, 'status': 'Ready for Pickup'}, {'id': 26, 'status': 'Ready for Pickup'}, {'id': 29, 'status': 'Ready for Pickup'}, {'id': 31, 'status': 'Pending'}, {'id': 32, 'status': 'Pending'}]
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755099306458131%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755099306679295%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 33 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755099642272113%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755099642482904%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 34 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755099731591026%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755099731820834%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 34 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 34 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755099736716839%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755099736927629%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 34 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 34 to group restaurant_4
+Order 34 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 34 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 34 to riders.
+Not Found: /api/api/cart/
+Not Found: /api/api/cart/add/
+Not Found: /api/api/cart/add/
+Not Found: /api/api/cart/add/
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755149799842081%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755149800093919%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 33 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 33 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755149820750532%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755149821005713%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 33 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 33 to group restaurant_4
+Order 33 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 33 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 33 to riders.
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755149869058551%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755149869441348%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 31 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 31 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755242673993621%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755242674203875%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 35 to group restaurant_4
+Invalid HTTP_HOST header: '10.5.55.18:8000'. You may need to add '10.5.55.18' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\utils\deprecation.py", line 132, in __acall__
+    response = await sync_to_async(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\http\request.py", line 202, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '10.5.55.18:8000'. You may need to add '10.5.55.18' to ALLOWED_HOSTS.
+Not Found: /api/orders/33/
+Not Found: /api/orders/34/
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755350784407344%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755350784612601%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 35 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 35 to group restaurant_4
+Not Found: /api/orders/34/
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755352697756224%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755352697968753%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 36 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755352710479495%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755352710667184%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 36 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 36 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755352714330343%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755352714537196%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 36 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 36 to group restaurant_4
+Order 36 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 36 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 36 to riders.
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755353092754543%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755353092957466%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 37 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755353139171356%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755353139401229%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 37 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 37 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755353142493612%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755353142702688%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 37 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 37 to group restaurant_4
+Order 37 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 37 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 37 to riders.
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755355029857576%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755355030048466%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 35 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 35 to group restaurant_4
+Order 35 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 35 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 35 to riders.
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755355268394632%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755355268762458%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 32 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 32 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755355271436062%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755355271647589%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 32 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 32 to group restaurant_4
+Order 32 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 32 to group restaurant_4
+Sent 'Ready for Pickup' notification for order 32 to riders.
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755356997717176%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755356997995311%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 38 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755357050731402%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755357050943828%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 38 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 38 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755357053893131%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755357054101757%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 38 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 38 to group restaurant_4
+Order 38 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 38 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 38 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755357058461251%334de02b334de02b
+Notification results for user 5: 1 successful, 0 failed
+Sent push notifications for order 38 to 1 available riders.
+Not Found: /api/rider-orders/37/complete/
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755357198620118%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755357198832840%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755357239358521%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755357239556539%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed

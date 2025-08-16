@@ -1,11 +1,50 @@
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:rider_app/services/api_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+// Must be a top-level function (not a class method)
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  if (kDebugMode) {
+    print("Handling a background message: ${message.messageId}");
+  }
+  showNotification(message);
+}
+
+void showNotification(RemoteMessage message) {
+  final notification = message.notification;
+  if (notification != null) {
+    flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel', // id
+            'High Importance Notifications', // title
+            channelDescription: 'This channel is used for important notifications.', // description
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher', // Ensure you have this icon
+          ),
+          iOS: const DarwinNotificationDetails(),
+        ),
+        payload: message.data['orderId']);
+  }
+}
 
 class PushNotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final ApiService _apiService = ApiService();
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
     // Request permission for notifications
@@ -38,18 +77,22 @@ class PushNotificationService {
       }
     }
 
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings();
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+    await _localNotifications.initialize(initializationSettings);
+
     // Handle incoming messages when the app is in the foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-       if (kDebugMode) {
+      if (kDebugMode) {
         print('Got a message whilst in the foreground!');
         print('Message data: ${message.data}');
-       }
-
-      if (message.notification != null) {
-         if (kDebugMode) {
-          print('Message also contained a notification: ${message.notification}');
-         }
       }
+      showNotification(message);
     });
   }
 
