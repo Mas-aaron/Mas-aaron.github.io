@@ -3,6 +3,9 @@ from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError
 from django.conf import settings
 import logging
+from requests.exceptions import ConnectionError, RequestException
+from google.auth.exceptions import TransportError
+from urllib3.exceptions import ProtocolError
 
 from .models import Device
 
@@ -100,17 +103,17 @@ def send_push_notification(user, title, body, data=None, image_url=None):
                 logger.info(f"Successfully sent message to device {device.id}: {response}")
                 success_count += 1
 
+            except messaging.UnregisteredError as e:
+                logger.warning(f"Device {device.id} has an unregistered token. Deactivating. Error: {e}")
+                device.is_active = False
+                device.save()
+                failure_count += 1
+            except (ConnectionError, TransportError, ProtocolError, RequestException) as e:
+                logger.warning(f"Network error sending to device {device.id}: {str(e)}")
+                failure_count += 1
             except FirebaseError as e:
                 logger.error(f"Firebase error sending to device {device.id}: {str(e)}")
                 failure_count += 1
-                
-                # Handle specific error cases safely
-                if hasattr(e, 'code') and (e.code == 'messaging/registration-token-not-registered' or e.code == 'messaging/invalid-registration-token'):
-                    device.is_active = False
-                    device.save()
-                    logger.warning(f"Deactivated invalid device token for user {user.id}: {device.token}")
-                else:
-                    logger.warning(f"Unhandled FirebaseError for device {device.id}. Error: {e}")
 
         logger.info(f"Notification results for user {user.id}: {success_count} successful, {failure_count} failed")
         return success_count > 0

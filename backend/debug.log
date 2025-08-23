@@ -3196,3 +3196,586 @@ Unhandled FirebaseError for device 1. Error: Requested entity was not found.
 Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755357239358521%4c3c1fe64c3c1fe6
 Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755357239556539%4c3c1fe64c3c1fe6
 Notification results for user 4: 2 successful, 1 failed
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755940638963971%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755940642857471%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 31 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 31 to group restaurant_4
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755940814001117%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755940814667563%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Sent new order notification for order 39 to group restaurant_4
+Order 31 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 31 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 31 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755941016815099%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755941017341133%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Sent push notifications for order 31 to 1 available riders.
+Not Found: /api/rider-orders/34/complete/
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755941074976828%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755941075236779%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755941111845689%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755941113071080%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 39 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 39 to group restaurant_4
+Not Found: /favicon.ico
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755941478074527%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755941478620857%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755941478843081%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755941479081844%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755941504571569%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755941504967563%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755941505319102%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755941505622975%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755941528109546%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755941528341707%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Order 39 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 39 to group restaurant_4
+Order 39 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 39 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 39 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755941544417538%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755941544870299%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Sent push notifications for order 39 to 1 available riders.
+Firebase error sending to device 1: Requested entity was not found.
+Unhandled FirebaseError for device 1. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755941630714551%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755941630931247%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Internal Server Error: /api/loyalty/rewards/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\loyalty\views.py", line 37, in get
+    rewards = RedemptionService.get_available_rewards(request.user)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\loyalty\services.py", line 75, in get_available_rewards
+    loyalty = CustomerLoyalty.objects.get(user=user)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 633, in get
+    raise self.model.DoesNotExist(
+loyalty.models.CustomerLoyalty.DoesNotExist: CustomerLoyalty matching query does not exist.
+Bad Request: /api/login/
+Device 1 has an unregistered token. Deactivating. Error: Requested entity was not found.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755943391371370%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755943391587599%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 1 failed
+Unexpected error sending notification for user 4: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connection.py", line 565, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1428, in getresponse
+    response.begin()
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 300, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connection.py", line 565, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1428, in getresponse
+    response.begin()
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 300, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\transport\requests.py", line 187, in __call__
+    response = self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\adapters.py", line 682, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\notifications.py", line 99, in send_push_notification
+    response = messaging.send(message)
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\messaging.py", line 125, in send
+    return _get_messaging_service(app).send(message, dry_run)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\messaging.py", line 421, in send
+    resp = self._client.body(
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\_http_client.py", line 148, in body
+    resp = self.request(method, url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\_http_client.py", line 135, in request
+    resp = self._session.request(method, self.base_url + url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\transport\requests.py", line 535, in request
+    self.credentials.before_request(auth_request, method, url, request_headers)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+               ^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\transport\requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755943695350083%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755943695590223%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 40 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755943710680569%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755943710916645%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 40 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 40 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755943720384594%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755943720636177%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 40 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 40 to group restaurant_4
+Order 40 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 40 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 40 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755943723740668%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755943723972784%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Sent push notifications for order 40 to 1 available riders.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755943758093741%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755943758315643%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755943843039759%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755943843262498%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755943843486996%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755943843749310%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755944371950049%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755944372162550%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 41 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755944406666364%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755944406896836%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 41 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 41 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755944437737690%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755944437999546%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 41 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 41 to group restaurant_4
+Order 41 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 41 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 41 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755944442264755%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755944442870039%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Sent push notifications for order 41 to 1 available riders.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755944892785673%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755944893052589%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 42 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755944991407747%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755944991621805%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755944991839948%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755944992045310%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Internal Server Error: /api/rider-orders/38/complete/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 1024, in complete
+    points, _ = LoyaltyService.calculate_points(order)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\loyalty\services.py", line 19, in calculate_points
+    base_points = int(order.total)  # 1 point per currency unit
+                      ^^^^^^^^^^^
+AttributeError: 'Order' object has no attribute 'total'
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945028815320%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945029149313%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945029371201%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945029854376%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Internal Server Error: /api/rider-orders/35/complete/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 1024, in complete
+    points, _ = LoyaltyService.calculate_points(order)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\loyalty\services.py", line 19, in calculate_points
+    base_points = int(order.total)  # 1 point per currency unit
+                      ^^^^^^^^^^^
+AttributeError: 'Order' object has no attribute 'total'
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945105252747%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945105813241%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 42 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 42 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945109298498%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945109528900%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 42 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 42 to group restaurant_4
+Order 42 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 42 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 42 to riders_available group.
+Sent 'Ready for Pickup' WebSocket message for order 42 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755945364861239%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755945365087395%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Sent push notifications for order 42 to 1 available riders.
+Unexpected error sending notification for user 5: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connection.py", line 565, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1428, in getresponse
+    response.begin()
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 300, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\util\retry.py", line 474, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\urllib3\connection.py", line 565, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1428, in getresponse
+    response.begin()
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 300, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\transport\requests.py", line 187, in __call__
+    response = self.session.request(
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\requests\adapters.py", line 682, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\notifications.py", line 99, in send_push_notification
+    response = messaging.send(message)
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\messaging.py", line 125, in send
+    return _get_messaging_service(app).send(message, dry_run)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\messaging.py", line 421, in send
+    resp = self._client.body(
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\_http_client.py", line 148, in body
+    resp = self.request(method, url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\firebase_admin\_http_client.py", line 135, in request
+    resp = self._session.request(method, self.base_url + url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\transport\requests.py", line 535, in request
+    self.credentials.before_request(auth_request, method, url, request_headers)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\oauth2\_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+               ^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\google\auth\transport\requests.py", line 194, in __call__
+    raise new_exc from caught_exc
+google.auth.exceptions.TransportError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+Sent push notifications for order 42 to 1 available riders.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945674673190%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945674937992%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Sent new order notification for order 43 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945692579288%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945693416631%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 43 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 43 to group restaurant_4
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945713266751%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945713542035%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Order 43 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 43 to group restaurant_4
+Order 43 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 43 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 43 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1755945770592580%334de02b334de02b
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1755945770921820%334de02b334de02b
+Notification results for user 5: 2 successful, 0 failed
+Sent push notifications for order 43 to 1 available riders.
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945787174262%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945787816955%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Successfully sent message to device 2: projects/fortexpress-5641c/messages/0:1755945788072986%4c3c1fe64c3c1fe6
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1755945788428101%4c3c1fe64c3c1fe6
+Notification results for user 4: 2 successful, 0 failed
+Internal Server Error: /api/rider-orders/43/complete/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 1024, in complete
+    points, _ = LoyaltyService.calculate_points(order)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\loyalty\services.py", line 19, in calculate_points
+    base_points = int(order.total)  # 1 point per currency unit
+                      ^^^^^^^^^^^
+AttributeError: 'Order' object has no attribute 'total'
+Internal Server Error: /api/directions/

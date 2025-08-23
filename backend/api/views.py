@@ -36,6 +36,7 @@ from .models import (
     UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview
 )
 from .dispatch_service import find_and_assign_rider
+from loyalty.services import LoyaltyService
 from .serializers import (
     RestaurantDashboardReviewSerializer,
     BillSerializer,
@@ -510,6 +511,34 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
 
         return response
 
+
+class NotifyArrivalView(APIView):
+    """Allows a rider to notify the customer that they are arriving soon."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id, *args, **kwargs):
+        try:
+            order = Order.objects.get(id=order_id)
+            rider_profile = get_object_or_404(RiderProfile, user=request.user)
+
+            # Check if the authenticated user is the rider assigned to this order
+            if order.rider != rider_profile:
+                return Response({'error': 'You are not assigned to this order.'}, status=status.HTTP_403_FORBIDDEN)
+
+            # Send notification to the customer
+            customer = order.user
+            send_push_notification(
+                customer,
+                title="Your rider is arriving!",
+                body=f"{request.user.username} is just moments away with your order.",
+                data={'orderId': str(order.id), 'status': 'Arriving'}
+            )
+
+            return Response({'status': 'Notification sent to customer.'}, status=status.HTTP_200_OK)
+
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found.'}, status=status.HTTP_404_NOT_FOUND)
+
 # --- User and Auth Views ---
 
 class CreateUserView(generics.CreateAPIView):
@@ -950,26 +979,17 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'error': 'This order is no longer available.'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            rider_profile = request.user.rider_profile
+            rider_profile = RiderProfile.objects.get(user=request.user)
+            order.rider = rider_profile
+            order.status = 'On the way'
+            order.save()
+
+            # Notify customer and restaurant
+            send_order_status_notification(order)
+
+            return Response(OrderSerializer(order).data)
         except RiderProfile.DoesNotExist:
-            return Response({'error': 'Rider profile not found for this user.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        order.rider = rider_profile
-        order.status = 'On the way'
-        order.save()
-
-        # Notify customer via WebSocket
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f'track_{order.id}',
-            {
-                'type': 'order.status.update',
-                'order': OrderSerializer(order).data
-            }
-        )
-
-        serializer = self.get_serializer(order)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'error': 'Rider profile not found.'}, status=status.HTTP_403_FORBIDDEN)
 
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):
@@ -980,10 +1000,29 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
             # .get_queryset() already filters for the current rider
             order = self.get_queryset().get(pk=pk, status='On the way')
         except Order.DoesNotExist:
-            return Response({'error': 'Order not found or not in a deliverable state.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Order not found or not in "On the way" status.'}, status=status.HTTP_404_NOT_FOUND)
 
         order.status = 'Delivered'
         order.save()
+
+        # Notify customer
+        send_order_status_notification(order)
+
+        # Notify restaurant
+        channel_layer = get_channel_layer()
+        restaurant_group_name = f'restaurant_{order.restaurant.id}'
+        order_data = RestaurantOrderSerializer(order).data
+        async_to_sync(channel_layer.group_send)(
+            restaurant_group_name,
+            {
+                'type': 'order_update',
+                'order': order_data
+            }
+        )
+
+        # Award loyalty points
+        points, _ = LoyaltyService.calculate_points(order)
+        LoyaltyService.award_points(order.user, points, 'order_completion', order)
 
         serializer = self.get_serializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
