@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0034_menuitem_average_rating_menuitem_review_count_and_more'),
+        ('api', '0034_cleanup_orphan_orders'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

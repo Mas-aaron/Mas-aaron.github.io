@@ -24,8 +24,13 @@ router.register(r'addresses', api_views.UserAddressViewSet, basename='address')
 router.register(r'devices', api_views.DeviceViewSet, basename='device')
 
 # Review Endpoints
-router.register(r'order-reviews', api_views.OrderReviewViewSet, basename='order-review')
-router.register(r'rider-reviews', api_views.RiderReviewViewSet, basename='rider-review')
+from .views import (
+    RestaurantViewSet, MenuItemViewSet, 
+    DietaryPreferenceViewSet, CustomerProfileView,
+    DashboardAnalyticsView, RiderOrderViewSet,
+    DeviceViewSet
+)
+from .rider_arrival_views import RiderArrivalView, RiderLocationUpdateView
 router.register(r'reviews', api_views.ReviewViewSet, basename='review')
 router.register(r'bills', api_views.BillViewSet, basename='bill')
 router.register(r'restaurant/dashboard-reviews', api_views.RestaurantOrderReviewViewSet, basename='restaurant-dashboard-review')
@@ -43,7 +48,7 @@ custom_urlpatterns = [
     path('orders/', api_views.OrderListCreateView.as_view(), name='order-list-create'),
     path('orders/<int:pk>/', api_views.OrderDetailView.as_view(), name='order-detail'),
     path('orders/<int:pk>/update-status/', api_views.OrderUpdateStatusView.as_view(), name='order-update-status'),
-    path('orders/<int:order_id>/notify-arrival/', api_views.NotifyArrivalView.as_view(), name='order-notify-arrival'),
+    # path('orders/<int:order_id>/notify-arrival/', api_views.NotifyArrivalView.as_view(), name='order-notify-arrival'),
 
     # Restaurant URLs
     path('restaurants/<int:restaurant_pk>/menu-items/', api_views.MenuItemListByRestaurantView.as_view(), name='restaurant-menu-items'),
@@ -62,6 +67,10 @@ custom_urlpatterns = [
     path('rider/available-orders/', api_views.AvailableOrderListView.as_view(), name='available-orders-list'),
     path('rider/signup/', api_views.RiderSignUpView.as_view(), name='rider-signup'),
     path('my-reviews/', api_views.MyRiderReviewsView.as_view(), name='my-rider-reviews'),
+    
+    # Rider Arrival URLs
+    path('rider-orders/<int:order_id>/arrival/', RiderArrivalView.as_view(), name='rider-arrival'),
+    path('rider-orders/<int:order_id>/location-update/', RiderLocationUpdateView.as_view(), name='rider-location-update'),
 
     # Dashboard URLs
     path('restaurants/dashboard-menu/', api_views.DashboardMenuView.as_view(), name='dashboard-menu'),

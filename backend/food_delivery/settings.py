@@ -55,6 +55,7 @@ if DEBUG:
         '10.32.141.42',
         '10.4.42.205',
         '10.4.45.171',
+        '10.5.55.117',
         '10.5.55.231',
 
     ]
@@ -241,24 +242,11 @@ if not DEBUG:
     ]
 
 # Channels
-if DEBUG:
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [('127.0.0.1', 6379)],
-            },
-        },
-    }
-else:
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [os.environ.get('REDIS_URL', 'redis://red-clevererh24si6c8l5rg:6379')],
-            },
-        },
-    }
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

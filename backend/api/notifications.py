@@ -87,7 +87,7 @@ def send_push_notification(user, title, body, data=None, image_url=None):
                 message = messaging.Message(
                     notification=notification_payload,
                     token=device.token,
-                    data=data or {},
+                    data={k: str(v) for k, v in (data or {}).items()},
                     apns=messaging.APNSConfig(
                         payload=messaging.APNSPayload(
                             aps=messaging.Aps(
@@ -104,9 +104,8 @@ def send_push_notification(user, title, body, data=None, image_url=None):
                 success_count += 1
 
             except messaging.UnregisteredError as e:
-                logger.warning(f"Device {device.id} has an unregistered token. Deactivating. Error: {e}")
-                device.is_active = False
-                device.save()
+                logger.warning(f"Device {device.id} has an unregistered token and will be deleted. Error: {e}")
+                device.delete()
                 failure_count += 1
             except (ConnectionError, TransportError, ProtocolError, RequestException) as e:
                 logger.warning(f"Network error sending to device {device.id}: {str(e)}")

@@ -296,9 +296,35 @@ class OrderReviewSerializer(serializers.ModelSerializer):
         return value
 
 
+class RiderPublicProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer to expose public details of a rider.
+    """
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+
+    class Meta:
+        model = RiderProfile
+        fields = ('first_name', 'last_name')
+
+
+class CustomerContactSerializer(serializers.ModelSerializer):
+    """
+    Serializer to expose customer contact details to the rider.
+    """
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    phone_number = serializers.CharField(source='customerprofile.phone_number', read_only=True, allow_null=True)
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'phone_number')
+
+
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     restaurant = RestaurantSerializer(read_only=True)
+    rider = RiderPublicProfileSerializer(read_only=True)
     review = serializers.SerializerMethodField()
     restaurant_name = serializers.SerializerMethodField(read_only=True)
 
@@ -370,11 +396,11 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id', 'user', 'rider_id', 'restaurant', 'restaurant_name',
+            'id', 'user', 'rider', 'restaurant', 'restaurant_name',
             'total_price', 'status', 'created_at', 'delivery_address', 'items',
             'customer_lat', 'customer_lng', 'restaurant_lat', 'restaurant_lng', 'review'
         ]
-        read_only_fields = ('user', 'rider_id', 'restaurant', 'restaurant_name', 'total_price', 'status', 'created_at', 'items')
+        read_only_fields = ('user', 'rider', 'restaurant', 'restaurant_name', 'total_price', 'status', 'created_at', 'items')
 
 
 class RiderNotificationOrderSerializer(serializers.ModelSerializer):
@@ -396,6 +422,15 @@ class CustomerSerializer(serializers.ModelSerializer):
 class RestaurantOrderSerializer(OrderSerializer):
     """An order serializer specifically for the restaurant view, including customer details."""
     user = CustomerSerializer(read_only=True)
+
+
+class RiderOrderSerializer(OrderSerializer):
+    """An order serializer for the rider view, including customer contact details."""
+    customer = CustomerContactSerializer(source='user', read_only=True)
+
+    class Meta(OrderSerializer.Meta):
+        fields = OrderSerializer.Meta.fields + ['customer']
+        read_only_fields = OrderSerializer.Meta.read_only_fields
 
 
 class OrderUpdateStatusSerializer(serializers.ModelSerializer):

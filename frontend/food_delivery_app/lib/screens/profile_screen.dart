@@ -5,6 +5,7 @@ import 'package:food_delivery_app/models/user_address.dart';
 import 'package:food_delivery_app/services/profile_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'loyalty_dashboard_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -163,7 +164,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 _buildProfileHeader(profile),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                _buildLoyaltySection(context),
+                const SizedBox(height: 24),
                 _buildAddressesSection(),
                 const SizedBox(height: 16),
                 _buildDietaryPreferencesSection(profile),
@@ -173,6 +176,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoyaltySection(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: ListTile(
+        leading: const Icon(Icons.star, color: Colors.amber),
+        title: const Text('Loyalty Program'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => LoyaltyDashboardScreen(),
+            ),
+          );
         },
       ),
     );

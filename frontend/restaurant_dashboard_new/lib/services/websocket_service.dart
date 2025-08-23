@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../constants.dart';
 
 class WebSocketService {
   WebSocketChannel? _channel;
@@ -19,7 +20,7 @@ class WebSocketService {
       return;
     }
     // URL for the restaurant dashboard WebSocket
-    final url = 'ws://10.5.55.18:8001/ws/restaurant/orders/?token=$token';
+    final url = '$webSocketUrl/ws/restaurant/orders/?token=$token';
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
       _isConnected = true;

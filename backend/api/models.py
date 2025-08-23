@@ -325,3 +325,17 @@ class RiderReview(models.Model):
         return f'Rider Review for Order #{self.order.id} by {self.user.username}'
 
 
+class OrderActivity(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='activities')
+    activity_type = models.CharField(max_length=50)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.activity_type} for Order #{self.order.id} at {self.created_at}'
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Order Activities"
+
+

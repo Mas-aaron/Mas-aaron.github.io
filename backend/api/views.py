@@ -38,35 +38,35 @@ from .models import (
 from .dispatch_service import find_and_assign_rider
 from loyalty.services import LoyaltyService
 from .serializers import (
-    RestaurantDashboardReviewSerializer,
-    BillSerializer,
-    CartItemSerializer,
-    CartSerializer,
-    CartItemWriteSerializer,
-    MenuCategorySerializer,
-    MenuItemBulkUploadSerializer,
+    UserSerializer,
+    RestaurantSerializer,
     MenuItemSerializer,
-    MessageSerializer,
-    ModifierGroupSerializer,
-    ModifierSerializer,
-    NotificationSerializer,
+    CartSerializer,
+    CartItemSerializer,
+    CartItemWriteSerializer,
     OrderSerializer,
+    RestaurantSignUpSerializer,
+    RiderSignUpSerializer,
+    CustomerProfileSerializer,
+    RestaurantProfileSerializer,
     OrderUpdateStatusSerializer,
     RestaurantOrderSerializer,
-    RestaurantSerializer,
-    RestaurantSignUpSerializer,
-    RestaurantProfileSerializer,
+    RiderOrderSerializer,
+    MessageSerializer,
     MenuCategoryCRUDSerializer,
-    UserSerializer,
-    RiderSignUpSerializer,
+    BillSerializer,
+    RestaurantDashboardReviewSerializer,
     DietaryPreferenceSerializer,
     UserAddressSerializer,
-    CustomerProfileSerializer,
     ReviewSerializer,
     OrderReviewSerializer,
     RiderReviewSerializer,
     DeviceSerializer,
     RestaurantOrderReviewSerializer,
+    MenuItemBulkUploadSerializer,
+    ModifierGroupSerializer,
+    ModifierSerializer,
+    NotificationSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -953,20 +953,17 @@ class RestaurantProfileView(generics.RetrieveUpdateAPIView):
 class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This viewset handles listing and managing a rider's orders.
+    It uses the RiderOrderSerializer to include customer contact details.
     """
-    serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = RiderOrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        """
-        This view should return a list of all the orders
-        assigned to the currently authenticated user (rider).
-        """
-        try:
-            rider_profile = self.request.user.rider_profile
-            return Order.objects.filter(rider=rider_profile).order_by('-created_at')
-        except RiderProfile.DoesNotExist:
-            return Order.objects.none()
+        """This view should return a list of all the orders assigned to the currently authenticated rider."""
+        user = self.request.user
+        if hasattr(user, 'rider_profile'):
+            return Order.objects.filter(rider=user.rider_profile).order_by('-created_at')
+        return Order.objects.none() # Return no orders if the user is not a rider
 
     @action(detail=True, methods=['post'])
     def accept(self, request, pk=None):
