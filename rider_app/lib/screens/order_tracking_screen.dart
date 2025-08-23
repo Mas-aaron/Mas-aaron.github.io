@@ -6,15 +6,16 @@ import 'package:flutter/services.dart';
 import 'package:rider_app/constants.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'dart:convert';
-
-import 'package:rider_app/models/order.dart';
-
-import 'package:rider_app/services/api_service.dart';
-
-import 'package:web_socket_channel/web_socket_channel.dart';
+import '../models/order.dart';
+import '../constants.dart';
+import '../services/api_service.dart';
+import '../services/websocket_service.dart';
+import '../services/location_service.dart';
+import '../services/arrival_notification_service.dart';
+import 'package:location/location.dart';
 
 // Helper function to programmatically resize marker icons
 Future<BitmapDescriptor> getMarkerIcon(String path, int width) async {
@@ -45,12 +46,17 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   LocationData? _currentLocation;
   final Location _location = Location();
   StreamSubscription<LocationData>? _locationSubscription;
+  StreamSubscription? _webSocketSubscription;
   WebSocketChannel? _channel;
   Timer? _broadcastTimer;
   Timer? _reconnectTimer;
   bool _wsConnected = false;
 
   BitmapDescriptor? _riderIcon;
+  
+  // Arrival notification services
+  final LocationService _locationService = LocationService();
+  final ArrivalNotificationService _arrivalService = ArrivalNotificationService();
 
   @override
   void initState() {
@@ -74,6 +80,27 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       _initializeLocation();
       _getRouteAndDrawPolyline();
       _initWebSocket();
+      _initializeArrivalNotifications();
+    }
+  }
+
+  Future<void> _initializeArrivalNotifications() async {
+    // Start monitoring location for arrival detection if order is active
+    if (widget.order.status.toLowerCase() == 'on the way') {
+      try {
+        await _locationService.startRiderLocationTracking(widget.order);
+        print('Arrival notification system initialized for order ${widget.order.id}');
+      } catch (error) {
+        print('Failed to initialize arrival notifications: $error');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to start location tracking: $error'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -134,7 +161,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       });
     }
 
-    _channel!.stream.listen(
+    _webSocketSubscription = _channel!.stream.listen(
       (event) {
         // Handle incoming messages if needed, but connection is already active.
         print('Received WebSocket message: $event');
@@ -304,6 +331,54 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     ));
   }
 
+  Future<void> _notifyArrival() async {
+    if (_currentLocation?.latitude == null || _currentLocation?.longitude == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Location not available. Please wait for GPS signal.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final success = await _arrivalService.triggerArrivalNotification(
+        widget.order,
+        _currentLocation!.latitude!,
+        _currentLocation!.longitude!,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Customer notified of your arrival!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to send arrival notification. You may not be close enough to the customer.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to send notification: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _completeOrder() async {
     try {
       await _apiService.completeOrder(widget.order.id);
@@ -325,9 +400,14 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   @override
   void dispose() {
     _locationSubscription?.cancel();
+    _webSocketSubscription?.cancel();
     _broadcastTimer?.cancel();
     _reconnectTimer?.cancel();
     _channel?.sink.close();
+    
+    // Stop location tracking services
+    _locationService.stopLocationTracking();
+    
     super.dispose();
   }
 
@@ -374,10 +454,47 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         polylines: _polylines,
       ),
       floatingActionButton: widget.order.status == 'On the way'
-          ? FloatingActionButton.extended(
-              onPressed: _completeOrder,
-              label: const Text('Mark as Delivered'),
-              icon: const Icon(Icons.check),
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // DEBUG: Force arrival test button
+                FloatingActionButton.extended(
+                  onPressed: () async {
+                    // Test with fake coordinates near customer
+                    final success = await _arrivalService.triggerArrivalNotification(
+                      widget.order,
+                      widget.order.customerLat ?? 0.0,
+                      widget.order.customerLng ?? 0.0,
+                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success ? 'DEBUG: Arrival test successful!' : 'DEBUG: Arrival test failed'),
+                          backgroundColor: success ? Colors.green : Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  label: const Text('DEBUG: Force Arrival'),
+                  icon: const Icon(Icons.bug_report),
+                  heroTag: 'debugArrival',
+                  backgroundColor: Colors.purple,
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton.extended(
+                  onPressed: _notifyArrival,
+                  label: const Text('Notify Arrival'),
+                  icon: const Icon(Icons.notifications_active),
+                  heroTag: 'notifyArrival',
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton.extended(
+                  onPressed: _completeOrder,
+                  label: const Text('Mark as Delivered'),
+                  icon: const Icon(Icons.check),
+                  heroTag: 'completeOrder',
+                ),
+              ],
             )
           : null,
     );

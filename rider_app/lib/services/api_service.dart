@@ -236,4 +236,27 @@ class ApiService {
       throw Exception('Failed to load rider reviews');
     }
   }
+
+  Future<void> notifyArrival(int orderId) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('Authentication token not found.');
+    }
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/orders/$orderId/notify-arrival/'),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      try {
+        final body = jsonDecode(response.body);
+        throw Exception(body['error'] ?? 'Failed to send arrival notification.');
+      } catch (e) {
+        throw Exception('Failed to send arrival notification.');
+      }
+    }
+  }
 }
