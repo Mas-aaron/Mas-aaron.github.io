@@ -29,7 +29,7 @@ def cleanup_orphan_orders(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0033_auto_20250810_0959'),
+        ('api', '0034_menuitem_average_rating_menuitem_review_count_and_more'),
     ]
 
     operations = [
