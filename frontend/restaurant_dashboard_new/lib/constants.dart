@@ -1,3 +1,3 @@
-// PRODUCTION
-const String baseUrl = 'https://mas-aarongithubio-production.up.railway.app/api';
-const String webSocketUrl = 'wss://mas-aarongithubio-production.up.railway.app';
+// TODO: Replace with your local network IP address
+const String baseUrl = 'http://10.32.142.80:8000/api';
+const String webSocketUrl = 'ws://10.32.142.80:8000';

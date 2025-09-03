@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:food_delivery_app/constants.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/services/auth_service.dart';
+import 'package:food_delivery_app/services/contact_service.dart';
 import 'package:food_delivery_app/models/order.dart';
+import 'package:food_delivery_app/models/rider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:food_delivery_app/services/directions_service.dart';
@@ -213,6 +215,27 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     super.dispose();
   }
 
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'confirmed':
+        return Colors.blue;
+      case 'preparing':
+        return Colors.purple;
+      case 'ready for pickup':
+        return Colors.green;
+      case 'out for delivery':
+        return const Color(0xFFFE5722);
+      case 'delivered':
+        return Colors.green;
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -248,23 +271,224 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_currentOrder != null ? 'Track Order #${_currentOrder!.id}' : 'Loading Order...'),
-        backgroundColor: Colors.orange,
+        backgroundColor: const Color(0xFFFE5722),
+        foregroundColor: Colors.white,
+        actions: [
+          if (_currentOrder?.rider != null && _currentOrder!.rider!.phoneNumber != null)
+            IconButton(
+              icon: const Icon(Icons.phone),
+              onPressed: () => ContactService.showContactOptions(
+                context,
+                riderName: _currentOrder!.rider!.name,
+                phoneNumber: _currentOrder!.rider!.phoneNumber!,
+              ),
+            ),
+        ],
       ),
-      body: SizedBox.expand(
-        child: GoogleMap(
-          onMapCreated: (GoogleMapController controller) {
-            if (!_controller.isCompleted) {
-              _controller.complete(controller);
-            }
-          },
-          initialCameraPosition: CameraPosition(
-            target: LatLng(widget.order.restaurant.lat, widget.order.restaurant.lng),
-            zoom: 14.5,
+      body: Stack(
+        children: [
+          SizedBox.expand(
+            child: GoogleMap(
+              onMapCreated: (GoogleMapController controller) {
+                if (!_controller.isCompleted) {
+                  _controller.complete(controller);
+                }
+              },
+              initialCameraPosition: CameraPosition(
+                target: LatLng(widget.order.restaurant.lat, widget.order.restaurant.lng),
+                zoom: 14.5,
+              ),
+              markers: _markers,
+              polylines: _polylines,
+              myLocationEnabled: true,
+            ),
           ),
-          markers: _markers,
-          polylines: _polylines,
-          myLocationEnabled: true,
-        ),
+          if (_currentOrder != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Handle bar
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Order status
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(_currentOrder!.status).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _currentOrder!.status,
+                              style: TextStyle(
+                                color: _getStatusColor(_currentOrder!.status),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          if (_currentOrder!.rider != null && _currentOrder!.rider!.phoneNumber != null)
+                            GestureDetector(
+                              onTap: () => ContactService.showContactOptions(
+                                context,
+                                riderName: _currentOrder!.rider!.name,
+                                phoneNumber: _currentOrder!.rider!.phoneNumber!,
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFE5722).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.phone, size: 16, color: Color(0xFFFE5722)),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Contact Rider',
+                                      style: TextStyle(
+                                        color: Color(0xFFFE5722),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Rider info
+                      if (_currentOrder!.rider != null)
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: const Color(0xFFFE5722).withOpacity(0.1),
+                              child: const Icon(
+                                Icons.delivery_dining,
+                                color: Color(0xFFFE5722),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _currentOrder!.rider!.name,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Your FortExpress Rider',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (_currentOrder!.rider!.rating != null)
+                              Row(
+                                children: [
+                                  const Icon(Icons.star, color: Colors.amber, size: 16),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    _currentOrder!.rider!.rating!.toStringAsFixed(1),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                          ],
+                        ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Restaurant info
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.orange[50],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(Icons.restaurant, color: Colors.orange[600], size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _currentOrder!.restaurant.name,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  'Restaurant',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

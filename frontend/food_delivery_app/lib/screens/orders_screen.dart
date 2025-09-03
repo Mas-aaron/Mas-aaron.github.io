@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/order.dart';
+import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/services/websocket_service.dart';
 import 'package:food_delivery_app/screens/order_tracking_screen.dart';
+import 'package:food_delivery_app/widgets/error_display.dart';
 import 'package:intl/intl.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen> {
   List<Order> _orders = [];
   bool _isLoading = true;
+  String? _errorMessage;
   final ApiService _apiService = ApiService();
   WebSocketService? _webSocketService;
 
@@ -26,10 +29,18 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Future<void> _loadOrdersAndInitWebSocket() async {
     await _loadOrders();
-    _initWebSocket();
+    if (_errorMessage == null) {
+      _initWebSocket();
+    }
   }
 
   Future<void> _loadOrders() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
     try {
       final orders = await _apiService.fetchOrders();
       if (mounted) {
@@ -39,13 +50,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
         });
       }
     } catch (e) {
+      print('Error loading orders: $e');
       if (mounted) {
         setState(() {
+          _errorMessage = 'Failed to load orders: $e';
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load orders: $e')),
-        );
       }
     }
   }
@@ -148,6 +158,78 @@ class _OrdersScreenState extends State<OrdersScreen> {
     super.dispose();
   }
 
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return ErrorDisplayWidget(
+        errorMessage: _errorMessage!,
+        onRetry: _loadOrdersAndInitWebSocket,
+      );
+    }
+
+    if (_orders.isEmpty) {
+      return const Center(child: Text('You have no active orders.'));
+    }
+
+    return ListView.builder(
+      itemCount: _orders.length,
+      itemBuilder: (context, index) {
+        final order = _orders[index];
+        final createdAtDate = DateTime.parse(order.createdAt);
+        final double totalPrice = double.tryParse(order.totalPrice) ?? 0.0;
+
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: InkWell(
+            onTap: () => _navigateToTrackingScreen(order),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Order #${order.id}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        CurrencyFormatter.formatUGX(totalPrice),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Placed on: ${DateFormat.yMMMd().format(createdAtDate)}'),
+                      _getStatusChip(order.status),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,64 +239,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadOrders,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _orders.isEmpty
-                ? const Center(child: Text('You have no active orders.'))
-                : ListView.builder(
-                    itemCount: _orders.length,
-                    itemBuilder: (context, index) {
-                      final order = _orders[index];
-                      final createdAtDate = DateTime.parse(order.createdAt);
-                      final double totalPrice = double.tryParse(order.totalPrice) ?? 0.0;
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: InkWell(
-                          onTap: () => _navigateToTrackingScreen(order),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Order #${order.id}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    Text(
-                                      '\$${totalPrice.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Placed on: ${DateFormat.yMMMd().format(createdAtDate)}'),
-                                    _getStatusChip(order.status),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+        child: _buildBody(),
       ),
     );
   }

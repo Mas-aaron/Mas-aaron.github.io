@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('api', '0042_remove_menuitem_image_url_and_more'),
+        ('api', '0033_riderprofile_rating_riderprofile_rating_count'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

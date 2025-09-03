@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart.dart';
+import '../widgets/order_type_selector.dart';
 
 import '../constants.dart';
 import '../services/api_service.dart';
@@ -13,10 +14,39 @@ class CartProvider with ChangeNotifier {
   Cart? _cart;
   bool _isLoading = false;
   String? _error;
+  
+  // Order type and scheduling for dine-in
+  OrderType _orderType = OrderType.delivery;
+  DateTime? _scheduledTime;
+  double _tipAmount = 0.0;
 
   Cart? get cart => _cart;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  
+  // Order type getters
+  OrderType get orderType => _orderType;
+  DateTime? get scheduledTime => _scheduledTime;
+  double get tipAmount => _tipAmount;
+  
+  // Order type setters
+  void setOrderType(OrderType type) {
+    _orderType = type;
+    if (type != OrderType.dineIn) {
+      _scheduledTime = null;
+    }
+    notifyListeners();
+  }
+  
+  void setScheduledTime(DateTime? time) {
+    _scheduledTime = time;
+    notifyListeners();
+  }
+  
+  void setTipAmount(double amount) {
+    _tipAmount = amount;
+    notifyListeners();
+  }
 
 
 
@@ -163,30 +193,40 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> placeOrder(String address, double latitude, double longitude) async {
+  Future<Map<String, dynamic>> placeOrder(String? address, double? latitude, double? longitude) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     if (token == null) {
       _error = 'You are not logged in.';
       notifyListeners();
-      return false;
+      return {'success': false, 'error': 'You are not logged in.'};
     }
 
     _isLoading = true;
     notifyListeners();
 
-        bool success = false;
     try {
-      await _apiService.placeOrder(address, latitude, longitude);
+      await _apiService.placeOrder(
+        address ?? '', 
+        latitude ?? 0.0, 
+        longitude ?? 0.0,
+        orderType: _orderType,
+        scheduledTime: _scheduledTime,
+        tipAmount: _tipAmount,
+      );
       await fetchCart(); // Refresh cart, which should now be empty
-      success = true;
+      _isLoading = false;
+      notifyListeners();
+      return {'success': true};
     } catch (e) {
-      _error = 'An error occurred while placing the order: $e';
-      success = false;
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11); // Remove "Exception: " prefix
+      }
+      _error = errorMessage;
+      _isLoading = false;
+      notifyListeners();
+      return {'success': false, 'error': errorMessage};
     }
-
-    _isLoading = false;
-    notifyListeners();
-    return success;
   }
 }

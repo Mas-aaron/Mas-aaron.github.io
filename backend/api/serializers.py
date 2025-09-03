@@ -4,12 +4,10 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User, Group
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from .models import (
-    RiderProfile,
-    Bill,
-    Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, Order, OrderItem, 
-    Message, Notification, DietaryPreference, CustomerProfile, UserAddress, Review, Device
-)
+from .models import *
+from .utils import format_ugx_currency
+import csv
+import io
 from .models import OrderReview, RiderReview
 
 logger = logging.getLogger(__name__)
@@ -161,18 +159,21 @@ class ModifierGroupSerializer(serializers.ModelSerializer):
 
 class MenuItemSerializer(serializers.ModelSerializer):
     price = serializers.FloatField()
+    price_ugx = serializers.SerializerMethodField()
     modifier_groups = ModifierGroupSerializer(many=True, read_only=True)
     available_breakfast = serializers.BooleanField()
     available_lunch = serializers.BooleanField()
     available_dinner = serializers.BooleanField()
-    image = serializers.ImageField(required=False, allow_null=True)
-    category = serializers.PrimaryKeyRelatedField(queryset=MenuCategory.objects.all(), required=True)
-    restaurant = serializers.ReadOnlyField(source='category.restaurant.id')
+    category = serializers.PrimaryKeyRelatedField(queryset=MenuCategory.objects.all())
+    restaurant = RestaurantSerializer(read_only=True)
+
+    def get_price_ugx(self, obj):
+        return format_ugx_currency(obj.price)
 
     class Meta:
         model = MenuItem
         fields = (
-            'id', 'category', 'restaurant', 'name', 'description', 'price', 'image',
+            'id', 'category', 'restaurant', 'name', 'description', 'price', 'price_ugx', 'image',
             'available_breakfast', 'available_lunch', 'available_dinner',
             'modifier_groups'
         )
@@ -217,10 +218,14 @@ class RestaurantOrderItemSerializer(serializers.ModelSerializer):
 class RestaurantOrderSerializer(serializers.ModelSerializer):
     items = RestaurantOrderItemSerializer(many=True, read_only=True)
     total_price = serializers.FloatField()
+    total_price_ugx = serializers.SerializerMethodField()
+
+    def get_total_price_ugx(self, obj):
+        return format_ugx_currency(obj.total_price)
 
     class Meta:
         model = Order
-        fields = ('id', 'items', 'total_price', 'status', 'created_at', 'delivery_address', 'restaurant_name', 'rider_id')
+        fields = ('id', 'items', 'total_price', 'total_price_ugx', 'status', 'created_at', 'delivery_address', 'restaurant_name', 'rider_id')
 
 class CartItemWriteSerializer(serializers.ModelSerializer):
     """Serializer for writing (create/update) CartItem data."""
@@ -346,9 +351,18 @@ class OrderSerializer(serializers.ModelSerializer):
         if not cart or not cart.items.exists():
             raise serializers.ValidationError("Your cart is empty.")
 
-        # 2. Validation: Check for required location data
-        if 'customer_lat' not in validated_data or 'customer_lng' not in validated_data:
-            raise serializers.ValidationError("Customer location (lat, lng) is required.")
+        # 2. Validation: Check for required location data (only for delivery orders)
+        order_type = validated_data.get('order_type', 'delivery')
+        if order_type == 'delivery' and ('customer_lat' not in validated_data or 'customer_lng' not in validated_data):
+            raise serializers.ValidationError("Customer location (lat, lng) is required for delivery orders.")
+
+        # 3. Validation: Ensure all items in cart are from the same restaurant
+        restaurants = set()
+        for cart_item in cart.items.all():
+            restaurants.add(cart_item.menu_item.category.restaurant.id)
+        
+        if len(restaurants) > 1:
+            raise serializers.ValidationError("Your cart contains items from multiple restaurants. Please order from one restaurant at a time.")
 
         onboarding_restaurant = cart.items.first().menu_item.category.restaurant
 
@@ -358,7 +372,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
         # Find the corresponding api.models.Restaurant instance
         try:
-            api_restaurant = Restaurant.objects.get(name=onboarding_restaurant.name)
+            # Use ID instead of name to ensure we get the exact restaurant
+            api_restaurant = Restaurant.objects.get(id=onboarding_restaurant.id)
         except Restaurant.DoesNotExist:
             raise serializers.ValidationError(f"Could not find a corresponding active restaurant for '{onboarding_restaurant.name}'.")
 
@@ -370,11 +385,14 @@ class OrderSerializer(serializers.ModelSerializer):
             user=user,
             restaurant=api_restaurant,
             total_price=total_price,
-            delivery_address=validated_data['delivery_address'],
+            order_type=validated_data.get('order_type', 'delivery'),
+            delivery_address=validated_data.get('delivery_address', ''),
+            scheduled_time=validated_data.get('scheduled_time'),
+            tip_amount=validated_data.get('tip_amount', 0.00),
             restaurant_lat=onboarding_restaurant.latitude,
             restaurant_lng=onboarding_restaurant.longitude,
-            customer_lat=validated_data['customer_lat'],
-            customer_lng=validated_data['customer_lng']
+            customer_lat=validated_data.get('customer_lat'),
+            customer_lng=validated_data.get('customer_lng')
         )
 
         # 4. Create OrderItems from CartItems
@@ -386,19 +404,54 @@ class OrderSerializer(serializers.ModelSerializer):
                 price=cart_item.menu_item.price
             )
         
-        # 5. Clear the cart
+        # 5. Calculate estimated preparation time
+        order.estimated_prep_time = self._calculate_prep_time(cart.items.all())
+        order.save()
+        
+        # 6. Clear the cart
         cart.items.all().delete()
 
-
-
         return order
+
+    def _calculate_prep_time(self, cart_items):
+        """Calculate estimated preparation time in minutes based on order complexity."""
+        base_time = 15  # Base preparation time in minutes
+        item_time = 0
+        
+        for cart_item in cart_items:
+            # Add time based on quantity (2 minutes per additional item)
+            item_time += (cart_item.quantity - 1) * 2
+            
+            # Add complexity time based on menu item category or type
+            menu_item = cart_item.menu_item
+            if hasattr(menu_item, 'category') and menu_item.category:
+                category_name = menu_item.category.name.lower()
+                if 'pizza' in category_name or 'grill' in category_name:
+                    item_time += 10  # Complex items take longer
+                elif 'salad' in category_name or 'drink' in category_name:
+                    item_time += 2   # Simple items are quick
+                else:
+                    item_time += 5   # Standard items
+            else:
+                item_time += 5  # Default time for items without category
+        
+        total_time = base_time + item_time
+        
+        # Cap the maximum preparation time at 60 minutes
+        return min(total_time, 60)
+
+    total_price_ugx = serializers.SerializerMethodField()
+
+    def get_total_price_ugx(self, obj):
+        return format_ugx_currency(obj.total_price)
 
     class Meta:
         model = Order
         fields = [
             'id', 'user', 'rider', 'restaurant', 'restaurant_name',
-            'total_price', 'status', 'created_at', 'delivery_address', 'items',
-            'customer_lat', 'customer_lng', 'restaurant_lat', 'restaurant_lng', 'review'
+            'total_price', 'total_price_ugx', 'status', 'created_at', 'delivery_address', 'items',
+            'customer_lat', 'customer_lng', 'restaurant_lat', 'restaurant_lng', 'review',
+            'order_type', 'scheduled_time', 'tip_amount', 'table_number', 'estimated_prep_time'
         ]
         read_only_fields = ('user', 'rider', 'restaurant', 'restaurant_name', 'total_price', 'status', 'created_at', 'items')
 
@@ -641,6 +694,70 @@ class BillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bill
         fields = '__all__'
+
+
+class PaymentPeriodSerializer(serializers.ModelSerializer):
+    gross_revenue_ugx = serializers.SerializerMethodField()
+    net_payout_ugx = serializers.SerializerMethodField()
+    platform_fee_ugx = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = PaymentPeriod
+        fields = '__all__'
+    
+    def get_gross_revenue_ugx(self, obj):
+        return format_ugx_currency(obj.gross_revenue)
+    
+    def get_net_payout_ugx(self, obj):
+        return format_ugx_currency(obj.net_payout)
+    
+    def get_platform_fee_ugx(self, obj):
+        return format_ugx_currency(obj.platform_fee)
+
+
+class OrderPaymentSerializer(serializers.ModelSerializer):
+    subtotal_ugx = serializers.SerializerMethodField()
+    net_payout_ugx = serializers.SerializerMethodField()
+    platform_commission_ugx = serializers.SerializerMethodField()
+    delivery_fee_ugx = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = OrderPayment
+        fields = '__all__'
+    
+    def get_subtotal_ugx(self, obj):
+        return format_ugx_currency(obj.subtotal)
+    
+    def get_net_payout_ugx(self, obj):
+        return format_ugx_currency(obj.net_payout)
+    
+    def get_platform_commission_ugx(self, obj):
+        return format_ugx_currency(obj.platform_commission)
+    
+    def get_delivery_fee_ugx(self, obj):
+        return format_ugx_currency(obj.delivery_fee)
+
+
+class BankAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankAccount
+        fields = '__all__'
+        extra_kwargs = {
+            'account_number': {'write_only': True},
+            'routing_number': {'write_only': True},
+        }
+
+
+class PaymentDisputeSerializer(serializers.ModelSerializer):
+    amount_disputed_ugx = serializers.SerializerMethodField()
+    order_number = serializers.ReadOnlyField(source='order_payment.order_number')
+    
+    class Meta:
+        model = PaymentDispute
+        fields = '__all__'
+    
+    def get_amount_disputed_ugx(self, obj):
+        return format_ugx_currency(obj.amount_disputed)
 
 class DeviceSerializer(serializers.ModelSerializer):
     class Meta:

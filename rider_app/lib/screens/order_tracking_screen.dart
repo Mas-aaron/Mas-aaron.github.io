@@ -15,6 +15,8 @@ import '../services/api_service.dart';
 import '../services/websocket_service.dart';
 import '../services/location_service.dart';
 import '../services/arrival_notification_service.dart';
+import '../services/contact_service.dart';
+import '../services/distance_service.dart';
 import 'package:location/location.dart';
 
 // Helper function to programmatically resize marker icons
@@ -57,6 +59,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   // Arrival notification services
   final LocationService _locationService = LocationService();
   final ArrivalNotificationService _arrivalService = ArrivalNotificationService();
+  
+  // Distance tracking
+  String _restaurantDistance = 'Calculating...';
+  String _customerDistance = 'Calculating...';
 
   @override
   void initState() {
@@ -78,15 +84,40 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     if (mounted) {
       _setMarkers();
       _initializeLocation();
-      _getRouteAndDrawPolyline();
-      _initWebSocket();
+      _calculateDistances();
       _initializeArrivalNotifications();
+    }
+  }
+
+  Future<void> _calculateDistances() async {
+    if (widget.order.restaurantLat != null && widget.order.restaurantLng != null) {
+      final restaurantDistance = await DistanceService.getFormattedDistanceFromCurrentLocation(
+        widget.order.restaurantLat!,
+        widget.order.restaurantLng!,
+      );
+      if (mounted) {
+        setState(() {
+          _restaurantDistance = restaurantDistance;
+        });
+      }
+    }
+
+    if (widget.order.customerLat != null && widget.order.customerLng != null) {
+      final customerDistance = await DistanceService.getFormattedDistanceFromCurrentLocation(
+        widget.order.customerLat!,
+        widget.order.customerLng!,
+      );
+      if (mounted) {
+        setState(() {
+          _customerDistance = customerDistance;
+        });
+      }
     }
   }
 
   Future<void> _initializeArrivalNotifications() async {
     // Start monitoring location for arrival detection if order is active
-    if (widget.order.status.toLowerCase() == 'on the way') {
+    if (widget.order.status.toLowerCase() == 'out for delivery') {
       try {
         await _locationService.startRiderLocationTracking(widget.order);
         print('Arrival notification system initialized for order ${widget.order.id}');
@@ -95,8 +126,8 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to start location tracking: $error'),
-              backgroundColor: Colors.red,
+              content: Text('Location tracking unavailable: ${error.toString()}'),
+              backgroundColor: Colors.orange,
             ),
           );
         }
@@ -224,7 +255,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     // Only broadcast if order is active (customize statuses as needed)
     // Broadcast as long as the order is active.
     final status = widget.order.status.toLowerCase();
-    return status != 'delivered' && status != 'cancelled';
+    return status == 'out for delivery' || status == 'ready for pickup';
   }
 
   Future<void> _getRouteAndDrawPolyline() async {
@@ -416,11 +447,28 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     // Show a loader if we don't have coordinates yet.
     if (widget.order.restaurantLat == null || widget.order.restaurantLng == null) {
       return Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
         appBar: AppBar(
-          title: const Text('Loading Route...'),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Loading Route...',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          ),
         ),
         body: const Center(
-          child: CircularProgressIndicator(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Color(0xFF00C851)),
+              SizedBox(height: 16),
+              Text('Loading delivery route...', style: TextStyle(color: Colors.grey)),
+            ],
+          ),
         ),
       );
     }
@@ -431,72 +479,411 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Delivery Route'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.my_location),
-            onPressed: () {
-              if (_currentLocation != null && _shouldBroadcast()) {
-                _animateCameraToPosition(LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!));
-              }
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Full-screen map
+          GoogleMap(
+            mapType: MapType.normal,
+            initialCameraPosition: initialCameraPosition,
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
             },
-          )
+            markers: _markers,
+            polylines: _polylines,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
+          ),
+          
+          // Modern top app bar overlay
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 16,
+                right: 16,
+                bottom: 16,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order #${widget.order.id}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          _getStatusText(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _getStatusColor(),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.my_location, color: Color(0xFF00C851)),
+                    onPressed: () {
+                      if (_currentLocation != null && _shouldBroadcast()) {
+                        _animateCameraToPosition(LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!));
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Modern bottom sheet with order details and actions
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 20,
+                    offset: Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle bar
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    // Order details
+                    _buildOrderDetails(),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Action buttons
+                    _buildActionButtons(),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
-      body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition: initialCameraPosition,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-        markers: _markers,
-        polylines: _polylines,
-      ),
-      floatingActionButton: widget.order.status == 'On the way'
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // DEBUG: Force arrival test button
-                FloatingActionButton.extended(
-                  onPressed: () async {
-                    // Test with fake coordinates near customer
-                    final success = await _arrivalService.triggerArrivalNotification(
-                      widget.order,
-                      widget.order.customerLat ?? 0.0,
-                      widget.order.customerLng ?? 0.0,
-                    );
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(success ? 'DEBUG: Arrival test successful!' : 'DEBUG: Arrival test failed'),
-                          backgroundColor: success ? Colors.green : Colors.red,
+    );
+  }
+
+  String _getStatusText() {
+    switch (widget.order.status.toLowerCase()) {
+      case 'out for delivery':
+        return 'Delivering to customer';
+      case 'ready for pickup':
+        return 'Ready for pickup';
+      default:
+        return widget.order.status;
+    }
+  }
+
+  Color _getStatusColor() {
+    switch (widget.order.status.toLowerCase()) {
+      case 'out for delivery':
+        return const Color(0xFF00C851);
+      case 'ready for pickup':
+        return Colors.orange[600]!;
+      default:
+        return Colors.grey[600]!;
+    }
+  }
+
+  Widget _buildOrderDetails() {
+    return Column(
+      children: [
+        // Restaurant info
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.red[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.red[100]!),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(Icons.restaurant, color: Colors.red[600], size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pickup from',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.order.restaurantName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      );
-                    }
-                  },
-                  label: const Text('DEBUG: Force Arrival'),
-                  icon: const Icon(Icons.bug_report),
-                  heroTag: 'debugArrival',
-                  backgroundColor: Colors.purple,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.location_on, size: 14, color: Colors.red[700]),
+                              const SizedBox(width: 4),
+                              Text(
+                                _restaurantDistance,
+                                style: TextStyle(
+                                  color: Colors.red[700],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                FloatingActionButton.extended(
-                  onPressed: _notifyArrival,
-                  label: const Text('Notify Arrival'),
-                  icon: const Icon(Icons.notifications_active),
-                  heroTag: 'notifyArrival',
+              ),
+            ],
+          ),
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Customer info
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.blue[100]!),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue[100],
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 8),
-                FloatingActionButton.extended(
-                  onPressed: _completeOrder,
-                  label: const Text('Mark as Delivered'),
-                  icon: const Icon(Icons.check),
-                  heroTag: 'completeOrder',
+                child: Icon(Icons.location_on, color: Colors.blue[600], size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Deliver to',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.location_on, size: 14, color: Colors.blue[700]),
+                              const SizedBox(width: 4),
+                              Text(
+                                _customerDistance,
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (widget.order.customerPhone != null)
+                          GestureDetector(
+                            onTap: () => ContactService.showContactOptions(
+                              context,
+                              customerName: widget.order.customerName ?? 'Customer',
+                              phoneNumber: widget.order.customerPhone!,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00C851).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.phone, size: 14, color: Color(0xFF00C851)),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Contact',
+                                    style: TextStyle(
+                                      color: Color(0xFF00C851),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.order.deliveryAddress,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (widget.order.customerName != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Customer: ${widget.order.customerName}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              ],
-            )
-          : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    if (widget.order.status != 'Out for Delivery') {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        // Primary action button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _completeOrder,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00C851),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
+            icon: const Icon(Icons.check_circle, size: 20),
+            label: const Text(
+              'Mark as Delivered',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Secondary action button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _notifyArrival,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF00C851),
+              side: const BorderSide(color: Color(0xFF00C851)),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            icon: const Icon(Icons.notifications_active, size: 20),
+            label: const Text(
+              'Notify Customer of Arrival',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

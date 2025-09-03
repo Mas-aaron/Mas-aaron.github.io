@@ -22,11 +22,11 @@ class WebSocketService {
     // URL for the restaurant dashboard WebSocket
     final url = '$webSocketUrl/ws/restaurant/orders/?token=$token';
     try {
-      _channel = WebSocketChannel.connect(Uri.parse(url));
-      _isConnected = true;
       if (kDebugMode) {
         print('[WebSocket] Connecting to $url');
       }
+      _channel = WebSocketChannel.connect(Uri.parse(url));
+      _isConnected = true;
 
       _streamSubscription = _channel!.stream.listen(
         (data) {
@@ -49,10 +49,22 @@ class WebSocketService {
         onError: (error) {
           _isConnected = false;
           if (kDebugMode) {
-            print('[WebSocket] Error: $error');
+            print('[WebSocket] Connection error: $error');
+            print('[WebSocket] Make sure the backend server is running on $webSocketUrl');
           }
+          // Attempt reconnection after 5 seconds
+          Timer(const Duration(seconds: 5), () {
+            if (!_isConnected) {
+              if (kDebugMode) {
+                print('[WebSocket] Attempting to reconnect...');
+              }
+              // Store token for reconnection
+              final currentToken = token;
+              connect(currentToken);
+            }
+          });
         },
-        cancelOnError: true,
+        cancelOnError: false,
       );
     } catch (e) {
       if (kDebugMode) {

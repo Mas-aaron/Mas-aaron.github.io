@@ -4,8 +4,8 @@ class MenuItem {
   final String description;
   final double price;
   final String? imageUrl;
-  final int restaurant;
-  final int category;
+  final dynamic restaurant; // Can be int or Restaurant object
+  final dynamic category; // Can be int or string (category name)
   final bool availableBreakfast;
   final bool availableLunch;
   final bool availableDinner;
@@ -25,13 +25,13 @@ class MenuItem {
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
     return MenuItem(
-      id: json['id'],
+      id: json['id'] is String ? int.parse(json['id']) : json['id'] ?? 0,
       name: json['name'] ?? 'Unknown Item',
       description: json['description'] ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       imageUrl: json['image_url'] ?? json['image'],
-      restaurant: json['restaurant'] ?? 0,
-      category: json['category'] ?? 0,
+      restaurant: json['restaurant'], // Accept any type (int, object, etc.)
+      category: json['category'], // Accept any type (int, string, etc.)
       availableBreakfast: json['available_breakfast'] ?? false,
       availableLunch: json['available_lunch'] ?? false,
       availableDinner: json['available_dinner'] ?? false,

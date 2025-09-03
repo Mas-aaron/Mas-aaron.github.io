@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Food Delivery App',
+        title: 'FortExpress',
         theme: ThemeData(
           primaryColor: const Color(0xFFFE5722),
         colorScheme: ColorScheme.fromSwatch().copyWith(

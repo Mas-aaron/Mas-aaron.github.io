@@ -2,6 +2,7 @@ class AnalyticsData {
   final double totalIncome;
   final int totalOrders;
   final int pendingOrders;
+  final double pendingIncome;
   final double dailyIncome;
   final int dailyOrders;
   final List<OrderRate> orderRate;
@@ -11,6 +12,7 @@ class AnalyticsData {
     required this.totalIncome,
     required this.totalOrders,
     required this.pendingOrders,
+    required this.pendingIncome,
     required this.dailyIncome,
     required this.dailyOrders,
     required this.orderRate,
@@ -28,6 +30,7 @@ class AnalyticsData {
       totalIncome: (json['total_income'] as num? ?? 0).toDouble(),
       totalOrders: json['total_orders'] as int? ?? 0,
       pendingOrders: json['pending_orders'] as int? ?? 0,
+      pendingIncome: (json['pending_income'] as num? ?? 0).toDouble(),
       dailyIncome: (json['daily_income'] as num? ?? 0).toDouble(),
       dailyOrders: json['daily_orders'] as int? ?? 0,
       orderRate: orderRateData,

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/menu_item.dart';
+import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
 import 'package:food_delivery_app/screens/cart_screen.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/models/menu_category.dart';
+import 'package:food_delivery_app/widgets/error_display.dart';
 
 class MenuScreen extends StatefulWidget {
   final Restaurant restaurant;
@@ -15,58 +17,92 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  late Future<List<MenuCategory>> futureMenu;
+  List<MenuCategory> _menu = [];
+  bool _isLoading = true;
+  String? _errorMessage;
   final ApiService apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
-    futureMenu = apiService.fetchMenu(widget.restaurant.id);
+    _loadMenu();
+  }
+
+  Future<void> _loadMenu() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final menu = await apiService.fetchMenu(widget.restaurant.id);
+      if (mounted) {
+        setState(() {
+          _menu = menu;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = "Failed to load menu. Please check your connection and try again.";
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<List<MenuCategory>>(
-        future: futureMenu,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('This restaurant has no menu available.'));
-          } else {
-            final menu = snapshot.data!;
-            return CustomScrollView(
-              slivers: [
-                _buildSliverAppBar(context),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final category = menu[index];
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),
-                            child: Text(
-                              category.name,
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          ...category.items.map((item) => _MenuItemCard(item: item, apiService: apiService)),
-                        ],
-                      );
-                    },
-                    childCount: menu.length,
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: ErrorDisplayWidget(
+          errorMessage: _errorMessage!,
+          onRetry: _loadMenu,
+        ),
+      );
+    }
+
+    if (_menu.isEmpty) {
+      return const Center(child: Text('This restaurant has no menu available.'));
+    }
+
+    return CustomScrollView(
+      slivers: [
+        _buildSliverAppBar(context),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final category = _menu[index];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 24.0, 16.0, 8.0),
+                    child: Text(
+                      category.name,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-              ],
-            );
-          }
-        },
-      ),
+                  ...category.items.map((item) => _MenuItemCard(item: item, apiService: apiService)),
+                ],
+              );
+            },
+            childCount: _menu.length,
+          ),
+        ),
+      ],
     );
   }
 
@@ -158,7 +194,7 @@ class _MenuItemCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      '\$${item.price}',
+                      CurrencyFormatter.formatUGX(item.price),
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,

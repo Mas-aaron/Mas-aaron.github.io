@@ -1,6 +1,7 @@
 import 'package:food_delivery_app/models/order_item.dart';
 import 'package:food_delivery_app/models/order_review.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
+import 'package:food_delivery_app/models/rider.dart';
 
 class Order {
   final int id;
@@ -14,6 +15,7 @@ class Order {
   final double deliveryLng;
   final List<OrderItem> items;
   final OrderReview? review;
+  final Rider? rider;
 
   Order({
     required this.id,
@@ -27,6 +29,7 @@ class Order {
     required this.deliveryLng,
     required this.items,
     this.review,
+    this.rider,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -35,7 +38,7 @@ class Order {
 
     return Order(
       id: json['id'] ?? 0,
-      riderId: json['rider_id'],
+      riderId: json['rider_id'] as int?,
       totalPrice: json['total_price'] ?? '0.00',
       status: json['status'] ?? 'Unknown',
       createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
@@ -45,6 +48,7 @@ class Order {
       deliveryLng: (json['customer_lng'] as num?)?.toDouble() ?? 0.0,
       items: itemsList,
       review: json['review'] != null ? OrderReview.fromJson(json['review']) : null,
+      rider: json['rider'] != null ? Rider.fromJson(json['rider']) : null,
     );
   }
 
@@ -60,6 +64,7 @@ class Order {
     double? deliveryLng,
     List<OrderItem>? items,
     OrderReview? review,
+    Rider? rider,
   }) {
     return Order(
       id: id ?? this.id,
@@ -73,6 +78,7 @@ class Order {
       deliveryLng: deliveryLng ?? this.deliveryLng,
       items: items ?? this.items,
       review: review ?? this.review,
+      rider: rider ?? this.rider,
     );
   }
 }

@@ -13,8 +13,10 @@ class CartItem {
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
-      id: json['id'],
-      quantity: json['quantity'],
+      id: json['id'] is String ? int.parse(json['id']) : json['id'] ?? 0,
+      quantity: json['quantity'] is String 
+          ? int.parse(json['quantity']) 
+          : json['quantity'] ?? 1,
       menuItem: json['menu_item'] != null
           ? MenuItem.fromJson(json['menu_item'])
           : null,

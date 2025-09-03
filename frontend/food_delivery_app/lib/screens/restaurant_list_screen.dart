@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:food_delivery_app/widgets/error_display.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/restaurant.dart';
 import 'menu_screen.dart';
 import 'order_history_screen.dart';
 import '../services/api_service.dart';
+import '../services/distance_service.dart';
 
 class RestaurantListScreen extends StatefulWidget {
   const RestaurantListScreen({super.key});
@@ -15,8 +16,11 @@ class RestaurantListScreen extends StatefulWidget {
 }
 
 class _RestaurantListScreenState extends State<RestaurantListScreen> {
-  Future<List<Restaurant>>? _futureRestaurants;
+  List<Restaurant> _restaurants = [];
+  bool _isLoading = true;
+  String? _errorMessage;
   String _statusMessage = 'Finding restaurants near you...';
+  Map<int, String> _distances = {};
 
   @override
   void initState() {
@@ -25,30 +29,45 @@ class _RestaurantListScreenState extends State<RestaurantListScreen> {
   }
 
   Future<void> _loadRestaurants() async {
-    // We assign the future here. The FutureBuilder will react to the new future instance.
-    final future = _fetchRestaurantsWithLocation();
+    if (!mounted) return;
     setState(() {
-      _futureRestaurants = future;
+      _isLoading = true;
+      _errorMessage = null;
+      _statusMessage = 'Finding restaurants near you...';
     });
-    // Await the future to complete. This is mainly for the RefreshIndicator.
-    await future;
+
+    try {
+      final restaurants = await ApiService().fetchRestaurants();
+      if (mounted) {
+        setState(() {
+          _restaurants = restaurants;
+          _isLoading = false;
+          _statusMessage = '';
+        });
+        _calculateDistances();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load restaurants: ${e.toString()}';
+          _statusMessage = '';
+        });
+      }
+    }
   }
 
-  Future<List<Restaurant>> _fetchRestaurantsWithLocation() async {
-    try {
-      Position position = await _determinePosition();
-      setState(() {
-        _statusMessage = 'Loading restaurants...';
-      });
-      return ApiService().fetchRestaurants(lat: position.latitude, lng: position.longitude);
-    } catch (e) {
-      // If location fails, fetch all restaurants as a fallback
-      setState(() {
-        _statusMessage = '${e.toString().replaceAll('Exception: ', '')}\nFetching all restaurants.';
-      });
-      // Add a small delay so the user can read the message
-      await Future.delayed(const Duration(seconds: 2));
-      return ApiService().fetchRestaurants();
+  void _calculateDistances() async {
+    for (Restaurant restaurant in _restaurants) {
+      final distance = await DistanceService.getFormattedDistanceFromCurrentLocation(
+        restaurant.lat,
+        restaurant.lng,
+      );
+      if (mounted) {
+        setState(() {
+          _distances[restaurant.id] = distance;
+        });
+      }
     }
   }
 
@@ -98,83 +117,62 @@ class _RestaurantListScreenState extends State<RestaurantListScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadRestaurants,
-        child: FutureBuilder<List<Restaurant>>(
-          future: _futureRestaurants,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(_statusMessage, textAlign: TextAlign.center),
-                  ],
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('No restaurants found.'));
-            } else {
-              final restaurants = snapshot.data!;
-              return GridView.builder(
-                padding: const EdgeInsets.all(16.0),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16.0,
-                  mainAxisSpacing: 16.0,
-                  childAspectRatio: 0.7,
-                ),
-                itemCount: restaurants.length,
-                itemBuilder: (context, index) {
-                  final restaurant = restaurants[index];
-                  return _RestaurantCard(restaurant: restaurant);
-                },
-              );
-            }
-          },
-        ),
+        child: _buildBody(),
       ),
     );
   }
 
-  /// Determines the current position of the device.
-  /// When location services are not enabled or permissions
-  /// are denied the `Future` will return an error.
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
+  Widget _buildBody() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(_statusMessage, textAlign: TextAlign.center),
+          ],
+        ),
+      );
     }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
+    if (_errorMessage != null) {
+      return ErrorDisplayWidget(
+        errorMessage: _errorMessage!,
+        onRetry: _loadRestaurants,
+      );
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
+    if (_restaurants.isEmpty) {
+      return const Center(child: Text('No restaurants found near you.'));
     }
 
-    // Request high accuracy and add a timeout.
-    return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    ).timeout(const Duration(seconds: 10));
+    return GridView.builder(
+      padding: const EdgeInsets.all(16.0),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16.0,
+        mainAxisSpacing: 16.0,
+        childAspectRatio: 0.7,
+      ),
+      itemCount: _restaurants.length,
+      itemBuilder: (context, index) {
+        final restaurant = _restaurants[index];
+        return _RestaurantCard(
+          restaurant: restaurant, 
+          distance: _distances[restaurant.id],
+        );
+      },
+    );
   }
+
 }
 
 class _RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
+  final String? distance;
 
-  const _RestaurantCard({required this.restaurant});
+  const _RestaurantCard({required this.restaurant, this.distance});
 
   @override
   Widget build(BuildContext context) {
@@ -247,15 +245,30 @@ class _RestaurantCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (restaurant.distance != null)
+                  if (distance != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        // Format the double to one decimal place for display.
-                        '${restaurant.distance!.toStringAsFixed(1)} km away',
-                        style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12, fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[100],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.location_on, size: 14, color: Colors.blue[700]),
+                            const SizedBox(width: 4),
+                            Text(
+                              distance!,
+                              style: TextStyle(
+                                color: Colors.blue[700],
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                 ],

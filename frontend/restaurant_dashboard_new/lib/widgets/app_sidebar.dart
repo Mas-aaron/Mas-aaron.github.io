@@ -18,27 +18,41 @@ class _AppSidebarState extends State<AppSidebar> {
       width: 250,
       color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 16.0, bottom: 32.0),
-            child: Text(
-              'FortExpress.',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height - 48, // Account for vertical padding
+          ),
+          child: IntrinsicHeight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 16.0, bottom: 32.0),
+                  child: Text(
+                    'FortExpress.',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Column(
+                  children: [
+                    _buildNavItem(Icons.dashboard_outlined, 'Dashboard', 0),
+                    _buildNavItem(Icons.receipt_long_rounded, 'Food Order', 1),
+                    _buildNavItem(Icons.star_border_rounded, 'Reviews', 2),
+                    _buildNavItem(Icons.restaurant_menu_outlined, 'Menu', 3),
+                    _buildNavItem(Icons.history_rounded, 'Order History', 4),
+                    _buildNavItem(Icons.wallet_rounded, 'Bills', 5),
+                    _buildNavItem(Icons.payment_outlined, 'Payments', 6),
+                    _buildNavItem(Icons.notifications_outlined, 'Notification', 7),
+                    _buildNavItem(Icons.settings_outlined, 'Settings', 8),
+                  ],
+                ),
+                const Spacer(),
+                _buildUpgradeCard(),
+              ],
             ),
           ),
-          _buildNavItem(Icons.dashboard_outlined, 'Dashboard', 0),
-          _buildNavItem(Icons.receipt_long_rounded, 'Food Order', 1),
-          _buildNavItem(Icons.star_border_rounded, 'Reviews', 2),
-          _buildNavItem(Icons.restaurant_menu_outlined, 'Menu', 3),
-          _buildNavItem(Icons.history_rounded, 'Order History', 4),
-          _buildNavItem(Icons.wallet_rounded, 'Bills', 5),
-          _buildNavItem(Icons.notifications_outlined, 'Notification', 6),
-          _buildNavItem(Icons.settings_outlined, 'Settings', 7),
-          const Spacer(),
-          _buildUpgradeCard(),
-        ],
+        ),
       ),
     );
   }

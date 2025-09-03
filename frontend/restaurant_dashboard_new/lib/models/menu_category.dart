@@ -6,7 +6,7 @@ class MenuCategory {
 
   factory MenuCategory.fromJson(Map<String, dynamic> json) {
     return MenuCategory(
-      id: json['id'],
+      id: json['id'] as int, // Ensure ID is parsed as an integer
       name: json['name'],
     );
   }

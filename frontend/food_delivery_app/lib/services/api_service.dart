@@ -5,13 +5,13 @@ import 'package:food_delivery_app/models/cart_item.dart';
 import 'package:food_delivery_app/models/order.dart';
 import 'package:food_delivery_app/constants.dart';
 import 'package:food_delivery_app/services/auth_service.dart';
+import 'package:food_delivery_app/widgets/order_type_selector.dart';
 import 'package:http/http.dart' as http;
 import '../models/restaurant.dart';
 import '../models/menu_category.dart';
 import '../models/menu_item.dart';
 import '../models/review.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final String _baseUrl = baseUrl;
@@ -116,12 +116,33 @@ class ApiService {
 
   Future<List<Order>> fetchOrders() async {
     final headers = await _getAuthHeaders();
-        final response = await http.get(Uri.parse('$_baseUrl/orders/'), headers: headers);
+    print('--- Fetching Orders ---');
+    print('URL: $_baseUrl/orders/');
+    print('Headers: $headers');
+    
+    final response = await http.get(Uri.parse('$_baseUrl/orders/'), headers: headers);
+    
+    print('Response Status: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+    
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      return body.map((dynamic item) => Order.fromJson(item)).toList();
+      List<Order> orders = [];
+      
+      for (int i = 0; i < body.length; i++) {
+        try {
+          orders.add(Order.fromJson(body[i]));
+        } catch (e) {
+          print('Error parsing order at index $i: $e');
+          print('Order data: ${body[i]}');
+          // Skip this order and continue with the rest
+        }
+      }
+      
+      return orders;
     } else {
-      throw Exception('Failed to load orders');
+      print('Error fetching orders: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to load orders: ${response.statusCode}');
     }
   }
 
@@ -193,20 +214,57 @@ class ApiService {
     }
   }
 
-  Future<Order> placeOrder(String deliveryAddress, double latitude, double longitude) async {
+  Future<Order> placeOrder(
+    String deliveryAddress, 
+    double latitude, 
+    double longitude, {
+    OrderType? orderType,
+    DateTime? scheduledTime,
+    double? tipAmount,
+  }) async {
     final headers = await _getAuthHeaders();
-    final body = jsonEncode({
+    
+    final orderData = <String, dynamic>{
       'delivery_address': deliveryAddress,
       'customer_lat': latitude,
       'customer_lng': longitude,
-    });
+    };
+    
+    // Add dine-in specific fields
+    if (orderType != null) {
+      orderData['order_type'] = orderType.toString().split('.').last;
+    }
+    
+    if (scheduledTime != null) {
+      orderData['scheduled_time'] = scheduledTime.toIso8601String();
+    }
+    
+    if (tipAmount != null && tipAmount > 0) {
+      orderData['tip_amount'] = tipAmount;
+    }
+    
+    final body = jsonEncode(orderData);
         final response = await http.post(Uri.parse('$_baseUrl/orders/'), headers: headers, body: body);
     if (response.statusCode == 201) {
       return Order.fromJson(jsonDecode(response.body));
     } else {
       print('Failed to place order. Status code: ${response.statusCode}');
       print('Response body: ${response.body}');
-      throw Exception('Failed to place order.');
+      
+      // Parse error message from response
+      String errorMessage = 'Failed to place order.';
+      try {
+        final responseBody = jsonDecode(response.body);
+        if (responseBody is List && responseBody.isNotEmpty) {
+          errorMessage = responseBody.first.toString();
+        } else if (responseBody is Map && responseBody.containsKey('error')) {
+          errorMessage = responseBody['error'].toString();
+        }
+      } catch (e) {
+        // Keep default message if parsing fails
+      }
+      
+      throw Exception(errorMessage);
     }
   }
 

@@ -9,13 +9,122 @@ from django.conf import settings
 
 class Bill(models.Model):
     restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE, related_name='bills')
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="The total amount of the bill.")
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('paid', 'Paid')], default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f'Bill {self.id} for {self.restaurant.name} - {self.status}'
+
+
+class PaymentPeriod(models.Model):
+    """Weekly or daily payment periods for restaurants"""
+    PERIOD_TYPES = [
+        ('weekly', 'Weekly'),
+        ('daily', 'Daily'),
+    ]
+    
+    restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE, related_name='payment_periods')
+    period_type = models.CharField(max_length=10, choices=PERIOD_TYPES, default='weekly')
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    total_orders = models.IntegerField(default=0)
+    gross_revenue = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    platform_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    delivery_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    tax_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    adjustments = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    net_payout = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('paid', 'Paid'), ('processing', 'Processing')], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        unique_together = ['restaurant', 'start_date', 'end_date', 'period_type']
+        ordering = ['-start_date']
+    
+    def __str__(self):
+        return f'{self.period_type.title()} payment for {self.restaurant.name} ({self.start_date.date()} - {self.end_date.date()})'
+
+
+class OrderPayment(models.Model):
+    """Detailed payment breakdown for each order"""
+    order = models.OneToOneField('Order', on_delete=models.CASCADE, related_name='payment_details')
+    payment_period = models.ForeignKey(PaymentPeriod, on_delete=models.CASCADE, related_name='order_payments')
+    
+    # Order details
+    order_number = models.CharField(max_length=50)
+    order_date = models.DateTimeField()
+    customer_name = models.CharField(max_length=255)
+    
+    # Financial breakdown
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    delivery_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    service_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    platform_commission = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    tip_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    adjustments = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    net_payout = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Payment status
+    payment_status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('paid', 'Paid'), ('disputed', 'Disputed')], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-order_date']
+    
+    def __str__(self):
+        return f'Payment for Order #{self.order_number}'
+
+
+class BankAccount(models.Model):
+    """Restaurant bank account information for payments"""
+    restaurant = models.OneToOneField('Restaurant', on_delete=models.CASCADE, related_name='bank_account')
+    account_holder_name = models.CharField(max_length=255)
+    bank_name = models.CharField(max_length=255)
+    account_number = models.CharField(max_length=50)
+    routing_number = models.CharField(max_length=50, blank=True, null=True)
+    swift_code = models.CharField(max_length=20, blank=True, null=True)
+    account_type = models.CharField(max_length=20, choices=[('checking', 'Checking'), ('savings', 'Savings')], default='checking')
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f'Bank account for {self.restaurant.name}'
+
+
+class PaymentDispute(models.Model):
+    """Customer refund disputes that restaurants can manage"""
+    DISPUTE_TYPES = [
+        ('refund', 'Customer Refund'),
+        ('chargeback', 'Chargeback'),
+        ('quality', 'Quality Issue'),
+        ('delivery', 'Delivery Issue'),
+        ('other', 'Other'),
+    ]
+    
+    DISPUTE_STATUS = [
+        ('open', 'Open'),
+        ('under_review', 'Under Review'),
+        ('resolved', 'Resolved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    order_payment = models.ForeignKey(OrderPayment, on_delete=models.CASCADE, related_name='disputes')
+    dispute_type = models.CharField(max_length=20, choices=DISPUTE_TYPES)
+    reason = models.TextField()
+    amount_disputed = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=DISPUTE_STATUS, default='open')
+    restaurant_response = models.TextField(blank=True, null=True)
+    resolution_notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return f'Dispute for Order #{self.order_payment.order_number} - {self.dispute_type}'
 
 
 class NotificationTemplate(models.Model):
@@ -136,6 +245,12 @@ class CartItem(models.Model):
 
 
 class Order(models.Model):
+    ORDER_TYPE_CHOICES = (
+        ('delivery', 'Delivery'),
+        ('pickup', 'Pickup'),
+        ('dine_in', 'Dine-in'),
+    )
+
     STATUS_CHOICES = (
         # Restaurant-facing statuses
         ('Pending', 'Pending'),                     # A new order that needs confirmation
@@ -143,11 +258,14 @@ class Order(models.Model):
         ('Rejected', 'Rejected'),                   # Restaurant has rejected the order
         ('Preparing', 'Preparing'),                 # Restaurant is preparing the food
         ('Ready for Pickup', 'Ready for Pickup'),   # Food is ready for a rider
+        ('Ready for Dine-in', 'Ready for Dine-in'), # Food is ready for dine-in customer
 
         # Rider/Customer-facing statuses
         ('Assigned', 'Assigned'),                   # A rider has been assigned
         ('Out for Delivery', 'Out for Delivery'),   # Rider has picked up the order
+        ('Rider Arrived', 'Rider Arrived'),         # Rider has arrived at customer location
         ('Delivered', 'Delivered'),                 # Rider has delivered the order
+        ('Completed', 'Completed'),                 # Order completed (for dine-in/pickup)
         ('Cancelled', 'Cancelled'),                 # Order was cancelled (by customer or system)
     )
 
@@ -156,8 +274,13 @@ class Order(models.Model):
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    order_type = models.CharField(max_length=10, choices=ORDER_TYPE_CHOICES, default='delivery')
     created_at = models.DateTimeField(auto_now_add=True)
-    delivery_address = models.CharField(max_length=255)
+    delivery_address = models.CharField(max_length=255, blank=True, null=True)
+    scheduled_time = models.DateTimeField(null=True, blank=True)  # For dine-in reservations
+    estimated_prep_time = models.IntegerField(default=30)  # Minutes
+    table_number = models.CharField(max_length=10, blank=True, null=True)  # For dine-in
+    tip_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     # Geolocation fields
     restaurant_lat = models.FloatField(null=True, blank=True)
     restaurant_lng = models.FloatField(null=True, blank=True)

@@ -31,34 +31,64 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<ThemeProvider, AuthProvider>(
       builder: (context, themeProvider, authProvider, child) {
+        // Show loading screen while initializing
+        if (authProvider.isLoading) {
+          return MaterialApp(
+            title: 'FortExpress Restaurant',
+            theme: ThemeData(
+              brightness: Brightness.light,
+              primarySwatch: Colors.orange,
+              scaffoldBackgroundColor: const Color(0xFFF7F7F7),
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+            ),
+            home: const Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading FortExpress Restaurant...',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
         return OverlaySupport.global(
           child: MaterialApp(
-          title: 'Restaurant Dashboard',
-          theme: ThemeData(
-            brightness: Brightness.light,
-            primarySwatch: Colors.orange,
-            scaffoldBackgroundColor: const Color(0xFFF7F7F7),
-            visualDensity: VisualDensity.adaptivePlatformDensity,
+            title: 'FortExpress Restaurant',
+            theme: ThemeData(
+              brightness: Brightness.light,
+              primarySwatch: Colors.orange,
+              scaffoldBackgroundColor: const Color(0xFFF7F7F7),
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+            ),
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+              primarySwatch: Colors.orange,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+            ),
+            themeMode: themeProvider.themeMode,
+            home: authProvider.isAuthenticated
+                ? const HomeScreen()
+                : const LoginScreen(),
+            routes: {
+              LoginScreen.routeName: (context) => const LoginScreen(),
+              SignUpScreen.routeName: (context) => SignUpScreen(),
+              SettingsScreen.routeName: (ctx) => SettingsScreen(),
+              ManageCategoriesScreen.routeName: (ctx) => ManageCategoriesScreen(),
+              MenuManagementScreen.routeName: (context) => const MenuManagementScreen(),
+              HomeScreen.routeName: (context) => const HomeScreen(),
+              OrderProtocolScreen.routeName: (context) => OrderProtocolScreen(),
+            },
           ),
-          darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            primarySwatch: Colors.orange,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-          ),
-          themeMode: themeProvider.themeMode,
-          home: authProvider.isAuthenticated
-              ? HomeScreen()
-              : const LoginScreen(),
-          routes: {
-            LoginScreen.routeName: (context) => const LoginScreen(),
-            SignUpScreen.routeName: (context) => SignUpScreen(),
-            SettingsScreen.routeName: (ctx) => SettingsScreen(),
-            ManageCategoriesScreen.routeName: (ctx) => ManageCategoriesScreen(),
-            MenuManagementScreen.routeName: (context) => const MenuManagementScreen(),
-            HomeScreen.routeName: (context) => HomeScreen(),
-            OrderProtocolScreen.routeName: (context) => OrderProtocolScreen(),
-          },
-        ),
         );
       },
     );

@@ -1,5 +1,5 @@
 import firebase_admin
-from firebase_admin import messaging
+from firebase_admin import credentials, messaging
 from firebase_admin.exceptions import FirebaseError
 from django.conf import settings
 import logging
@@ -11,16 +11,6 @@ from .models import Device
 
 logger = logging.getLogger(__name__)
 
-# Initialize Firebase app if not already done
-if not firebase_admin._apps:
-    # This part should ideally be in your settings or app config
-    # For now, we ensure it's initialized before use.
-    try:
-        # Ensure you have GOOGLE_APPLICATION_CREDENTIALS set in your environment
-        firebase_admin.initialize_app()
-        logger.info("Firebase Admin SDK initialized successfully.")
-    except Exception as e:
-        logger.error(f"Failed to initialize Firebase Admin SDK: {e}")
 
 def send_order_status_notification(order):
     """

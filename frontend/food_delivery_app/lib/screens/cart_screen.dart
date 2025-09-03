@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:food_delivery_app/providers/location_provider.dart';
+import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/screens/set_location_screen.dart';
+import 'package:food_delivery_app/widgets/error_display.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
+import '../providers/location_provider.dart';
 import '../models/cart.dart';
 import 'checkout_screen.dart';
 
@@ -56,7 +58,12 @@ class _CartScreenState extends State<CartScreen> {
           }
 
           if (cartProvider.error != null) {
-            return Center(child: Text('Error: ${cartProvider.error}'));
+            return Center(
+              child: ErrorDisplayWidget(
+                errorMessage: cartProvider.error!,
+                onRetry: _refreshCart,
+              ),
+            );
           }
 
           if (cartProvider.cart == null || cartProvider.cart!.items.isEmpty) {
@@ -137,7 +144,7 @@ class _CartItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${item.menuItem?.price.toStringAsFixed(2) ?? '0.00'}'
+                    CurrencyFormatter.formatUGX(item.menuItem?.price ?? 0.0)
                   ),
                 ],
               ),
@@ -289,7 +296,7 @@ class _OrderSummaryCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title, style: TextStyle(fontSize: 16, color: Colors.grey.shade700)),
-        Text('\$${amount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
+        Text(CurrencyFormatter.formatUGX(amount), style: const TextStyle(fontSize: 16)),
       ],
     );
   }
@@ -300,7 +307,7 @@ class _OrderSummaryCard extends StatelessWidget {
       children: [
         Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         Text(
-          '\$${amount.toStringAsFixed(2)}',
+          CurrencyFormatter.formatUGX(amount),
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ],

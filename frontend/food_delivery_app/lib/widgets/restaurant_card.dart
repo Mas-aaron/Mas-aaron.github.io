@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
+import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/screens/restaurant_detail_screen.dart';
 
 class RestaurantCard extends StatelessWidget {
@@ -63,7 +64,7 @@ class RestaurantCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text('${restaurant.deliveryTime} min'),
                       const Spacer(),
-                      Text('\$${restaurant.deliveryFee.toStringAsFixed(2)} Delivery', style: Theme.of(context).textTheme.bodySmall),
+                      Text('${CurrencyFormatter.formatUGX(restaurant.deliveryFee)} Delivery', style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ),
                 ],

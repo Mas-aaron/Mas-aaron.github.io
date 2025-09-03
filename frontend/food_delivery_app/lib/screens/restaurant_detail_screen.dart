@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
+import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/models/menu_item.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/screens/filter_dialog.dart';
 import 'package:food_delivery_app/screens/cart_screen.dart';
 import 'package:food_delivery_app/providers/cart_provider.dart';
+import 'package:food_delivery_app/services/distance_service.dart';
+import 'package:food_delivery_app/widgets/order_type_selector.dart';
+import 'package:food_delivery_app/widgets/dine_in_scheduler.dart';
 import 'package:provider/provider.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
@@ -20,11 +24,25 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   final ApiService _apiService = ApiService();
   late Future<List<MenuItem>> _futureMenuItems;
   List<int> _selectedPreferenceIds = [];
+  String _distance = 'Calculating...';
 
   @override
   void initState() {
     super.initState();
     _loadMenuItems();
+    _calculateDistance();
+  }
+
+  void _calculateDistance() async {
+    final distance = await DistanceService.getFormattedDistanceFromCurrentLocation(
+      widget.restaurant.lat,
+      widget.restaurant.lng,
+    );
+    if (mounted) {
+      setState(() {
+        _distance = distance;
+      });
+    }
   }
 
   void _loadMenuItems() {
@@ -96,11 +114,39 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.restaurant.name,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.restaurant.name,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[100],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.location_on, size: 16, color: Colors.blue[700]),
+                            const SizedBox(width: 4),
+                            Text(
+                              _distance,
+                              style: TextStyle(
+                                color: Colors.blue[700],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -136,7 +182,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '\$${widget.restaurant.deliveryFee}',
+                        CurrencyFormatter.formatUGX(widget.restaurant.deliveryFee),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ],
@@ -146,6 +192,65 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                     widget.restaurant.cuisineType,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Order Type Selector
+          SliverToBoxAdapter(
+            child: Consumer<CartProvider>(
+              builder: (context, cartProvider, child) {
+                return OrderTypeSelector(
+                  selectedType: cartProvider.orderType,
+                  onTypeChanged: (type) {
+                    cartProvider.setOrderType(type);
+                    if (type != OrderType.dineIn) {
+                      cartProvider.setScheduledTime(null);
+                    }
+                  },
+                  showDistance: true,
+                  distance: _distance,
+                  estimatedPrepTime: widget.restaurant.deliveryTime,
+                );
+              },
+            ),
+          ),
+
+          // Dine-in Scheduler (only show when dine-in is selected)
+          Consumer<CartProvider>(
+            builder: (context, cartProvider, child) {
+              if (cartProvider.orderType == OrderType.dineIn) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: DineInScheduler(
+                      selectedTime: cartProvider.scheduledTime,
+                      onTimeChanged: (time) {
+                        cartProvider.setScheduledTime(time);
+                      },
+                      estimatedPrepTime: widget.restaurant.deliveryTime,
+                    ),
+                  ),
+                );
+              }
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            },
+          ),
+
+          // Menu Items Header
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Menu',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],
@@ -254,7 +359,7 @@ class MenuItemCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('\$${item.price.toStringAsFixed(2)}', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(CurrencyFormatter.formatUGX(item.price), style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                       InkWell(
                         onTap: () async {
                           final cartProvider = Provider.of<CartProvider>(context, listen: false);
@@ -352,7 +457,7 @@ class BottomCartBar extends StatelessWidget {
                     ),
                   ],
                 ),
-                Text('\$${total.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                Text(CurrencyFormatter.formatUGX(total), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
               ],
             ),
           ),

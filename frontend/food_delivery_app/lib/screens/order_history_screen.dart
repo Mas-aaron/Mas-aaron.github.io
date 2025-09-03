@@ -3,6 +3,8 @@ import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/models/order.dart';
 import 'package:food_delivery_app/models/order_review.dart';
 import 'package:food_delivery_app/screens/submit_review_screen.dart';
+import 'package:food_delivery_app/widgets/error_display.dart';
+import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 
 import 'package:food_delivery_app/screens/order_tracking_screen.dart';
@@ -15,7 +17,9 @@ class OrderHistoryScreen extends StatefulWidget {
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
-  late Future<List<Order>> futureOrders;
+  List<Order> _orders = [];
+  bool _isLoading = true;
+  String? _errorMessage;
   final ApiService apiService = ApiService();
 
   @override
@@ -24,10 +28,30 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     _loadOrders();
   }
 
-  void _loadOrders() {
+  Future<void> _loadOrders() async {
+    if (!mounted) return;
     setState(() {
-      futureOrders = apiService.fetchOrders();
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final orders = await apiService.fetchOrders();
+      if (mounted) {
+        setState(() {
+          _orders = orders;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading order history: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load orders: $e';
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -42,60 +66,56 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       body: Container(
         color: Colors.grey[100],
         child: RefreshIndicator(
-          onRefresh: () async => _loadOrders(),
-          child: FutureBuilder<List<Order>>(
-            future: futureOrders,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFfe5722)),
-                ));
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 50, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text('Error loading orders', style: TextStyle(color: Colors.grey)),
-                      TextButton(
-                        onPressed: _loadOrders,
-                        child: Text('Retry', style: TextStyle(color: Color(0xFFfe5722))),
-                      ),
-                    ],
-                  ),
-                );
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
-                      SizedBox(height: 16),
-                      Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-                      SizedBox(height: 8),
-                      Text('Your orders will appear here', style: TextStyle(color: Colors.grey[500])),
-                    ],
-                  ),
-                );
-              } else {
-                final orders = snapshot.data!;
-                return ListView.separated(
-                  padding: EdgeInsets.all(16.0),
-                  itemCount: orders.length,
-                  separatorBuilder: (context, index) => SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    return OrderCard(
-                      order: orders[index],
-                      onRefresh: _loadOrders,
-                    );
-                  },
-                );
-              }
-            },
-          ),
+          onRefresh: _loadOrders,
+          child: _buildBody(),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFfe5722)),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: ErrorDisplayWidget(
+          errorMessage: _errorMessage!,
+          onRetry: _loadOrders,
+        ),
+      );
+    }
+
+    if (_orders.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
+            SizedBox(height: 16),
+            Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+            SizedBox(height: 8),
+            Text('Your orders will appear here', style: TextStyle(color: Colors.grey[500])),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: EdgeInsets.all(16.0),
+      itemCount: _orders.length,
+      separatorBuilder: (context, index) => SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        return OrderCard(
+          order: _orders[index],
+          onRefresh: _loadOrders,
+        );
+      },
     );
   }
 }
@@ -207,7 +227,6 @@ class OrderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedDate = DateFormat('MMM dd, yyyy - hh:mm a').format(DateTime.parse(order.createdAt));
     final isDelivered = order.status.toLowerCase() == 'delivered';
-    final formatCurrency = NumberFormat.simpleCurrency(locale: 'en_US');
 
     return Card(
       margin: EdgeInsets.zero,
@@ -259,7 +278,7 @@ class OrderCard extends StatelessWidget {
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                   Text(
-                    formatCurrency.format(double.tryParse(order.totalPrice) ?? 0.0),
+                    CurrencyFormatter.formatUGX(double.tryParse(order.totalPrice) ?? 0.0),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -303,7 +322,7 @@ class OrderCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        formatCurrency.format(double.tryParse(item.price) ?? 0.0),
+                        CurrencyFormatter.formatUGX(double.tryParse(item.price) ?? 0.0),
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                     ],

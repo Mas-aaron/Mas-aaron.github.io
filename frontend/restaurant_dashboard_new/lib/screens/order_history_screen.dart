@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:restaurant_dashboard_new/models/order.dart';
 import 'package:restaurant_dashboard_new/services/order_service.dart';
+import 'package:restaurant_dashboard_new/utils/currency_formatter.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   @override
@@ -42,7 +43,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   child: ListTile(
                     title: Text('Order #${order.id}'),
                     subtitle: Text('Status: ${order.status}'),
-                    trailing: Text('\$${order.totalPrice.toStringAsFixed(2)}'),
+                    trailing: Text(CurrencyFormatter.formatUGX(order.totalPrice)),
                   ),
                 );
               },

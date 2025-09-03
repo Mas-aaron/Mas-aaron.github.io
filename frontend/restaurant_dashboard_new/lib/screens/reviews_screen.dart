@@ -24,15 +24,19 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
   Future<void> _fetchReviews() async {
     try {
       final reviews = await _restaurantService.fetchRestaurantReviews();
-      setState(() {
-        _reviews = reviews;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _reviews = reviews;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -214,12 +218,14 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
                 if (controller.text.isNotEmpty) {
                   try {
                     final updatedReview = await _restaurantService.replyToReview(review.id, controller.text);
-                    setState(() {
-                      final index = _reviews!.indexWhere((r) => r.id == review.id);
-                      if (index != -1) {
-                        _reviews![index] = updatedReview;
-                      }
-                    });
+                    if (mounted) {
+                      setState(() {
+                        final index = _reviews!.indexWhere((r) => r.id == review.id);
+                        if (index != -1) {
+                          _reviews![index] = updatedReview;
+                        }
+                      });
+                    }
                     Navigator.of(context).pop();
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(

@@ -5,7 +5,12 @@ from django.urls import path, reverse
 from django.shortcuts import render, redirect
 from django.utils.html import format_html
 
-from .models import Restaurant, MenuCategory, MenuItem, RiderProfile, Order, Cart, CartItem, NotificationTemplate
+from .models import (
+    Restaurant, MenuCategory, MenuItem, RiderProfile, Order, Cart, CartItem, 
+    NotificationTemplate, OrderItem, DietaryPreference, OrderReview, 
+    RiderReview, Device, Bill, PaymentPeriod, OrderPayment, BankAccount, 
+    PaymentDispute
+)
 from .notifications import send_push_notification
 
 class MenuCategoryAdmin(admin.ModelAdmin):
@@ -164,10 +169,19 @@ class NotificationTemplateAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(Restaurant)
-admin.site.register(MenuCategory, MenuCategoryAdmin)
 admin.site.register(MenuItem)
-admin.site.register(RiderProfile)
+admin.site.register(MenuCategory, MenuCategoryAdmin)
 admin.site.register(Order)
+admin.site.register(OrderItem)
 admin.site.register(Cart)
 admin.site.register(CartItem)
-
+admin.site.register(RiderProfile)
+admin.site.register(DietaryPreference)
+admin.site.register(OrderReview)
+admin.site.register(RiderReview)
+admin.site.register(Device)
+admin.site.register(Bill)
+admin.site.register(PaymentPeriod)
+admin.site.register(OrderPayment)
+admin.site.register(BankAccount)
+admin.site.register(PaymentDispute)

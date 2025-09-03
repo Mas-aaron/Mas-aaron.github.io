@@ -21,7 +21,7 @@ class MenuService {
     final token = await _getToken();
     final cacheBuster = DateTime.now().millisecondsSinceEpoch;
     final response = await http.get(
-      Uri.parse('$_apiBaseUrl/restaurants/dashboard-menu/?_=$cacheBuster'),
+      Uri.parse('$_apiBaseUrl/menu-items/?_=$cacheBuster'),
       headers: <String, String>{
         'Authorization': 'Token $token',
       },

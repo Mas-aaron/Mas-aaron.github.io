@@ -31,6 +31,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-8^7at1!9+e!h^d@zmutm+
 # Google Maps API Key
 GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', 'AIzaSyB2_rwYdL9Tr_LWV7PDfn83n8-2_6KVahs')
 
+# Firebase Configuration
+GOOGLE_CLOUD_PROJECT = 'fortexpress-5641c'
+
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -41,22 +44,8 @@ if DEBUG:
         '10.0.2.2',
         '127.0.0.1',
         'localhost',
-        '10.5.55.25',
-        '10.4.45.158',
-        '10.5.55.169',
-        '10.32.141.42',
-        '10.5.55.166',
-        '10.4.45.164',
-        '10.4.45.158',
-        '10.5.55.25',
-        '10.5.55.18',
-        '10.4.45.57',
-        '10.8.85.240',
-        '10.32.141.42',
-        '10.4.42.205',
-        '10.4.45.171',
-        '10.5.55.117',
-        '10.5.55.231',
+        '10.32.140.30',
+        '10.32.142.80',
 
     ]
 else:
@@ -67,15 +56,17 @@ else:
         ALLOWED_HOSTS = allowed_hosts_env.split(',')
     else:
         ALLOWED_HOSTS = [
-        'mas-aarongithubio-production.up.railway.app',
-        'localhost',
-        '127.0.0.1',
-    ]
+            'mas-aarongithubio-production.up.railway.app',
+            'localhost',
+            '127.0.0.1',
+            '10.32.142.80',
+            
+        ]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'restaurants',
+    # 'restaurants',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -207,21 +198,7 @@ APPEND_SLASH = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Firebase Admin SDK setup
-import firebase_admin
-from firebase_admin import credentials
-import os
-
-SERVICE_ACCOUNT_KEY_PATH = os.path.join(BASE_DIR, 'serviceAccountKey.json')
-
-if os.path.exists(SERVICE_ACCOUNT_KEY_PATH):
-    # Initialize the app if it hasn't been initialized yet
-    if not firebase_admin._apps:
-        cred = credentials.Certificate(SERVICE_ACCOUNT_KEY_PATH)
-        firebase_admin.initialize_app(cred)
-else:
-    import logging
-    logging.warning("Firebase service account key not found at {}. Push notifications will be disabled.".format(SERVICE_ACCOUNT_KEY_PATH))
+# Firebase Admin SDK initialization is now handled in `api/apps.py`
 
 
 REST_FRAMEWORK = {
@@ -241,15 +218,6 @@ if not DEBUG:
         'https://mas-aaron-github-io.onrender.com',
     ]
 
-# Channels
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Logging Configuration
 LOGGING = {

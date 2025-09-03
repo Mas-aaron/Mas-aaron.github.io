@@ -3,6 +3,7 @@ import 'package:food_delivery_app/models/restaurant.dart';
 import 'package:food_delivery_app/providers/location_provider.dart';
 import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:food_delivery_app/services/api_service.dart';
+import 'package:food_delivery_app/widgets/error_display.dart';
 import 'package:food_delivery_app/widgets/restaurant_card.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -17,47 +18,58 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  List<Restaurant> _restaurants = [];
   List<Restaurant> _searchResults = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
+  String? _errorMessage;
   bool _isSearching = false;
   final ApiService _apiService = ApiService();
-  late Future<List<Restaurant>> _futureRestaurants;
-
-  Future<void> _refreshData() async {
-    // When refreshing, clear any active search
-    _searchController.clear();
-
-    // Create a list of futures to wait for
-    final List<Future> refreshFutures = [
-      // Re-fetch location without waiting for it to complete here
-      context.read<LocationProvider>().determineInitialLocation(),
-      // Re-fetch restaurants and assign the future to a variable
-      _apiService.fetchRestaurants().then((restaurants) {
-        if (mounted) {
-          setState(() {
-            // Update the future that the FutureBuilder is listening to
-            _futureRestaurants = Future.value(restaurants);
-            _isSearching = false;
-            _searchResults = [];
-          });
-        }
-      })
-    ];
-
-    // Wait for all refresh operations to complete
-    await Future.wait(refreshFutures);
-  }
 
   @override
   void initState() {
     super.initState();
-    // Fetch restaurants and initial location
-    _futureRestaurants = _apiService.fetchRestaurants();
-    // Use post-frame callback to safely access provider
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // No need to check for mounted here, as it's a post-frame callback.
-      context.read<LocationProvider>().determineInitialLocation();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      // Fetch restaurants and initial location in parallel
+      final results = await Future.wait([
+        _apiService.fetchRestaurants(),
+        context.read<LocationProvider>().determineInitialLocation(),
+      ]);
+
+      final restaurants = results[0] as List<Restaurant>;
+
+      if (mounted) {
+        setState(() {
+          _restaurants = restaurants;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to load data. Please check your connection.';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _refreshData() async {
+    _searchController.clear();
+    setState(() {
+      _isSearching = false;
+      _searchResults = [];
+    });
+    await _loadData();
   }
 
   @override
@@ -78,24 +90,29 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = true;
       _isSearching = true;
+      _errorMessage = null;
     });
 
     try {
-      final restaurants = await _apiService.fetchRestaurants();
-      final results = restaurants
+      final results = _restaurants
           .where((restaurant) =>
               restaurant.name.toLowerCase().contains(query.toLowerCase()) ||
               restaurant.cuisineType.toLowerCase().contains(query.toLowerCase()))
           .toList();
 
-      setState(() {
-        _searchResults = results;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Failed to perform search. Please try again.';
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -142,23 +159,37 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refreshData,
-                child: _isSearching
-                    ? _buildSearchResults()
-                    : SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildCategories(),
-                            _buildBanner(),
-                            _buildTopPicks(),
-                          ],
-                        ),
-                      ),
+                child: _buildBody(),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading && !_isSearching) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return ErrorDisplayWidget(errorMessage: _errorMessage!, onRetry: _loadData);
+    }
+
+    if (_isSearching) {
+      return _buildSearchResults();
+    }
+
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildCategories(),
+          _buildBanner(),
+          _buildTopPicks(),
+        ],
       ),
     );
   }
@@ -366,28 +397,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          FutureBuilder<List<Restaurant>>(
-            future: _futureRestaurants,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('No restaurants found.'));
-              } else {
-                return ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: snapshot.data!.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    return RestaurantCard(restaurant: snapshot.data![index]);
-                  },
-                );
-              }
-            },
-          ),
+          if (_restaurants.isEmpty)
+            const Center(child: Text('No restaurants found near you.'))
+          else
+            ListView.separated(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: _restaurants.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                return RestaurantCard(restaurant: _restaurants[index]);
+              },
+            ),
         ],
       ),
     );
@@ -398,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
-      return const Center(child: Text('No restaurants found.'));
+      return const Center(child: Text('No restaurants found for your search.'));
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),

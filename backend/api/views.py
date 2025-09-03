@@ -18,6 +18,7 @@ from rest_framework import viewsets, generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.generics import RetrieveAPIView
@@ -33,7 +34,7 @@ from .models import (
     Bill,
     Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, 
     Order, OrderItem, Message, Notification, DietaryPreference, CustomerProfile, 
-    UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview
+    UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview, PaymentPeriod, BankAccount, PaymentDispute
 )
 from .dispatch_service import find_and_assign_rider
 from loyalty.services import LoyaltyService
@@ -67,6 +68,10 @@ from .serializers import (
     ModifierGroupSerializer,
     ModifierSerializer,
     NotificationSerializer,
+    PaymentPeriodSerializer,
+    OrderPaymentSerializer,
+    BankAccountSerializer,
+    PaymentDisputeSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -582,12 +587,6 @@ class CurrentUserView(APIView):
 
 # --- Other Views ---
 
-class AvailableOrderListView(generics.ListAPIView):
-    serializer_class = RestaurantOrderSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Order.objects.filter(status='Ready for Pickup', rider__isnull=True)
 
 class AssignOrderToRiderView(APIView):
     permission_classes = [IsAuthenticated]
@@ -706,6 +705,7 @@ class DashboardAnalyticsView(APIView):
         # Calculate pending orders from the complete list
         pending_statuses = ['Pending', 'Accepted', 'Preparing']
         pending_orders_count = all_orders.filter(status__in=pending_statuses).count()
+        pending_income = all_orders.filter(status__in=pending_statuses).aggregate(total=Sum('total_price'))['total'] or 0
 
         # 2. Calculate Order Rate (e.g., last 12 months)
         order_rate_data = (
@@ -747,6 +747,7 @@ class DashboardAnalyticsView(APIView):
             'total_income': total_income,
             'total_orders': total_orders_count,
             'pending_orders': pending_orders_count,
+            'pending_income': pending_income,
             'daily_income': daily_income,
             'daily_orders': daily_orders_count,
             'order_rate': order_rate,
@@ -875,11 +876,13 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         category = serializer.validated_data.get('category')
         try:
             restaurant = self.request.user.restaurant_profile
+            if category is None:
+                raise ValidationError("Category is required.")
             if category.restaurant != restaurant:
-                raise serializers.ValidationError("You can only add items to your own restaurant's categories.")
+                raise ValidationError("You can only add items to your own restaurant's categories.")
             serializer.save()
         except Restaurant.DoesNotExist:
-            raise serializers.ValidationError("User is not associated with a restaurant.")
+            raise ValidationError("User is not associated with a restaurant.")
 
 
 class MenuCategoryViewSet(viewsets.ModelViewSet):
@@ -925,6 +928,120 @@ class BillViewSet(viewsets.ReadOnlyModelViewSet):
             return Bill.objects.filter(restaurant=restaurant).order_by('-created_at')
         except Restaurant.DoesNotExist:
             return Bill.objects.none()
+
+
+class PaymentPeriodViewSet(viewsets.ReadOnlyModelViewSet):
+    """API for viewing payment periods (weekly/daily summaries)"""
+    serializer_class = PaymentPeriodSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+    
+    def get_queryset(self):
+        try:
+            restaurant = self.request.user.restaurant_profile
+            return PaymentPeriod.objects.filter(restaurant=restaurant)
+        except Restaurant.DoesNotExist:
+            return PaymentPeriod.objects.none()
+    
+    @action(detail=False, methods=['get'])
+    def current_week(self):
+        """Get current week's payment period"""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        try:
+            restaurant = self.request.user.restaurant_profile
+            now = timezone.now()
+            # Calculate start of current week (Monday)
+            start_of_week = now - timedelta(days=now.weekday())
+            start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_of_week = start_of_week + timedelta(days=7)
+            
+            period, created = PaymentPeriod.objects.get_or_create(
+                restaurant=restaurant,
+                period_type='weekly',
+                start_date=start_of_week,
+                end_date=end_of_week,
+                defaults={'status': 'pending'}
+            )
+            
+            serializer = self.get_serializer(period)
+            return Response(serializer.data)
+        except Restaurant.DoesNotExist:
+            return Response({'error': 'Restaurant not found'}, status=404)
+
+
+class OrderPaymentViewSet(viewsets.ReadOnlyModelViewSet):
+    """API for viewing detailed order payment breakdowns"""
+    serializer_class = OrderPaymentSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+    
+    def get_queryset(self):
+        try:
+            restaurant = self.request.user.restaurant_profile
+            queryset = OrderPayment.objects.filter(payment_period__restaurant=restaurant)
+            
+            # Filter by payment period if provided
+            period_id = self.request.query_params.get('period_id')
+            if period_id:
+                queryset = queryset.filter(payment_period_id=period_id)
+            
+            # Filter by date range
+            start_date = self.request.query_params.get('start_date')
+            end_date = self.request.query_params.get('end_date')
+            if start_date and end_date:
+                queryset = queryset.filter(order_date__range=[start_date, end_date])
+            
+            return queryset
+        except Restaurant.DoesNotExist:
+            return OrderPayment.objects.none()
+
+
+class BankAccountViewSet(viewsets.ModelViewSet):
+    """API for managing restaurant bank account information"""
+    serializer_class = BankAccountSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+    
+    def get_queryset(self):
+        try:
+            restaurant = self.request.user.restaurant_profile
+            return BankAccount.objects.filter(restaurant=restaurant)
+        except Restaurant.DoesNotExist:
+            return BankAccount.objects.none()
+    
+    def perform_create(self, serializer):
+        restaurant = self.request.user.restaurant_profile
+        serializer.save(restaurant=restaurant)
+
+
+class PaymentDisputeViewSet(viewsets.ModelViewSet):
+    """API for managing payment disputes and refunds"""
+    serializer_class = PaymentDisputeSerializer
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+    
+    def get_queryset(self):
+        try:
+            restaurant = self.request.user.restaurant_profile
+            return PaymentDispute.objects.filter(
+                order_payment__payment_period__restaurant=restaurant
+            )
+        except Restaurant.DoesNotExist:
+            return PaymentDispute.objects.none()
+    
+    @action(detail=True, methods=['post'])
+    def respond(self, request, pk=None):
+        """Allow restaurant to respond to a dispute"""
+        dispute = self.get_object()
+        response_text = request.data.get('response')
+        
+        if not response_text:
+            return Response({'error': 'Response text is required'}, status=400)
+        
+        dispute.restaurant_response = response_text
+        dispute.status = 'under_review'
+        dispute.save()
+        
+        serializer = self.get_serializer(dispute)
+        return Response(serializer.data)
 
 
 class RestaurantReviewsView(generics.ListAPIView):
@@ -978,7 +1095,7 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
         try:
             rider_profile = RiderProfile.objects.get(user=request.user)
             order.rider = rider_profile
-            order.status = 'On the way'
+            order.status = 'Out for Delivery'
             order.save()
 
             # Notify customer and restaurant
@@ -995,9 +1112,27 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
         """
         try:
             # .get_queryset() already filters for the current rider
-            order = self.get_queryset().get(pk=pk, status='On the way')
+            order = self.get_queryset().get(pk=pk)
         except Order.DoesNotExist:
-            return Response({'error': 'Order not found or not in "On the way" status.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Order not found or not assigned to you.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check if order can be completed
+        if order.status not in ['Out for Delivery', 'Ready for Pickup', 'Rider Arrived']:
+            return Response({
+                'error': f'Order cannot be completed. Current status: {order.status}. Order must be "Out for Delivery", "Ready for Pickup", or "Rider Arrived".'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # If order is "Ready for Pickup", automatically assign to rider and set to "Out for Delivery"
+        if order.status == 'Ready for Pickup':
+            try:
+                rider_profile = RiderProfile.objects.get(user=request.user)
+                order.rider = rider_profile
+                order.status = 'Out for Delivery'
+                order.save()
+                # Notify about pickup
+                send_order_status_notification(order)
+            except RiderProfile.DoesNotExist:
+                return Response({'error': 'Rider profile not found.'}, status=status.HTTP_403_FORBIDDEN)
 
         order.status = 'Delivered'
         order.save()

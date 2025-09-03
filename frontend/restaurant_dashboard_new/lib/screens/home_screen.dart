@@ -9,6 +9,7 @@ import 'package:restaurant_dashboard_new/screens/notification_screen.dart';
 import 'package:restaurant_dashboard_new/screens/reviews_screen.dart';
 import 'package:restaurant_dashboard_new/screens/order_history_screen.dart';
 import 'package:restaurant_dashboard_new/screens/bills_screen.dart';
+import 'package:restaurant_dashboard_new/screens/payments_screen.dart';
 import 'package:restaurant_dashboard_new/screens/settings_screen.dart';
 import 'package:restaurant_dashboard_new/screens/order_management_screen.dart';
 import 'analytics_screen.dart';
@@ -37,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const MenuManagementScreen(),
     OrderHistoryScreen(),
     BillsScreen(),
+    const PaymentsScreen(),
     const NotificationScreen(),
     const SettingsScreen(),
   ];
@@ -124,9 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 flex: 5,
                 child: _screens[_selectedIndex],
               ),
-              const Expanded(
+              Expanded(
                 flex: 2,
-                child: OrderPanel(),
+                child: OrderPanel(onViewMorePressed: () => _onItemTapped(1)),
               ),
             ],
           ),
@@ -157,8 +159,9 @@ class _HomeScreenState extends State<HomeScreen> {
           const Spacer(),
           const Text('Dashboard', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const Spacer(),
-          const CircleAvatar(
-            backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+          CircleAvatar(
+            backgroundColor: Colors.orange[100],
+            child: Icon(Icons.person, color: Colors.orange[600]),
           ),
         ],
       ),

@@ -8,6 +8,8 @@ class Order {
   final double? restaurantLng;
   final double? customerLat;
   final double? customerLng;
+  final String? customerName;
+  final String? customerPhone;
 
   Order({
     required this.id,
@@ -19,6 +21,8 @@ class Order {
     this.restaurantLng,
     this.customerLat,
     this.customerLng,
+    this.customerName,
+    this.customerPhone,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -32,6 +36,10 @@ class Order {
       restaurantLng: json['restaurant_lng'] as double?,
       customerLat: json['customer_lat'] as double?,
       customerLng: json['customer_lng'] as double?,
+      customerName: json['customer']?['first_name'] != null && json['customer']?['last_name'] != null 
+          ? '${json['customer']['first_name']} ${json['customer']['last_name']}'
+          : null,
+      customerPhone: json['customer']?['phone_number'],
     );
   }
 }

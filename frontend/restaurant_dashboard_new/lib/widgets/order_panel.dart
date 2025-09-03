@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:restaurant_dashboard_new/models/order.dart';
 import 'package:restaurant_dashboard_new/services/order_service.dart';
+import 'package:restaurant_dashboard_new/utils/currency_formatter.dart';
 
 class OrderPanel extends StatefulWidget {
-  const OrderPanel({super.key});
+  final VoidCallback? onViewMorePressed;
+
+  const OrderPanel({super.key, this.onViewMorePressed});
 
   @override
   State<OrderPanel> createState() => _OrderPanelState();
@@ -12,11 +15,45 @@ class OrderPanel extends StatefulWidget {
 class _OrderPanelState extends State<OrderPanel> {
   late Future<List<Order>> _ordersFuture;
   final OrderService _orderService = OrderService();
+  String _selectedFilter = 'All';
+  List<Order> _allOrders = [];
+  List<Order> _filteredOrders = [];
+  List<Order> _displayedOrders = [];
 
   @override
   void initState() {
     super.initState();
-    _ordersFuture = _orderService.getOrders();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    try {
+      final orders = await _orderService.getOrders();
+      setState(() {
+        _allOrders = orders;
+        _applyFilter();
+      });
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  void _applyFilter() {
+    setState(() {
+      if (_selectedFilter == 'All') {
+        _filteredOrders = _allOrders;
+      } else {
+        _filteredOrders = _allOrders.where((order) => order.status == _selectedFilter).toList();
+      }
+      _displayedOrders = _filteredOrders.take(5).toList();
+    });
+  }
+
+  void _onFilterChanged(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      _applyFilter();
+    });
   }
 
   @override
@@ -31,26 +68,7 @@ class _OrderPanelState extends State<OrderPanel> {
       width: 350,
       color: panelBackgroundColor,
       padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Your Balance',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
-          ),
-          const SizedBox(height: 16),
-          _buildBalanceCard(),
-          const SizedBox(height: 24),
-          Text(
-            'My Address',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
-          ),
-          const SizedBox(height: 16),
-          _buildAddressCard(cardBackgroundColor),
-          const SizedBox(height: 24),
-          _buildOrderMenuSection(textColor),
-        ],
-      ),
+      child: _buildOrderMenuSection(textColor),
     );
   }
 
@@ -61,90 +79,190 @@ class _OrderPanelState extends State<OrderPanel> {
         color: const Color(0xFFFFC107),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          const Row(
             children: [
-              Text('Balance', style: TextStyle(color: Colors.black54)),
-              SizedBox(height: 4),
-              Text('\$12.000', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Balance', style: TextStyle(color: Colors.black54)),
+                    SizedBox(height: 4),
+                    Text('\$12.000', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+                  ],
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 12),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildBalanceButton(Icons.arrow_upward, 'Top Up'),
-              const SizedBox(width: 12),
               _buildBalanceButton(Icons.swap_horiz, 'Transfer'),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
   Widget _buildBalanceButton(IconData icon, String label) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.3),
-            shape: BoxShape.circle,
+    return Flexible(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.3),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.black, size: 18),
           ),
-          child: Icon(icon, color: Colors.black, size: 20),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.black87)),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            label, 
+            style: const TextStyle(fontSize: 10, color: Colors.black87),
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildOrderMenuSection(Color textColor) {
-    return Expanded(
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Incoming Orders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
+              Text('Orders', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
               TextButton(
-                onPressed: () {},
-                child: const Text('View all >', style: TextStyle(color: Colors.orange)),
+                onPressed: widget.onViewMorePressed,
+                child: const Text('View More', style: TextStyle(color: Colors.orange)),
               ),
             ],
           ),
           const SizedBox(height: 16),
+          _buildOrderFilters(),
+          const SizedBox(height: 16),
           Expanded(
-            child: FutureBuilder<List<Order>>(
-              future: _ordersFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No current orders.'));
-                }
-
-                final orders = snapshot.data!;
-                return ListView.builder(
-                  itemCount: orders.length,
-                  itemBuilder: (context, index) {
-                    final order = orders[index];
-                    return _buildOrderItem(order, textColor);
-                  },
-                );
-              },
-            ),
+            child: _displayedOrders.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.inbox_outlined, size: 48, color: Colors.grey[400]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No ${_selectedFilter.toLowerCase()} orders',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _displayedOrders.length,
+                    itemBuilder: (context, index) {
+                      final order = _displayedOrders[index];
+                      return _buildOrderItem(order, textColor);
+                    },
+                  ),
           ),
         ],
+      );
+  }
+
+  Widget _buildOrderFilters() {
+    final filters = ['All', 'Pending', 'Accepted', 'Preparing', 'Ready', 'Delivered', 'Cancelled'];
+    
+    return Container(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final isSelected = _selectedFilter == filter;
+          final count = filter == 'All' 
+              ? _allOrders.length 
+              : _allOrders.where((order) => order.status == filter).length;
+          
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: FilterChip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    filter,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[700],
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontSize: 12,
+                    ),
+                  ),
+                  if (count > 0) ...[
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white.withOpacity(0.3) : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        count.toString(),
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.grey[700],
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  _onFilterChanged(filter);
+                }
+              },
+              backgroundColor: Colors.grey[100],
+              selectedColor: _getFilterColor(filter),
+              checkmarkColor: Colors.white,
+              elevation: isSelected ? 2 : 0,
+              pressElevation: 4,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+          );
+        },
       ),
     );
+  }
+
+  Color _getFilterColor(String filter) {
+    switch (filter) {
+      case 'Pending':
+        return Colors.orange;
+      case 'Accepted':
+        return Colors.blue;
+      case 'Preparing':
+        return Colors.purple;
+      case 'Ready':
+        return Colors.green;
+      case 'Delivered':
+        return Colors.teal;
+      case 'Cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildOrderItem(Order order, Color textColor) {
@@ -180,7 +298,7 @@ class _OrderPanelState extends State<OrderPanel> {
                   ],
                 ),
               ),
-              Text('\$${totalPrice.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
+              Text(CurrencyFormatter.formatUGX(totalPrice), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
             ],
           ),
           const SizedBox(height: 10),
@@ -215,9 +333,7 @@ class _OrderPanelState extends State<OrderPanel> {
         SnackBar(content: Text('Order has been $status')),
       );
       // Refresh the list of orders
-      setState(() {
-        _ordersFuture = _orderService.getOrders();
-      });
+      _loadOrders();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update order: $e')),

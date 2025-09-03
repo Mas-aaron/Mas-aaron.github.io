@@ -3,6 +3,7 @@ import '../services/menu_service.dart';
 import '../models/menu_item.dart';
 import '../models/menu_category.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:restaurant_dashboard_new/utils/currency_formatter.dart';
 
 
 
@@ -39,14 +40,18 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     try {
       final categories = await _menuService.getMenuCategories();
       setState(() {
-        _categories = categories;
+        _categories = categories ?? [];
         if (_categories.isNotEmpty) {
           _selectedCategoryId = _categories.first.id;
+        } else {
+          _selectedCategoryId = null;
         }
         _isLoadingCategories = false;
       });
     } catch (e) {
       setState(() {
+        _categories = [];
+        _selectedCategoryId = null;
         _isLoadingCategories = false;
       });
       if (mounted) {
@@ -104,11 +109,16 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Wrap(
+      alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      runSpacing: 16,
+      spacing: 16,
       children: [
         const Text('Menu Management', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        Row(
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
           children: [
             ElevatedButton.icon(
               onPressed: _showManageCategoriesDialog,
@@ -120,7 +130,6 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-            const SizedBox(width: 16),
             ElevatedButton.icon(
               onPressed: _showAddMenuItemDialog,
               icon: const Icon(Icons.add),
@@ -152,7 +161,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     final formKey = GlobalKey<FormState>();
     final nameController = TextEditingController(text: item.name);
     final descriptionController = TextEditingController(text: item.description);
-    final priceController = TextEditingController(text: item.price.toString());
+    final priceController = TextEditingController(text: CurrencyFormatter.formatUGX(item.price));
     XFile? imageFile;
     int? selectedCategoryId = item.category;
     bool isAvailable = item.isAvailable;
@@ -198,26 +207,57 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                         ),
                         TextFormField(
                           controller: priceController,
-                          decoration: const InputDecoration(labelText: 'Price'),
+                          decoration: const InputDecoration(labelText: 'Price (UGX)'),
                           keyboardType: TextInputType.number,
                           validator: (value) => value!.isEmpty ? 'Enter a price' : null,
                         ),
-                        DropdownButtonFormField<int>(
-                          value: selectedCategoryId,
-                          items: _categories.map((MenuCategory category) {
-                            return DropdownMenuItem<int>(
-                              value: category.id,
-                              child: Text(category.name),
-                            );
-                          }).toList(),
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCategoryId = newValue;
-                            });
-                          },
-                          decoration: const InputDecoration(labelText: 'Category'),
-                          validator: (value) => value == null ? 'Select a category' : null,
-                        ),
+                        _categories.isEmpty
+                            ? Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[50],
+                                  border: Border.all(color: Colors.orange[200]!),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.category, color: Colors.orange[600], size: 32),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'No categories available',
+                                      style: TextStyle(
+                                        color: Colors.orange[800],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Please create a category first using "Manage Categories"',
+                                      style: TextStyle(
+                                        color: Colors.orange[600],
+                                        fontSize: 12,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : DropdownButtonFormField<int>(
+                                value: selectedCategoryId,
+                                items: _categories.map((MenuCategory category) {
+                                  return DropdownMenuItem<int>(
+                                    value: category.id,
+                                    child: Text(category.name),
+                                  );
+                                }).toList(),
+                                onChanged: (newValue) {
+                                  setState(() {
+                                    selectedCategoryId = newValue;
+                                  });
+                                },
+                                decoration: const InputDecoration(labelText: 'Category'),
+                                validator: (value) => value == null ? 'Select a category' : null,
+                              ),
                         SwitchListTile(
                           title: const Text('Available'),
                           value: isAvailable,
@@ -244,7 +284,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                       item.id,
                       nameController.text,
                       descriptionController.text,
-                      double.parse(priceController.text),
+                      CurrencyFormatter.parseUGX(priceController.text).toDouble(),
                       selectedCategoryId!,
                       isAvailable,
                       imageFile,
@@ -284,29 +324,54 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                 width: 400, // Constrain width
                 child: _isLoadingCategories
                     ? const Center(child: CircularProgressIndicator())
-                    : SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: _categories.map((category) {
-                            return ListTile(
-                              title: Text(category.name),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blue),
-                                    onPressed: () => _showEditCategoryDialog(category, refreshCategories),
+                    : _categories.isEmpty
+                        ? Container(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.category, size: 48, color: Colors.grey[400]),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No categories yet',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _showDeleteCategoryConfirmation(category, refreshCategories),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Create your first category to start organizing your menu items.',
+                                  style: TextStyle(color: Colors.grey[500]),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          )
+                        : SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: _categories.map((category) {
+                                return ListTile(
+                                  title: Text(category.name),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.blue),
+                                        onPressed: () => _showEditCategoryDialog(category, refreshCategories),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.red),
+                                        onPressed: () => _showDeleteCategoryConfirmation(category, refreshCategories),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
               ),
               actions: [
                 TextButton(
@@ -475,26 +540,57 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                       ),
                       TextFormField(
                         controller: priceController,
-                        decoration: const InputDecoration(labelText: 'Price'),
+                        decoration: const InputDecoration(labelText: 'Price (UGX)'),
                         keyboardType: TextInputType.number,
                         validator: (value) => value!.isEmpty ? 'Enter a price' : null,
                       ),
-                      DropdownButtonFormField<int>(
-                        value: selectedCategoryId,
-                        items: _categories.map((MenuCategory category) {
-                          return DropdownMenuItem<int>(
-                            value: category.id,
-                            child: Text(category.name),
-                          );
-                        }).toList(),
-                        onChanged: (newValue) {
-                          setState(() {
-                            selectedCategoryId = newValue;
-                          });
-                        },
-                        decoration: const InputDecoration(labelText: 'Category'),
-                        validator: (value) => value == null ? 'Select a category' : null,
-                      ),
+                      _categories.isEmpty
+                          ? Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.orange[50],
+                                border: Border.all(color: Colors.orange[200]!),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(Icons.category, color: Colors.orange[600], size: 32),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'No categories available',
+                                    style: TextStyle(
+                                      color: Colors.orange[800],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Please create a category first using "Manage Categories"',
+                                    style: TextStyle(
+                                      color: Colors.orange[600],
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
+                          : DropdownButtonFormField<int>(
+                              value: selectedCategoryId,
+                              items: _categories.map((MenuCategory category) {
+                                return DropdownMenuItem<int>(
+                                  value: category.id,
+                                  child: Text(category.name),
+                                );
+                              }).toList(),
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectedCategoryId = newValue;
+                                });
+                              },
+                              decoration: const InputDecoration(labelText: 'Category'),
+                              validator: (value) => value == null ? 'Select a category' : null,
+                            ),
                     ],
                   ),
                 ),
@@ -509,6 +605,12 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
                 onPressed: () async {
+                  if (_categories.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please create at least one category before adding menu items.')),
+                    );
+                    return;
+                  }
                   if (formKey.currentState!.validate()) {
                     if (selectedCategoryId == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -520,7 +622,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                       await _menuService.addMenuItem(
                         nameController.text,
                         descriptionController.text,
-                        double.parse(priceController.text),
+                        CurrencyFormatter.parseUGX(priceController.text).toDouble(),
                         selectedCategoryId!,
                         imageFile,
                       );
@@ -563,7 +665,7 @@ class _MenuItemCard extends StatelessWidget {
           ClipRRect(
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             child: Image.network(
-              item.image ?? 'https://via.placeholder.com/300x150', // Use real image URL or placeholder
+              item.image ?? '', // Use real image URL
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -580,20 +682,22 @@ class _MenuItemCard extends StatelessWidget {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text(item.description, style: TextStyle(fontSize: 12, color: Colors.grey[600]), maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 8),
-                Text('\$${item.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange)),
-              ],
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Text(item.description, style: TextStyle(fontSize: 12, color: Colors.grey[600]), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 8),
+                  Text(CurrencyFormatter.formatUGX(item.price), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange)),
+                  const Spacer(),
+                ],
+              ),
             ),
           ),
-          const Spacer(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
             child: Row(
