@@ -45,7 +45,7 @@ if DEBUG:
         '127.0.0.1',
         'localhost',
         '10.32.140.30',
-        '10.32.142.80',
+        '10.4.45.150',
 
     ]
 else:
@@ -59,7 +59,7 @@ else:
             'mas-aarongithubio-production.up.railway.app',
             'localhost',
             '127.0.0.1',
-            '10.32.142.80',
+            '10.4.45.150',
             
         ]
 

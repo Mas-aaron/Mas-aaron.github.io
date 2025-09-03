@@ -7,8 +7,6 @@ import 'package:food_delivery_app/screens/filter_dialog.dart';
 import 'package:food_delivery_app/screens/cart_screen.dart';
 import 'package:food_delivery_app/providers/cart_provider.dart';
 import 'package:food_delivery_app/services/distance_service.dart';
-import 'package:food_delivery_app/widgets/order_type_selector.dart';
-import 'package:food_delivery_app/widgets/dine_in_scheduler.dart';
 import 'package:provider/provider.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
@@ -197,47 +195,6 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 ],
               ),
             ),
-          ),
-
-          // Order Type Selector
-          SliverToBoxAdapter(
-            child: Consumer<CartProvider>(
-              builder: (context, cartProvider, child) {
-                return OrderTypeSelector(
-                  selectedType: cartProvider.orderType,
-                  onTypeChanged: (type) {
-                    cartProvider.setOrderType(type);
-                    if (type != OrderType.dineIn) {
-                      cartProvider.setScheduledTime(null);
-                    }
-                  },
-                  showDistance: true,
-                  distance: _distance,
-                  estimatedPrepTime: widget.restaurant.deliveryTime,
-                );
-              },
-            ),
-          ),
-
-          // Dine-in Scheduler (only show when dine-in is selected)
-          Consumer<CartProvider>(
-            builder: (context, cartProvider, child) {
-              if (cartProvider.orderType == OrderType.dineIn) {
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: DineInScheduler(
-                      selectedTime: cartProvider.scheduledTime,
-                      onTimeChanged: (time) {
-                        cartProvider.setScheduledTime(time);
-                      },
-                      estimatedPrepTime: widget.restaurant.deliveryTime,
-                    ),
-                  ),
-                );
-              }
-              return const SliverToBoxAdapter(child: SizedBox.shrink());
-            },
           ),
 
           // Menu Items Header

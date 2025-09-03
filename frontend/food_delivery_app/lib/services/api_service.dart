@@ -221,18 +221,28 @@ class ApiService {
     OrderType? orderType,
     DateTime? scheduledTime,
     double? tipAmount,
+    String? tableNumber,
   }) async {
     final headers = await _getAuthHeaders();
     
     final orderData = <String, dynamic>{
       'delivery_address': deliveryAddress,
-      'customer_lat': latitude,
-      'customer_lng': longitude,
     };
+    
+    // Only add location data for delivery orders
+    if (orderType == OrderType.delivery) {
+      orderData['customer_lat'] = latitude;
+      orderData['customer_lng'] = longitude;
+    }
     
     // Add dine-in specific fields
     if (orderType != null) {
-      orderData['order_type'] = orderType.toString().split('.').last;
+      String orderTypeString = orderType.toString().split('.').last;
+      // Convert camelCase to snake_case for backend compatibility
+      if (orderTypeString == 'dineIn') {
+        orderTypeString = 'dine_in';
+      }
+      orderData['order_type'] = orderTypeString;
     }
     
     if (scheduledTime != null) {
@@ -241,6 +251,10 @@ class ApiService {
     
     if (tipAmount != null && tipAmount > 0) {
       orderData['tip_amount'] = tipAmount;
+    }
+    
+    if (tableNumber != null && tableNumber.isNotEmpty) {
+      orderData['table_number'] = tableNumber;
     }
     
     final body = jsonEncode(orderData);
@@ -345,6 +359,7 @@ class ApiService {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({
       'order': orderId,
+      'rider': riderId,
       'rating': rating,
       'comment': comment,
     });

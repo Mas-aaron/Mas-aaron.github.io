@@ -48,7 +48,11 @@ class Order {
       user: json['user'] != null ? User.fromJson(json['user']) : null,
       orderType: json['order_type'],
       scheduledTime: json['scheduled_time'],
-      tipAmount: (json['tip_amount'] as num?)?.toDouble(),
+      tipAmount: json['tip_amount'] != null 
+          ? (json['tip_amount'] is String 
+              ? double.tryParse(json['tip_amount']) 
+              : (json['tip_amount'] as num?)?.toDouble())
+          : null,
       tableNumber: json['table_number'],
       estimatedPrepTime: json['estimated_prep_time'],
     );

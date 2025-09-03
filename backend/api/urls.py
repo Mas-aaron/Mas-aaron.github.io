@@ -26,6 +26,8 @@ router.register(r'devices', api_views.DeviceViewSet, basename='device')
 # Review Endpoints
 from .rider_arrival_views import RiderArrivalView, RiderLocationUpdateView
 router.register(r'reviews', api_views.ReviewViewSet, basename='review')
+router.register(r'order-reviews', api_views.OrderReviewViewSet, basename='order-review')
+router.register(r'rider-reviews', api_views.RiderReviewViewSet, basename='rider-review')
 router.register(r'bills', api_views.BillViewSet, basename='bill')
 router.register(r'payment-periods', api_views.PaymentPeriodViewSet, basename='payment-period')
 router.register(r'order-payments', api_views.OrderPaymentViewSet, basename='order-payment')

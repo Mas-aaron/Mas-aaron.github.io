@@ -19,6 +19,7 @@ class CartProvider with ChangeNotifier {
   OrderType _orderType = OrderType.delivery;
   DateTime? _scheduledTime;
   double _tipAmount = 0.0;
+  String? _tableNumber;
 
   Cart? get cart => _cart;
   bool get isLoading => _isLoading;
@@ -28,6 +29,7 @@ class CartProvider with ChangeNotifier {
   OrderType get orderType => _orderType;
   DateTime? get scheduledTime => _scheduledTime;
   double get tipAmount => _tipAmount;
+  String? get tableNumber => _tableNumber;
   
   // Order type setters
   void setOrderType(OrderType type) {
@@ -45,6 +47,11 @@ class CartProvider with ChangeNotifier {
   
   void setTipAmount(double amount) {
     _tipAmount = amount;
+    notifyListeners();
+  }
+  
+  void setTableNumber(String? number) {
+    _tableNumber = number;
     notifyListeners();
   }
 
@@ -206,13 +213,18 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      // For non-delivery orders, don't pass location data
+      double? lat = _orderType == OrderType.delivery ? latitude : null;
+      double? lng = _orderType == OrderType.delivery ? longitude : null;
+      
       await _apiService.placeOrder(
         address ?? '', 
-        latitude ?? 0.0, 
-        longitude ?? 0.0,
+        lat ?? 0.0, 
+        lng ?? 0.0,
         orderType: _orderType,
         scheduledTime: _scheduledTime,
         tipAmount: _tipAmount,
+        tableNumber: _tableNumber,
       );
       await fetchCart(); // Refresh cart, which should now be empty
       _isLoading = false;

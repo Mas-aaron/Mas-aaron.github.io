@@ -5,7 +5,9 @@ import 'package:rider_app/services/websocket_service.dart';
 import 'package:rider_app/screens/available_orders_screen.dart';
 import 'package:rider_app/screens/order_list_screen.dart';
 import 'package:rider_app/screens/my_reviews_screen.dart';
+import 'package:rider_app/screens/login_screen.dart';
 import 'package:rider_app/widgets/new_order_notification.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RiderHomeScreen extends StatefulWidget {
   const RiderHomeScreen({super.key});
@@ -104,6 +106,101 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
     });
   }
 
+  Future<void> _logout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('authToken');
+      
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (Route<dynamic> route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error logging out. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showProfileMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Color(0xFF00C851),
+                  child: Icon(Icons.person, color: Colors.white, size: 40),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Rider Profile',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'FortExpress Delivery Partner',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 30),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
+                    'Logout',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _logout();
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _webSocketService.disconnect();
@@ -175,10 +272,13 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
           ),
           Container(
             margin: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: const Color(0xFF00C851).withOpacity(0.1),
-              child: const Icon(Icons.person, color: Color(0xFF00C851), size: 20),
+            child: GestureDetector(
+              onTap: _showProfileMenu,
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: const Color(0xFF00C851).withOpacity(0.1),
+                child: const Icon(Icons.person, color: Color(0xFF00C851), size: 20),
+              ),
             ),
           ),
         ],

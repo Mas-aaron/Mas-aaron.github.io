@@ -5956,3 +5956,198 @@ Firebase Admin SDK initialized with service account key.
 Firebase Admin SDK initialized with service account key.
 Firebase Admin SDK initialized with service account key.
 Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Bad Request: /api/orders/
+Firebase Admin SDK initialized with service account key.
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756884881569345%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 64 to group restaurant_4
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756884913317803%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 64 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 64 to group restaurant_4
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756884927877099%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 64 status changed from Accepted to Preparing. Sending notifications.
+Sent order status update for order 64 to group restaurant_4
+Order 64 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 64 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 64 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1756884943700496%334de02b334de02b
+Device 5 has an unregistered token and will be deleted. Error: Requested entity was not found.
+Notification results for user 5: 1 successful, 1 failed
+Sent push notifications for order 64 to 1 available riders.
+Order 62 status changed from Preparing to Ready for Pickup. Sending notifications.
+Sent order status update for order 62 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 62 to riders_available group.
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756885760350430%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 62 status changed from Accepted to Ready for Pickup. Sending notifications.
+Sent order status update for order 62 to group restaurant_4
+Sent 'Ready for Pickup' WebSocket message for order 62 to riders_available group.
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1756885764332052%334de02b334de02b
+Notification results for user 5: 1 successful, 0 failed
+Sent push notifications for order 62 to 1 available riders.
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756885773266097%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756885773583953%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Not Found: /api/rider-orders/62/accept/
+Successfully sent message to device 3: projects/fortexpress-5641c/messages/0:1756885776524338%334de02b334de02b
+Notification results for user 5: 1 successful, 0 failed
+Sent push notifications for order 62 to 1 available riders.
+RiderArrivalView POST request for order_id: 62, user: 5
+Request data: {'latitude': 0.6874429, 'longitude': 30.2480169}
+Calculating distance: rider=(0.6874429, 30.2480169), customer=(0.6876077, 30.2482963)
+Calculated distance: 36.067657850203375 meters
+Attempting to send arrival notification for order 62
+Calling send_push_notification for user 4
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756885808788600%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent push notification for order 62
+Getting channel layer for WebSocket notification.
+Sending WebSocket notification to group customer_4
+Successfully sent WebSocket notification for order 62
+Bad Request: /api/rider-orders/62/complete/
+RiderLocationUpdateView POST request for order_id: 62, user: 5
+Request data: {'latitude': 0.6874271, 'longitude': 30.2480606}
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756885855807061%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756885856374714%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756886215370079%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756886215602928%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756886370439131%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Successfully sent message to device 4: projects/fortexpress-5641c/messages/0:1756886370643213%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Not Found: /api/order-reviews/
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Internal Server Error: /api/dashboard-analytics/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 730, in get
+    OrderItem.objects.filter(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1563, in build_filter
+    self.check_related_objects(join_info.final_field, value, join_info.opts)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1372, in check_related_objects
+    self.check_query_object_type(value, opts, field)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1349, in check_query_object_type
+    raise ValueError(
+ValueError: Cannot query "Betty Burgers": Must be "MenuItem" instance.
+Internal Server Error: /api/dashboard-analytics/
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\CascadeProjects\food-delivery-app\backend\api\views.py", line 730, in get
+    OrderItem.objects.filter(
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1493, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1511, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\query.py", line 1518, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1646, in add_q
+    clause, _ = self._add_q(q_object, can_reuse)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1678, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1563, in build_filter
+    self.check_related_objects(join_info.final_field, value, join_info.opts)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1372, in check_related_objects
+    self.check_query_object_type(value, opts, field)
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1349, in check_query_object_type
+    raise ValueError(
+ValueError: Cannot query "Betty Burgers": Must be "MenuItem" instance.

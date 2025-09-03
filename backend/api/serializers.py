@@ -353,8 +353,11 @@ class OrderSerializer(serializers.ModelSerializer):
 
         # 2. Validation: Check for required location data (only for delivery orders)
         order_type = validated_data.get('order_type', 'delivery')
-        if order_type == 'delivery' and ('customer_lat' not in validated_data or 'customer_lng' not in validated_data):
-            raise serializers.ValidationError("Customer location (lat, lng) is required for delivery orders.")
+        if order_type == 'delivery':
+            if 'customer_lat' not in validated_data or 'customer_lng' not in validated_data:
+                raise serializers.ValidationError("Customer location (lat, lng) is required for delivery orders.")
+            if validated_data.get('customer_lat') is None or validated_data.get('customer_lng') is None:
+                raise serializers.ValidationError("Customer location (lat, lng) is required for delivery orders.")
 
         # 3. Validation: Ensure all items in cart are from the same restaurant
         restaurants = set()

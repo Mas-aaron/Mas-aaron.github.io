@@ -727,7 +727,10 @@ class DashboardAnalyticsView(APIView):
 
         # 3. Calculate Popular Food Items
         popular_items_data = (
-            OrderItem.objects.filter(order__restaurant=restaurant)
+            OrderItem.objects.filter(
+                order__restaurant=restaurant,
+                menu_item__category__restaurant=restaurant  # Ensure menu item belongs to this restaurant
+            )
             .values('menu_item__name', 'menu_item__image')
             .annotate(count=Count('id'))
             .order_by('-count')[:5]  # Top 5 items

@@ -21,6 +21,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
   final OrderService _orderService = OrderService();
   WebSocketService? _webSocketService;
   bool _hasNewNotification = false;
+  Set<int> _expandedOrders = {};
 
   @override
   void initState() {
@@ -668,30 +669,40 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       itemCount: _filteredOrders.length,
       itemBuilder: (context, index) {
         final order = _filteredOrders[index];
-        return _buildModernOrderCard(order);
+        return _buildModernOrderCard(order, _expandedOrders.contains(order.id));
       },
     );
   }
 
-  Widget _buildModernOrderCard(Order order) {
+  Widget _buildModernOrderCard(Order order, bool isExpanded) {
     final orderTypeIcon = _getOrderTypeIcon(order.orderType ?? 'delivery');
     final orderTypeColor = _getOrderTypeColor(order.orderType ?? 'delivery');
     
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-            spreadRadius: 0,
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade100, width: 1),
-      ),
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isExpanded) {
+            _expandedOrders.remove(order.id);
+          } else {
+            _expandedOrders.add(order.id);
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              offset: const Offset(0, 4),
+              blurRadius: 12,
+              spreadRadius: 0,
+            ),
+          ],
+          border: Border.all(color: Colors.grey.shade100, width: 1),
+        ),
       child: Column(
         children: [
           // Enhanced Header
@@ -768,20 +779,30 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        order.status,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'UGX ${order.totalPrice.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          color: Colors.white.withOpacity(0.8),
+                          size: 24,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -813,12 +834,33 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
               ],
             ),
           ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          // Collapsed Summary
+          if (!isExpanded)
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Icon(Icons.shopping_bag_outlined, color: Colors.grey[600], size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${order.items.length} items',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Tap to view details',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          // Expandable Content
+          if (isExpanded) 
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Row(
                   children: [
                     Icon(Icons.attach_money, color: Colors.green.shade600, size: 20),
@@ -915,6 +957,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 

@@ -73,8 +73,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           return ListView(
             padding: const EdgeInsets.all(16.0),
             children: [
-              // Order Type Info
-              _buildOrderTypeInfo(cartProvider),
+              // Order Type Selection
+              _buildOrderTypeSelector(cartProvider),
               const SizedBox(height: 24),
               
               // Address section (only for delivery)
@@ -127,33 +127,168 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildOrderTypeInfo(CartProvider cartProvider) {
-    String orderTypeText = '';
-    IconData orderTypeIcon = Icons.delivery_dining;
-    
-    switch (cartProvider.orderType) {
-      case OrderType.delivery:
-        orderTypeText = 'Delivery Order';
-        orderTypeIcon = Icons.delivery_dining;
-        break;
-      case OrderType.pickup:
-        orderTypeText = 'Pickup Order';
-        orderTypeIcon = Icons.store;
-        break;
-      case OrderType.dineIn:
-        orderTypeText = 'Dine-in Order';
-        orderTypeIcon = Icons.restaurant;
-        break;
-    }
+  Widget _buildOrderTypeSelector(CartProvider cartProvider) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.orange.shade50, Colors.orange.shade100],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.orange.shade200, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade600,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.delivery_dining, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Choose Order Type',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange.shade800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Select how you\'d like to receive your order',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.orange.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildOrderTypeOption(
+                    OrderType.delivery,
+                    'Delivery',
+                    Icons.delivery_dining,
+                    'Delivered to your door',
+                    cartProvider.orderType == OrderType.delivery,
+                    () => cartProvider.setOrderType(OrderType.delivery),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildOrderTypeOption(
+                    OrderType.pickup,
+                    'Pickup',
+                    Icons.store,
+                    'Collect from restaurant',
+                    cartProvider.orderType == OrderType.pickup,
+                    () => cartProvider.setOrderType(OrderType.pickup),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildOrderTypeOption(
+                    OrderType.dineIn,
+                    'Dine-in',
+                    Icons.restaurant,
+                    'Eat at restaurant',
+                    cartProvider.orderType == OrderType.dineIn,
+                    () => cartProvider.setOrderType(OrderType.dineIn),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Icon(orderTypeIcon, color: Theme.of(context).primaryColor),
-        title: Text(orderTypeText, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: cartProvider.orderType == OrderType.dineIn && cartProvider.scheduledTime != null
-            ? Text('Scheduled for ${_formatDateTime(cartProvider.scheduledTime!)}')
-            : null,
+  Widget _buildOrderTypeOption(
+    OrderType type,
+    String title,
+    IconData icon,
+    String description,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.orange.shade600 : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? Colors.orange.shade600 : Colors.orange.shade200,
+            width: 2,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.orange.shade300.withOpacity(0.4),
+                    offset: const Offset(0, 4),
+                    blurRadius: 12,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    offset: const Offset(0, 2),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                  ),
+                ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected ? Colors.white : Colors.orange.shade600,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.orange.shade800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected ? Colors.white.withOpacity(0.9) : Colors.orange.shade600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -178,14 +313,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.restaurant_menu, color: Colors.grey.shade600),
+                Icon(Icons.table_restaurant, color: Colors.grey.shade600),
                 const SizedBox(width: 8),
-                const Text(
-                  'Table will be assigned upon arrival',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Table number (optional)',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onChanged: (value) {
+                      cartProvider.setTableNumber(value.isEmpty ? null : value);
+                    },
+                  ),
                 ),
               ],
             ),

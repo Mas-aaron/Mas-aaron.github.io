@@ -1,3 +1,3 @@
 // TODO: Replace with your local network IP address
-const String baseUrl = 'http://10.32.142.80:8000/api';
-const String webSocketUrl = 'ws://10.32.142.80:8000';
+const String baseUrl = 'http://127.0.0.1:8000/api';
+const String webSocketUrl = 'ws://127.0.0.1:8000';
