@@ -204,3 +204,28 @@ LOGGING = {
         },
     },
 }
+
+# Redis configuration for Railway
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
+
+# Channel layers for production (using Redis)
+if not DEBUG:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [REDIS_URL],
+            },
+        },
+    }
+
+# Cache configuration with Redis
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
