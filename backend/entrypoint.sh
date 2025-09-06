@@ -33,6 +33,19 @@ else:
     print(f'Superuser {username} already exists.')
 EOF
 
+# Test Django configuration
+echo "Testing Django configuration..."
+python -c "
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'food_delivery.settings')
+import django
+django.setup()
+from django.core.wsgi import get_wsgi_application
+app = get_wsgi_application()
+print('Django WSGI application loaded successfully')
+"
+
 # Start the application server
-echo "Starting server..."
-exec gunicorn food_delivery.wsgi:application --bind 0.0.0.0:$PORT
+echo "Starting server on port $PORT..."
+echo "About to start gunicorn..."
+exec gunicorn food_delivery.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 120 --log-level info
