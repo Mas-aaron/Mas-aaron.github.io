@@ -33,6 +33,18 @@ else:
     print(f'Superuser {username} already exists.')
 EOF
 
+# Load production data if it exists and hasn't been loaded yet
+if [ -f "local_data.json" ] && [ ! -f ".data_loaded" ]; then
+    echo "Loading production data..."
+    python load_data_script.py
+    if [ $? -eq 0 ]; then
+        touch .data_loaded
+        echo "Data loading completed successfully"
+    else
+        echo "Data loading failed, continuing without data"
+    fi
+fi
+
 # Start the application server
 echo "Starting server on port $PORT..."
 echo "Using daphne ASGI server..."
