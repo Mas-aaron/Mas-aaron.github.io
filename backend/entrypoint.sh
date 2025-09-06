@@ -7,10 +7,6 @@ set -e
 echo "Applying database migrations..."
 python manage.py migrate
 
-# Seed the database with initial data
-echo "Seeding database..."
-python manage.py seed
-
 # Collect static files for production
 echo "Collecting static files..."
 python manage.py collectstatic --noinput

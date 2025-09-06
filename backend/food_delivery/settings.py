@@ -208,16 +208,30 @@ LOGGING = {
 # Redis configuration for Railway
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
-# Channel layers for production (using Redis)
-if not DEBUG:
-    CHANNEL_LAYERS = {
-        'default': {
-            'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                "hosts": [REDIS_URL],
-            },
+# Parse Redis URL for Railway compatibility
+import urllib.parse
+if REDIS_URL.startswith('redis://'):
+    redis_url_parsed = urllib.parse.urlparse(REDIS_URL)
+    redis_host = redis_url_parsed.hostname or 'localhost'
+    redis_port = redis_url_parsed.port or 6379
+    redis_password = redis_url_parsed.password
+    redis_db = redis_url_parsed.path.lstrip('/') or '0'
+else:
+    redis_host = 'localhost'
+    redis_port = 6379
+    redis_password = None
+    redis_db = '0'
+
+# Channel layers configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(redis_host, redis_port)],
+            "password": redis_password,
         },
-    }
+    },
+}
 
 # Cache configuration with Redis
 CACHES = {
