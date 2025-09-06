@@ -6151,3 +6151,172 @@ Traceback (most recent call last):
   File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\db\models\sql\query.py", line 1349, in check_query_object_type
     raise ValueError(
 ValueError: Cannot query "Betty Burgers": Must be "MenuItem" instance.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Unauthorized: /api/restaurant-orders/
+Unauthorized: /api/dashboard-analytics/
+Unauthorized: /api/restaurant-orders/
+Unauthorized: /api/restaurant/dashboard-reviews/
+Unauthorized: /api/menu-categories/
+Unauthorized: /api/menu-items/
+Unauthorized: /api/restaurant-orders/
+Unauthorized: /api/restaurant-orders/
+Unauthorized: /api/dashboard-analytics/
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Bad Request: /api/login/
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+No active devices found for user 4
+Firebase Admin SDK initialized with service account key.
+Not Found: /favicon.ico
+Firebase Admin SDK initialized with service account key.
+Unauthorized: /api/devices/
+Firebase Admin SDK initialized with service account key.
+Unauthorized: /api/devices/
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
+Bad Request: /api/login/
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1757149707169596%4c3c1fe64c3c1fe6
+Device 4 has an unregistered token and will be deleted. Error: Requested entity was not found.
+Notification results for user 4: 1 successful, 1 failed
+Order 60 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 60 to group restaurant_4
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1757150079180765%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Sent new order notification for order 65 to group restaurant_4

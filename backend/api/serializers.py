@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import *
+from rest_framework.authtoken.models import Token
 from .utils import format_ugx_currency
 import csv
 import io
@@ -116,6 +117,8 @@ class UserSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password']
         )
+        # Automatically create a token for the new user
+        Token.objects.create(user=user)
         Cart.objects.create(user=user)
         return user
 

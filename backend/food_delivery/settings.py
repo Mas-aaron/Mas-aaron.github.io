@@ -45,7 +45,7 @@ if DEBUG:
         '127.0.0.1',
         'localhost',
         '10.32.140.30',
-        '10.4.45.150',
+        '10.4.42.76',
 
     ]
 else:
@@ -59,7 +59,7 @@ else:
             'mas-aarongithubio-production.up.railway.app',
             'localhost',
             '127.0.0.1',
-            '10.4.45.150',
+            '10.4.42.76',
             
         ]
 
@@ -135,13 +135,22 @@ if not DEBUG:
     }
     DATABASES['default']['CONN_MAX_AGE'] = 600
 else:
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.sqlite3',
+    #         'NAME': BASE_DIR / 'db.sqlite3',
+    #     }
+    # }
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'fortexpress', # Replace with your database name
+        'USER': 'postgres', # Replace with your username
+        'PASSWORD': '@a22%17#', # Replace with your password
+        'HOST': 'localhost',
+        'PORT': '',
     }
-
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
