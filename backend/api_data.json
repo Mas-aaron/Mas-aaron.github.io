@@ -1,0 +1,9 @@
+[
+{
+  "model": "api.notificationtemplate",
+  "pk": 1,
+  "fields": {
+    "category": "PROMOTIONAL",
+    "name": "promo_ad",
+    "title": "Holiday Special",
+    "body": 

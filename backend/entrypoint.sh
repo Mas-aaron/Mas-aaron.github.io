@@ -34,9 +34,9 @@ else:
 EOF
 
 # Load production data if it exists and hasn't been loaded yet
-if [ -f "production_data.json" ] && [ ! -f ".data_loaded" ]; then
+if [ -f "final_production_data.json" ] && [ ! -f ".data_loaded" ]; then
     echo "Loading production data from local PostgreSQL backup..."
-    python manage.py loaddata production_data.json
+    python manage.py loaddata final_production_data.json
     if [ $? -eq 0 ]; then
         touch .data_loaded
         echo "Production data loading completed successfully"
