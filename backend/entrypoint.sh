@@ -33,15 +33,15 @@ else:
     print(f'Superuser {username} already exists.')
 EOF
 
-# Seed production data if it hasn't been seeded yet
-if [ ! -f ".data_seeded" ]; then
-    echo "Seeding production data..."
-    python manage.py seed_production
+# Load production data if it exists and hasn't been loaded yet
+if [ -f "production_data.json" ] && [ ! -f ".data_loaded" ]; then
+    echo "Loading production data from local PostgreSQL backup..."
+    python manage.py loaddata production_data.json
     if [ $? -eq 0 ]; then
-        touch .data_seeded
-        echo "Data seeding completed successfully"
+        touch .data_loaded
+        echo "Production data loading completed successfully"
     else
-        echo "Data seeding failed, continuing without data"
+        echo "Production data loading failed, continuing without data"
     fi
 fi
 
