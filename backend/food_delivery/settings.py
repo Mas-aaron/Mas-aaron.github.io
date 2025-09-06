@@ -29,7 +29,7 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', 'AIzaSyB2_rwYdL9Tr_L
 GOOGLE_CLOUD_PROJECT = 'fortexpress-5641c'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'  # Temporarily enable for debugging
 
 # Get allowed hosts from environment variable or use defaults
 allowed_hosts_env = os.environ.get('ALLOWED_HOSTS')

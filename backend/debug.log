@@ -6354,3 +6354,4 @@ Traceback (most recent call last):
     raise DisallowedHost(msg)
 django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '10.5.55.224:8000'. You may need to add '10.5.55.224' to ALLOWED_HOSTS.
 Firebase Admin SDK initialized with service account key.
+Firebase Admin SDK initialized with service account key.
