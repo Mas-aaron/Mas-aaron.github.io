@@ -33,17 +33,7 @@ else:
     print(f'Superuser {username} already exists.')
 EOF
 
-# Load production data if it exists and hasn't been loaded yet
-if [ -f "final_production_data.json" ] && [ ! -f ".data_loaded" ]; then
-    echo "Loading production data from local PostgreSQL backup..."
-    python manage.py loaddata final_production_data.json
-    if [ $? -eq 0 ]; then
-        touch .data_loaded
-        echo "Production data loading completed successfully"
-    else
-        echo "Production data loading failed, continuing without data"
-    fi
-fi
+# Data loading section removed - using fresh database
 
 # Start the application server
 echo "Starting server on port $PORT..."
