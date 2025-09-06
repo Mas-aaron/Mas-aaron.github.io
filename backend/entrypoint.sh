@@ -35,4 +35,4 @@ EOF
 
 # Start the application server
 echo "Starting server..."
-exec daphne -b 0.0.0.0 -p "$PORT" food_delivery.asgi:application
+exec gunicorn food_delivery.wsgi:application --bind 0.0.0.0:$PORT
