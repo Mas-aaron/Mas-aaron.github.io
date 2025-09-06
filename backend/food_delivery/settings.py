@@ -107,9 +107,13 @@ CHANNEL_LAYERS = {
 # Check if we're in production (Railway provides DATABASE_URL)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
-    # Production - Use Railway's database
+    # Production - Use Railway's database with connection pooling
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
+    }
+    DATABASES['default']['OPTIONS'] = {
+        'MAX_CONNS': 20,
+        'connect_timeout': 10,
     }
 else:
     # Development - Use local database

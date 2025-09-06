@@ -98,13 +98,23 @@ class DeviceViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Use update_or_create for idempotent device registration.
-        # Match the model fields: 'token' and 'device_type'.
-        device, created = Device.objects.update_or_create(
-            user=request.user, 
-            token=registration_id,
-            defaults={'device_type': device_type, 'is_active': True}
-        )
+        try:
+            # Use update_or_create for idempotent device registration.
+            # Match the model fields: 'token' and 'device_type'.
+            device, created = Device.objects.update_or_create(
+                user=request.user, 
+                token=registration_id,
+                defaults={'device_type': device_type, 'is_active': True}
+            )
+        except Exception as e:
+            # Log the error and return a graceful response
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Database error in device registration: {e}")
+            return Response(
+                {"error": "Device registration temporarily unavailable. Please try again."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
 
         serializer = self.get_serializer(device)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
