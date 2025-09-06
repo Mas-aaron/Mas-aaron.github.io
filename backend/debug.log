@@ -6320,3 +6320,8 @@ Sent order status update for order 60 to group restaurant_4
 Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1757150079180765%4c3c1fe64c3c1fe6
 Notification results for user 4: 1 successful, 0 failed
 Sent new order notification for order 65 to group restaurant_4
+Firebase Admin SDK initialized with service account key.
+Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:1757150562680275%4c3c1fe64c3c1fe6
+Notification results for user 4: 1 successful, 0 failed
+Order 65 status changed from Pending to Accepted. Sending notifications.
+Sent order status update for order 65 to group restaurant_4
