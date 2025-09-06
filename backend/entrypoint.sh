@@ -36,7 +36,7 @@ EOF
 # Load production data if it exists and hasn't been loaded yet
 if [ -f "local_data.json" ] && [ ! -f ".data_loaded" ]; then
     echo "Loading production data..."
-    python load_data_script.py
+    python manage.py loaddata local_data.json
     if [ $? -eq 0 ]; then
         touch .data_loaded
         echo "Data loading completed successfully"
