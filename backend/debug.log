@@ -6325,3 +6325,31 @@ Successfully sent message to device 5: projects/fortexpress-5641c/messages/0:175
 Notification results for user 4: 1 successful, 0 failed
 Order 65 status changed from Pending to Accepted. Sending notifications.
 Sent order status update for order 65 to group restaurant_4
+Firebase Admin SDK initialized with service account key.
+Not Found: /favicon.ico
+Firebase Admin SDK initialized with service account key.
+Invalid HTTP_HOST header: '10.5.55.224:8000'. You may need to add '10.5.55.224' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 489, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\utils\deprecation.py", line 132, in __acall__
+    response = await sync_to_async(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 439, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\asgiref\sync.py", line 493, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\masen\AppData\Local\pypoetry\Cache\virtualenvs\food-delivery-hwrk1EDC-py3.12\Lib\site-packages\django\http\request.py", line 202, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '10.5.55.224:8000'. You may need to add '10.5.55.224' to ALLOWED_HOSTS.

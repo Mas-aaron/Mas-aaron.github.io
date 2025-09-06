@@ -43,6 +43,7 @@ else:
         '10.4.42.76',
         '10.0.2.2',
         '10.32.140.30',
+        '10.5.55.224',
         '.up.railway.app',  # Allow all Railway domains
     ]
 

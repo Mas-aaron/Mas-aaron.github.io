@@ -18,10 +18,22 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
+
+def root_view(request):
+    return JsonResponse({
+        'message': 'FortExpress Food Delivery API',
+        'status': 'running',
+        'endpoints': {
+            'admin': '/admin/',
+            'api': '/api/',
+            'loyalty': '/api/loyalty/'
+        }
+    })
 
 urlpatterns = [
+    path('', root_view, name='root'),
     path('admin/', admin.site.urls),
-
     path('api/', include('api.urls')),
     path('api/loyalty/', include('loyalty.urls')),
 ]
