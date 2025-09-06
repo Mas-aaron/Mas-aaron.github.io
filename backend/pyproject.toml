@@ -25,6 +25,11 @@ whitenoise = "^6.9.0"
 firebase-admin = "^7.1.0"
 django-model-utils = "^5.0.0"
 requests = "^2.32.5"
+django-redis = "^5.4.0"
+redis = "^5.0.5"
+djangorestframework-simplejwt = "^5.2.2"
+pyfcm = "^1.5.4"
+msgpack = "^1.0.8"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
