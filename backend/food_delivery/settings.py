@@ -106,10 +106,31 @@ CHANNEL_LAYERS = {
 # Database configuration - FIXED FOR RAILWAY
 # Check if we're in production (Railway provides DATABASE_URL)
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
+# Force production database configuration for Railway
 if DATABASE_URL:
     # Production - Use Railway's database
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
+    }
+    # Ensure we're not trying to connect to localhost
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
+    }
+elif os.environ.get('RAILWAY_ENVIRONMENT'):
+    # Railway environment but no DATABASE_URL - use Railway service variables
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('PGDATABASE'),
+            'USER': os.environ.get('PGUSER'),
+            'PASSWORD': os.environ.get('PGPASSWORD'),
+            'HOST': os.environ.get('PGHOST'),
+            'PORT': os.environ.get('PGPORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
 else:
     # Development - Use local database
