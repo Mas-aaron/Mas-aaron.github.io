@@ -80,6 +80,7 @@ custom_urlpatterns = [
     path('directions/', api_views.DirectionsProxyView.as_view(), name='directions-proxy'),
 
     # Test/Debug URLs
+    path('health/', api_views.health_check, name='health-check'),
     path('test-notification/', api_views.test_notification, name='test-notification'),
     path('send-template-notification/', api_views.SendTemplateNotificationView.as_view(), name='send-template-notification'),
 ]

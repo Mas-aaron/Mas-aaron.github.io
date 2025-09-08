@@ -23,6 +23,16 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.generics import RetrieveAPIView
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    """Simple health check endpoint for Railway deployment testing"""
+    return Response({
+        'status': 'healthy',
+        'message': 'Railway backend is running',
+        'timestamp': timezone.now().isoformat()
+    })
+
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.utils import timezone
