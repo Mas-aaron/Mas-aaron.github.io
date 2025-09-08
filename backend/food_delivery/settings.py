@@ -113,12 +113,13 @@ if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
     }
-    # Ensure we're not trying to connect to localhost
-    DATABASES['default']['OPTIONS'] = {
-        'sslmode': 'require',
-    }
-elif os.environ.get('RAILWAY_ENVIRONMENT'):
-    # Railway environment but no DATABASE_URL - use Railway service variables
+    # Only add SSL options for PostgreSQL
+    if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+        DATABASES['default']['OPTIONS'] = {
+            'sslmode': 'require',
+        }
+elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PGHOST'):
+    # Railway environment - use Railway service variables
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -133,15 +134,11 @@ elif os.environ.get('RAILWAY_ENVIRONMENT'):
         }
     }
 else:
-    # Development - Use local database
+    # Development - Use local database (SQLite for simplicity)
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'fortexpress'),
-            'USER': os.environ.get('DB_USER', 'postgres'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', '@a22%17#'),
-            'HOST': os.environ.get('DB_HOST', 'localhost'),
-            'PORT': os.environ.get('DB_PORT', ''),
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
