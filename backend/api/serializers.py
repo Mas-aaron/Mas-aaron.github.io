@@ -136,15 +136,18 @@ class RestaurantSignUpSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         owner_data = validated_data.pop('owner')
         
-        # The UserSerializer's create method will handle user creation and validation.
+        # Create the user account
         user = User.objects.create_user(
             username=owner_data['username'],
             email=owner_data['email'],
             password=owner_data['password']
         )
+        
+        # Create user cart and token
         Cart.objects.create(user=user)
+        Token.objects.create(user=user)
 
-        # Now create the restaurant and link it to the owner.
+        # Now create the restaurant and link it to the owner
         restaurant = Restaurant.objects.create(owner=user, **validated_data)
         
         return restaurant
