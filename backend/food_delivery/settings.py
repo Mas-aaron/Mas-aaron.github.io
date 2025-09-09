@@ -105,34 +105,30 @@ CHANNEL_LAYERS = {
 }
 
 # Database configuration - PRODUCTION ACTIVE
-# Railway database configuration (active for hosting)
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-# Force production database configuration for Railway
-if DATABASE_URL:
-    # Production - Use Railway's database
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
-    }
-    # Only add SSL options for PostgreSQL
-    if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
-        DATABASES['default']['OPTIONS'] = {
-            'sslmode': 'require',
-        }
-elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('DB_HOST'):
-    # Railway environment - use Railway service variables
+# Check for individual Railway database variables first
+if os.environ.get('DB_HOST'):
+    # Railway environment - use individual service variables
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USERNAME'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
+            'NAME': os.environ.get('DB_NAME', 'railway'),
+            'USER': os.environ.get('DB_USERNAME', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'postgres.railway.internal'),
             'PORT': os.environ.get('DB_PORT', '5432'),
             'OPTIONS': {
                 'sslmode': 'require',
             },
         }
+    }
+elif os.environ.get('DATABASE_URL'):
+    # Fallback to DATABASE_URL if available
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.environ.get('DATABASE_URL'), 
+            conn_max_age=600, 
+            conn_health_checks=True
+        )
     }
 else:
     # Local development fallback
