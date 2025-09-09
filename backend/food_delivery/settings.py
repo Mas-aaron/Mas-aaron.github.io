@@ -42,7 +42,8 @@ else:
         '127.0.0.1',
         '10.4.42.76',
         '10.0.2.2',
-        '10.32.140.30',
+        '10.5.55.106',
+        '10.116.248.2',
         '10.5.55.224',
         '.up.railway.app',  # Allow all Railway domains
     ]
@@ -103,8 +104,8 @@ CHANNEL_LAYERS = {
     },
 }
 
-# Database configuration - FIXED FOR RAILWAY
-# Check if we're in production (Railway provides DATABASE_URL)
+# Database configuration - PRODUCTION ACTIVE
+# Railway database configuration (active for hosting)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 # Force production database configuration for Railway
@@ -134,11 +135,15 @@ elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PGHOST'):
         }
     }
 else:
-    # Development - Use local database (SQLite for simplicity)
+    # Local development fallback
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'fortexpress'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', '@a22%17#'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
 
