@@ -119,16 +119,16 @@ if DATABASE_URL:
         DATABASES['default']['OPTIONS'] = {
             'sslmode': 'require',
         }
-elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('PGHOST'):
+elif os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('DB_HOST'):
     # Railway environment - use Railway service variables
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('PGDATABASE'),
-            'USER': os.environ.get('PGUSER'),
-            'PASSWORD': os.environ.get('PGPASSWORD'),
-            'HOST': os.environ.get('PGHOST'),
-            'PORT': os.environ.get('PGPORT', '5432'),
+            'NAME': os.environ.get('DB_NAME'),
+            'USER': os.environ.get('DB_USERNAME'),
+            'PASSWORD': os.environ.get('DB_PASSWORD'),
+            'HOST': os.environ.get('DB_HOST'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
             'OPTIONS': {
                 'sslmode': 'require',
             },
