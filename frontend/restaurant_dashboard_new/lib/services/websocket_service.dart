@@ -13,65 +13,12 @@ class WebSocketService {
   WebSocketService({required this.onMessageReceived});
 
   void connect(String token) {
-    if (_isConnected) {
-      if (kDebugMode) {
-        print('[WebSocket] Already connected.');
-      }
-      return;
+    if (kDebugMode) {
+      print('[WebSocket] WebSocket connections are temporarily disabled.');
+      print('[WebSocket] Backend is running in WSGI mode without WebSocket support.');
     }
-    // URL for the restaurant dashboard WebSocket
-    final url = '$webSocketUrl/ws/restaurant/orders/?token=$token';
-    try {
-      if (kDebugMode) {
-        print('[WebSocket] Connecting to $url');
-      }
-      _channel = WebSocketChannel.connect(Uri.parse(url));
-      _isConnected = true;
-
-      _streamSubscription = _channel!.stream.listen(
-        (data) {
-          try {
-            final message = json.decode(data);
-            onMessageReceived(message);
-          } catch (e) {
-            if (kDebugMode) {
-              print('[WebSocket] Error parsing message: $e');
-            }
-          }
-        },
-        onDone: () {
-          _isConnected = false;
-          if (kDebugMode) {
-            print('[WebSocket] Disconnected.');
-          }
-          // Optional: Implement reconnection logic here
-        },
-        onError: (error) {
-          _isConnected = false;
-          if (kDebugMode) {
-            print('[WebSocket] Connection error: $error');
-            print('[WebSocket] Make sure the backend server is running on $webSocketUrl');
-          }
-          // Attempt reconnection after 5 seconds
-          Timer(const Duration(seconds: 5), () {
-            if (!_isConnected) {
-              if (kDebugMode) {
-                print('[WebSocket] Attempting to reconnect...');
-              }
-              // Store token for reconnection
-              final currentToken = token;
-              connect(currentToken);
-            }
-          });
-        },
-        cancelOnError: false,
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        print('[WebSocket] Connection error: $e');
-      }
-      _isConnected = false;
-    }
+    // WebSocket connections disabled - backend running without Channels/Redis
+    return;
   }
 
   void disconnect() {

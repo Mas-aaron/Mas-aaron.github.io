@@ -60,9 +60,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'food_delivery.middleware.MediaFileMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -135,11 +136,11 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Serve media files in production
+# Static and media files configuration
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Configure WhiteNoise for production
 if not DEBUG:
-    # Add media files to static files for production serving
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    # Ensure media files are served by WhiteNoise in production
     WHITENOISE_USE_FINDERS = True
     WHITENOISE_AUTOREFRESH = True
 
