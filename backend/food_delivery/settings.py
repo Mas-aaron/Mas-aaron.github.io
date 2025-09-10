@@ -135,6 +135,14 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Serve media files in production
+if not DEBUG:
+    # Add media files to static files for production serving
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # Ensure media files are served by WhiteNoise in production
+    WHITENOISE_USE_FINDERS = True
+    WHITENOISE_AUTOREFRESH = True
+
 # CORS Settings
 CORS_ALLOW_CREDENTIALS = True
 

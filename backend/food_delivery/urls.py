@@ -23,20 +23,16 @@ from django.http import JsonResponse
 def root_view(request):
     return JsonResponse({
         'message': 'FortExpress Food Delivery API',
-        'status': 'running',
-        'endpoints': {
-            'admin': '/admin/',
-            'api': '/api/',
-            'loyalty': '/api/loyalty/'
-        }
+        'status': 'active',
+        'version': '1.0'
     })
 
 urlpatterns = [
-    path('', root_view, name='root'),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('api/loyalty/', include('loyalty.urls')),
+    path('', root_view),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files in both development and production
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -8,10 +8,10 @@ services:
   - type: web
     plan: free
     name: food-delivery-backend
-    runtime: python
+    env: python
     rootDir: backend
-    buildCommand: poetry install --no-interaction --no-ansi && poetry run python manage.py collectstatic --noinput && poetry run python manage.py migrate && poetry run python manage.py create_admin
-    startCommand: poetry run python -m gunicorn food_delivery.asgi:application -k uvicorn.workers.UvicornWorker
+    buildCommand: "cd backend && pip install --upgrade pip && pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py create_admin"
+    startCommand: "cd backend && gunicorn --workers 4 --bind 0.0.0.0:$PORT food_delivery.wsgi:application"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
