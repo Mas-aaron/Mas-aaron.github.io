@@ -1,6 +1,6 @@
-// Railway production backend URLs (ACTIVE)
-const String baseUrl = 'https://mas-aarongithubio-production.up.railway.app/api';
-const String webSocketUrl = 'wss://mas-aarongithubio-production.up.railway.app';
+// Render production backend URLs (ACTIVE)
+const String baseUrl = 'https://food-delivery-backend-2mcb.onrender.com/api';
+const String webSocketUrl = 'wss://food-delivery-backend-2mcb.onrender.com';
 
 // Local development backend URLs
 //const String baseUrl = 'http://10.116.248.2:8000/api';

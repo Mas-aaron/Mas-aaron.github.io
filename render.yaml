@@ -21,6 +21,8 @@ services:
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 4
+      - key: RENDER
+        value: true
       - key: GOOGLE_MAPS_API_KEY
         value: AIzaSyB2_rwYdL9Tr_LWV7PDfn83n8-2_6KVahs
       - key: GOOGLE_CLOUD_PROJECT

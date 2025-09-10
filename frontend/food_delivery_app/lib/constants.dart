@@ -1,10 +1,10 @@
 
 const String googleMapsApiKey = 'AIzaSyB2_rwYdL9Tr_LWV7PDfn83n8-2_6KVahs'; // Replace with your key
 
-// --- RAILWAY PRODUCTION (ACTIVE) --- 
-// Using Railway hosted backend
-const String baseUrl = 'https://mas-aarongithubio-production.up.railway.app/api';
-const String baseWebsocketUrl = 'wss://mas-aarongithubio-production.up.railway.app';
+// --- RENDER PRODUCTION (ACTIVE) --- 
+// Using Render hosted backend
+const String baseUrl = 'https://food-delivery-backend-2mcb.onrender.com/api';
+const String baseWebsocketUrl = 'wss://food-delivery-backend-2mcb.onrender.com';
 const String websocketUrl = '$baseWebsocketUrl/ws/notifications/';
 
 // --- LOCAL DEVELOPMENT (COMMENTED OUT) --- 
