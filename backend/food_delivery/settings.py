@@ -173,6 +173,10 @@ if not DEBUG:
     CORS_ALLOWED_ORIGINS = [
         'https://mas-aaron-github-io.onrender.com',
         'https://mas-aarongithubio-production.up.railway.app',
+        'http://localhost:3000',
+        'http://localhost:8080',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:8080',
     ]
 
 # Logging Configuration
