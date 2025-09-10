@@ -18,3 +18,4 @@ pyfcm==1.5.4
 gunicorn==21.2.0
 uvicorn==0.24.0
 django-model-utils==4.5.1
+geopy==2.4.1
