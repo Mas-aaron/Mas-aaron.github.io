@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'loyalty.apps.LoyaltyConfig',
     'corsheaders',
-    'channels',
+    # 'channels',  # Temporarily disabled due to Redis connection issues
     'whitenoise',
 ]
 
@@ -89,14 +89,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'food_delivery.wsgi.application'
-ASGI_APPLICATION = 'food_delivery.asgi.application'
+# ASGI_APPLICATION = 'food_delivery.asgi.application'  # Disabled for now
 
-# Channels settings for development
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+# Channels settings disabled due to Redis connection issues
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels.layers.InMemoryChannelLayer',
+#     },
+# }
 
 # Database configuration for Render
 DATABASES = {
