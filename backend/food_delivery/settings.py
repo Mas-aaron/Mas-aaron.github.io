@@ -130,49 +130,34 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
-# Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-# This setting informs Django of the URI path from which your static files will be served to users
-# Here, they well be accessible at your-domain.onrender.com/static/... or yourcustomdomain.com/static/...
 STATIC_URL = '/static/'
-
-# This production code might break development mode, so we check whether we're in DEBUG mode
-if not DEBUG:
-    # Tell Django to copy static assets into a path called `staticfiles` (this is specific to Render)
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    
-    # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
-    # and renames the files with unique names for each version to support long-term caching
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
-APPEND_SLASH = False
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# CORS Settings
+CORS_ALLOW_CREDENTIALS = True
 
-# Firebase Admin SDK initialization is now handled in `api/apps.py`
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
-}
+# Environment-specific settings
+if DEBUG:
+    # Development settings
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # Production settings
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Security settings for production
-if not DEBUG:
+    # Production security and CORS settings
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
     CORS_ALLOW_ALL_ORIGINS = False
     CORS_ALLOWED_ORIGINS = [
-        'https://mas-aaron-github-io.onrender.com',
-        'https://mas-aarongithubio-production.up.railway.app',
+        'https://mas-aaron-github-io.onrender.com', # TODO: Replace with your actual frontend domain
+        'https://mas-aarongithubio-production.up.railway.app', # Legacy
+        # Localhost origins for Flutter web development
         'http://localhost:3000',
         'http://localhost:8080',
         'http://localhost:8000',
@@ -184,6 +169,17 @@ if not DEBUG:
         'http://127.0.0.1:5000',
         'http://127.0.0.1:4200',
     ]
+
+# Default primary key field type
+APPEND_SLASH = False
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Firebase Admin SDK initialization is now handled in `api/apps.py`
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 # Logging Configuration
 LOGGING = {
