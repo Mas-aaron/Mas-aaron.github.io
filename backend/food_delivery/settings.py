@@ -140,7 +140,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Environment-specific settings
 if DEBUG:
-    # Development settings
+    # Development settings - allow all origins for Flutter web development
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     # Production settings
@@ -154,22 +154,16 @@ else:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
     CORS_ALLOW_ALL_ORIGINS = False
+    
+    # Use regex patterns to allow any localhost port for Flutter development
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^http://localhost:\d+$",
+        r"^http://127\.0\.0\.1:\d+$",
+    ]
+    
     CORS_ALLOWED_ORIGINS = [
         'https://mas-aaron-github-io.onrender.com', # TODO: Replace with your actual frontend domain
         'https://mas-aarongithubio-production.up.railway.app', # Legacy
-        # Localhost origins for Flutter web development
-        'http://localhost:3000',
-        'http://localhost:8080',
-        'http://localhost:8000',
-        'http://localhost:5000',
-        'http://localhost:4200',
-        'http://localhost:49405',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:8080',
-        'http://127.0.0.1:8000',
-        'http://127.0.0.1:5000',
-        'http://127.0.0.1:4200',
-        'http://127.0.0.1:49405',
     ]
 
 # Default primary key field type
