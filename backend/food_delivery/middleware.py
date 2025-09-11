@@ -17,7 +17,12 @@ class MediaFileMiddleware(MiddlewareMixin):
             file_path = os.path.join(settings.MEDIA_ROOT, relative_path)
             
             if os.path.exists(file_path) and os.path.isfile(file_path):
-                return FileResponse(open(file_path, 'rb'))
+                response = FileResponse(open(file_path, 'rb'))
+                # Add CORS headers for media files
+                response['Access-Control-Allow-Origin'] = '*'
+                response['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+                response['Access-Control-Allow-Headers'] = 'Content-Type'
+                return response
             else:
                 raise Http404("Media file not found")
         
