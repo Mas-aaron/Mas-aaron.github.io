@@ -203,13 +203,14 @@ class ApiService {
   }
 
   Future<List<MenuItem>> fetchMenuItems(int restaurantId, {List<int>? dietaryPreferenceIds}) async {
-    var uri = Uri.parse('$_baseUrl/restaurants/$restaurantId/menu-items/');
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+    var queryParameters = <String, dynamic>{'_': cacheBuster.toString()};
+    
     if (dietaryPreferenceIds != null && dietaryPreferenceIds.isNotEmpty) {
-      final queryParameters = {
-        'dietary_preferences': dietaryPreferenceIds.map((id) => id.toString()).toList(),
-      };
-      uri = uri.replace(queryParameters: queryParameters);
+      queryParameters['dietary_preferences'] = dietaryPreferenceIds.map((id) => id.toString()).toList();
     }
+    
+    var uri = Uri.parse('$_baseUrl/restaurants/$restaurantId/menu-items/').replace(queryParameters: queryParameters);
     final response = await _makeRequest('GET', uri.toString());
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);

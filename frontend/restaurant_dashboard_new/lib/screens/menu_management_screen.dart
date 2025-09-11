@@ -665,7 +665,9 @@ class _MenuItemCard extends StatelessWidget {
           ClipRRect(
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             child: Image.network(
-              item.image ?? '', // Use real image URL
+              item.image?.startsWith('http') == true 
+                ? item.image! 
+                : 'https://food-delivery-backend-2mcb.onrender.com${item.image ?? ''}',
               height: 120,
               width: double.infinity,
               fit: BoxFit.cover,

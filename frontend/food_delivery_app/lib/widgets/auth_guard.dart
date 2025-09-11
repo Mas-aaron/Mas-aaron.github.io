@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../screens/auth/login_screen.dart';
+import '../screens/login_screen.dart';
 
 /// A widget that protects routes by checking authentication status
 /// Shows login screen with descriptive message if user is not authenticated
@@ -20,7 +20,7 @@ class AuthGuard extends StatelessWidget {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         // Show loading spinner while checking authentication
-        if (authProvider.isLoading) {
+        if (authProvider.token == null && authProvider.isLoggedIn == false) {
           return const Scaffold(
             body: Center(
               child: Column(
@@ -41,7 +41,7 @@ class AuthGuard extends StatelessWidget {
         }
 
         // If authenticated, show the protected content
-        if (authProvider.isAuthenticated) {
+        if (authProvider.isLoggedIn) {
           return child;
         }
 
