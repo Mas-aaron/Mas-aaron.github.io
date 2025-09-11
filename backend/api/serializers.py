@@ -172,14 +172,23 @@ class MenuItemSerializer(serializers.ModelSerializer):
     available_dinner = serializers.BooleanField()
     category = serializers.PrimaryKeyRelatedField(queryset=MenuCategory.objects.all())
     restaurant = RestaurantSerializer(read_only=True)
+    image_url = serializers.SerializerMethodField()
 
     def get_price_ugx(self, obj):
         return format_ugx_currency(obj.price)
 
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+
     class Meta:
         model = MenuItem
         fields = (
-            'id', 'category', 'restaurant', 'name', 'description', 'price', 'price_ugx', 'image',
+            'id', 'category', 'restaurant', 'name', 'description', 'price', 'price_ugx', 'image_url',
             'available_breakfast', 'available_lunch', 'available_dinner',
             'modifier_groups'
         )

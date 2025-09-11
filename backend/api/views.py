@@ -433,19 +433,21 @@ class OrderListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         order = serializer.save(user=self.request.user)
-        channel_layer = get_channel_layer()
-        if channel_layer:
-            restaurant_id = order.restaurant.id
-            order_data = RestaurantOrderSerializer(order, context={'request': self.request}).data
-            # The order data must be dumped to a JSON string to be sent through the channel layer.
-            async_to_sync(channel_layer.group_send)(
-                f'restaurant_{restaurant_id}',
-                {
-                    'type': 'new_order',
-                    'order': json.dumps(order_data)
-                }
-            )
-            logger.info(f'Sent new order notification for order {order.id} to group restaurant_{restaurant_id}')
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                restaurant_id = order.restaurant.id
+                order_data = RestaurantOrderSerializer(order, context={'request': self.request}).data
+                async_to_sync(channel_layer.group_send)(
+                    f'restaurant_{restaurant_id}',
+                    {
+                        'type': 'new_order',
+                        'order': json.dumps(order_data, cls=DjangoJSONEncoder)
+                    }
+                )
+                logger.info(f'Sent new order notification for order {order.id} to group restaurant_{restaurant_id}')
+        except Exception as e:
+            logger.error(f'Failed to send new order notification for order {order.id}: {e}')
 
 class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer

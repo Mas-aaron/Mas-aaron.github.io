@@ -4,6 +4,9 @@ import '../models/menu_item.dart';
 import '../models/menu_category.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:restaurant_dashboard_new/utils/currency_formatter.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:typed_data';
 
 
 
@@ -22,6 +25,8 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
   List<MenuCategory> _categories = [];
   int? _selectedCategoryId;
   bool _isLoadingCategories = true;
+  XFile? imageFile;
+  Uint8List? imageFileBytes;
 
   @override
   void initState() {
@@ -176,7 +181,10 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
               Future<void> pickImage() async {
                 final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
                 if (pickedFile != null) {
-                                    setState(() {
+                  if (kIsWeb) {
+                    imageFileBytes = await pickedFile.readAsBytes();
+                  }
+                  setState(() {
                     imageFile = pickedFile;
                   });
                 }
@@ -191,9 +199,26 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                                                                                                 if (imageFile != null)
-                          Image.network(imageFile!.path, height: 150, fit: BoxFit.cover)
-                        else if (item.image != null && item.image!.isNotEmpty)
-                          Image.network(item.image!, height: 150, fit: BoxFit.cover),
+                          kIsWeb
+                              ? Image.memory(imageFileBytes!, height: 150, fit: BoxFit.cover)
+                              : Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
+                        else if (item.imageUrl != null && item.imageUrl!.isNotEmpty)
+                          Image.network(
+                            item.imageUrl!, 
+                            height: 150, 
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 150,
+                                color: Colors.grey[200],
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: Colors.grey[400],
+                                  size: 40,
+                                ),
+                              );
+                            },
+                          ),
                         ElevatedButton(onPressed: pickImage, child: const Text('Change Image')),
                         TextFormField(
                           controller: nameController,
@@ -520,7 +545,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                                                                   if (imageFile != null)
-                        Image.network(imageFile!.path, height: 150, fit: BoxFit.cover)
+                        Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
                       else
                         Container(
                           height: 150,
@@ -664,25 +689,45 @@ class _MenuItemCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-            child: Image.network(
-              item.image?.startsWith('http') == true 
-                ? item.image! 
-                : 'https://food-delivery-backend-2mcb.onrender.com${item.image ?? ''}',
-              height: 120,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
+            child: (item.imageUrl?.isNotEmpty == true)
+              ? Image.network(
+                  item.imageUrl!,
                   height: 120,
-                  color: Colors.grey[200],
-                  child: Icon(
-                    Icons.image_not_supported,
-                    color: Colors.grey[400],
-                    size: 40,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 120,
+                      color: Colors.grey[200],
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey[400],
+                        size: 40,
+                      ),
+                    );
+                  },
+                ) : Container(
+                    height: 120,
+                    color: Colors.grey[200],
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.image,
+                          color: Colors.grey[400],
+                          size: 40,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No Image',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                );
-              },
-            ),
           ),
           Expanded(
             child: Padding(
