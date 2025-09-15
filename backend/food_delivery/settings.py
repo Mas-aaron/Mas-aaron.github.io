@@ -168,11 +168,10 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
         
         # Override MEDIA_URL to ensure GCS URLs are used
         MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
-        MEDIA_ROOT = None  # Not used with GCS
         
-        # Force all file fields to use GCS URLs
-        from django.core.files.storage import default_storage
-        default_storage.base_url = MEDIA_URL
+        # Ensure no MEDIA_ROOT is set when using GCS
+        if 'MEDIA_ROOT' in globals():
+            del MEDIA_ROOT
         
         print("✅ Google Cloud Storage configured successfully")
         
@@ -188,6 +187,9 @@ else:
 
 # Static and media files configuration
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Default file storage - will be overridden by GCS if available
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Configure WhiteNoise for production
 if not DEBUG:
