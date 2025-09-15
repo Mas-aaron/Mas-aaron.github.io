@@ -140,8 +140,16 @@ STATIC_URL = '/static/'
 GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME', 'storage-bucket-fortexpress')
 GS_PROJECT_ID = os.getenv('GS_PROJECT_ID', 'fortexpress-5641c')
 
+# Add fallback for django-storages import
+try:
+    from storages.backends.gcloud import GoogleCloudStorage
+    STORAGES_AVAILABLE = True
+except ImportError:
+    STORAGES_AVAILABLE = False
+    print("⚠️ django-storages not found, will use local file storage as fallback")
+
 # Configure Google Cloud Storage if credentials are available
-if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
+if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') and STORAGES_AVAILABLE:
     try:
         from google.oauth2 import service_account
         
@@ -198,12 +206,21 @@ else:
 # Static and media files configuration
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Default file storage - fallback to local storage only if GCS is not configured
-if not os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
+# Add fallback for django-storages import
+try:
+    from storages.backends.gcloud import GoogleCloudStorage
+    STORAGES_AVAILABLE = True
+except ImportError:
+    STORAGES_AVAILABLE = False
+    print("⚠️ django-storages not found, will use local file storage as fallback")
+
+# GCS Configuration
+if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') and STORAGES_AVAILABLE:
+    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    print("✅ GCS credentials found - using GCS storage backend")
+else:
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     print("⚠️ Using local file storage - GCS credentials not found")
-else:
-    print("✅ GCS credentials found - using GCS storage backend")
 
 # Configure WhiteNoise for production
 if not DEBUG:
