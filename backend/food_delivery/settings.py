@@ -159,6 +159,16 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
         
         # Configure Django Storages for GCS
         DEFAULT_FILE_STORAGE = 'api.storage.PublicGoogleCloudStorage'
+        
+        # For Django 4.2+ - use STORAGES setting
+        STORAGES = {
+            "default": {
+                "BACKEND": "api.storage.PublicGoogleCloudStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            },
+        }
         GS_CREDENTIALS = service_account.Credentials.from_service_account_file(temp_cred_path)
         GS_FILE_OVERWRITE = False
         GS_QUERYSTRING_AUTH = False  # Don't use signed URLs, use public URLs
