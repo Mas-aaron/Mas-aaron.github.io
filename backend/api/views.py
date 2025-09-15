@@ -36,28 +36,47 @@ def health_check(request):
 @api_view(['GET'])
 def test_gcs_connection(request):
     """Test GCS connection and credentials"""
-    import tempfile
-    import json
+    from django.conf import settings
     
     result = {
         'status': 'testing',
         'credentials_available': False,
-        'bucket_accessible': False,
-        'upload_test': False,
-        'objects_in_bucket': 0,
+        'default_file_storage': getattr(settings, 'DEFAULT_FILE_STORAGE', 'Not set'),
+        'media_url': getattr(settings, 'MEDIA_URL', 'Not set'),
+        'gs_bucket_name': getattr(settings, 'GS_BUCKET_NAME', 'Not set'),
+        'environment_vars': {},
         'errors': []
     }
     
     try:
+        # Check environment variables
+        env_vars_to_check = [
+            'GOOGLE_APPLICATION_CREDENTIALS_JSON',
+            'GS_BUCKET_NAME', 
+            'GS_PROJECT_ID',
+            'GOOGLE_APPLICATION_CREDENTIALS'
+        ]
+        
+        for var in env_vars_to_check:
+            value = os.getenv(var)
+            if value:
+                # Truncate long values for security
+                if len(value) > 50:
+                    result['environment_vars'][var] = f"{value[:50]}... (truncated)"
+                else:
+                    result['environment_vars'][var] = value
+            else:
+                result['environment_vars'][var] = 'Not set'
+        
         # Check if credentials are available
         credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-        if not credentials_json:
+        if credentials_json:
+            result['credentials_available'] = True
+            result['status'] = 'credentials_found'
+        else:
             result['errors'].append('GOOGLE_APPLICATION_CREDENTIALS_JSON not found in environment')
-            result['status'] = 'failed'
-            return JsonResponse(result)
+            result['status'] = 'no_credentials'
         
-        result['credentials_available'] = True
-        result['status'] = 'credentials_found'
         return JsonResponse(result)
         
     except Exception as e:

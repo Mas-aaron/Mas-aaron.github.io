@@ -189,7 +189,8 @@ else:
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default file storage - will be overridden by GCS if available
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+if not os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Configure WhiteNoise for production
 if not DEBUG:
