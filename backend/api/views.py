@@ -36,6 +36,8 @@ def health_check(request):
 @api_view(['GET'])
 def test_gcs_connection(request):
     """Test GCS connection and credentials"""
+    import tempfile
+    import json
     
     result = {
         'status': 'testing',
@@ -107,7 +109,8 @@ def test_gcs_connection(request):
             result['errors'].append(f'Bucket {bucket_name} does not exist or is not accessible')
         
         # Clean up temp file
-        os.unlink(temp_cred_path)
+        if 'temp_cred_path' in locals():
+            os.unlink(temp_cred_path)
         
         result['status'] = 'completed'
         
