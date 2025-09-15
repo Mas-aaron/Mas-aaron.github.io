@@ -7,10 +7,12 @@ class PublicGoogleCloudStorage(GoogleCloudStorage):
     Custom Google Cloud Storage backend that ensures public URLs
     """
     def __init__(self, *args, **kwargs):
+        print(f"🔧 Initializing PublicGoogleCloudStorage")
         super().__init__(*args, **kwargs)
         self.default_acl = 'publicRead'
         self.querystring_auth = False
         self.bucket_name = getattr(settings, 'GS_BUCKET_NAME', 'storage-bucket-fortexpress')
+        print(f"🔧 GCS Storage initialized with bucket: {self.bucket_name}")
     
     def url(self, name):
         """
