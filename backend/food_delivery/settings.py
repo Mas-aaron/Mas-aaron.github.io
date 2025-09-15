@@ -157,7 +157,7 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
         # Set environment variable for Google auth
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_cred_path
         
-        # Configure Django Storages
+        # Configure Django Storages for GCS
         DEFAULT_FILE_STORAGE = 'api.storage.PublicGoogleCloudStorage'
         GS_CREDENTIALS = service_account.Credentials.from_service_account_file(temp_cred_path)
         GS_FILE_OVERWRITE = False
@@ -167,9 +167,13 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
         }
         GS_QUERYSTRING_AUTH = False  # Don't use signed URLs, use public URLs
         
-        # Media URL for GCS
+        # Override MEDIA_URL to ensure GCS URLs are used
         MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
-        MEDIA_ROOT = ''  # Not used with GCS
+        MEDIA_ROOT = None  # Not used with GCS
+        
+        # Force all file fields to use GCS URLs
+        from django.core.files.storage import default_storage
+        default_storage.base_url = MEDIA_URL
         
         print("✅ Google Cloud Storage configured successfully")
         

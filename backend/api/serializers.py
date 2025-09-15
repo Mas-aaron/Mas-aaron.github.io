@@ -177,11 +177,18 @@ class MenuItemSerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         if obj.image and hasattr(obj.image, 'url'):
-            # Return the direct URL from the storage backend (GCS or local)
             url = obj.image.url
+            
+            # If it's a local Django media URL, convert it to GCS URL
+            if url.startswith('/media/'):
+                # Extract the file path and convert to GCS URL
+                file_path = url.replace('/media/', '')
+                url = f"https://storage.googleapis.com/storage-bucket-fortexpress/{file_path}"
+            
             # Ensure GCS URLs are public (remove any query parameters)
             if 'googleapis.com' in url and '?' in url:
                 url = url.split('?')[0]
+            
             return url
         return None
 
