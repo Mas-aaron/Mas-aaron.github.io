@@ -29,6 +29,16 @@ class PublicGoogleCloudStorage(GoogleCloudStorage):
             # Save the file first
             blob_name = super()._save(name, content)
             print(f"✅ File uploaded to GCS: {blob_name}")
+            
+            # Try to make the individual object public
+            try:
+                blob = self.bucket.blob(blob_name)
+                blob.acl.all().grant_read()
+                blob.acl.save()
+                print(f"✅ Made object public: {blob_name}")
+            except Exception as acl_error:
+                print(f"⚠️ Could not set object ACL (bucket permissions should handle this): {acl_error}")
+            
             return blob_name
             
         except Exception as e:
