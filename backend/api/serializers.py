@@ -181,12 +181,34 @@ class MenuItemSerializer(serializers.ModelSerializer):
             return obj.image.url
         return None
 
+    def update(self, instance, validated_data):
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        logger.info(f"MenuItemSerializer.update called")
+        logger.info(f"Instance before update: {instance}")
+        logger.info(f"Instance image before: {instance.image}")
+        logger.info(f"Validated data: {validated_data}")
+        
+        # Check if image is in validated_data
+        if 'image' in validated_data:
+            logger.info(f"Image in validated_data: {validated_data['image']}")
+            logger.info(f"Image type: {type(validated_data['image'])}")
+        
+        # Call the parent update method
+        updated_instance = super().update(instance, validated_data)
+        
+        logger.info(f"Instance after update: {updated_instance}")
+        logger.info(f"Instance image after: {updated_instance.image}")
+        
+        return updated_instance
+
     class Meta:
         model = MenuItem
         fields = (
             'id', 'category', 'restaurant', 'name', 'description', 'price', 'price_ugx', 'image_url',
             'available_breakfast', 'available_lunch', 'available_dinner',
-            'modifier_groups'
+            'modifier_groups', 'image'
         )
 
 class MenuCategoryCRUDSerializer(serializers.ModelSerializer):
