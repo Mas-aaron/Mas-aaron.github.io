@@ -162,6 +162,8 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
         GS_CREDENTIALS = service_account.Credentials.from_service_account_file(temp_cred_path)
         GS_FILE_OVERWRITE = False
         GS_DEFAULT_ACL = 'publicRead'
+        GS_AUTO_CREATE_BUCKET = True
+        GS_AUTO_CREATE_ACL = 'publicRead'
         GS_OBJECT_PARAMETERS = {
             'CacheControl': 'max-age=86400',
         }

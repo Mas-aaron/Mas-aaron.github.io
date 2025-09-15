@@ -25,14 +25,28 @@ class PublicGoogleCloudStorage(GoogleCloudStorage):
         """
         Override save to ensure proper ACL is set
         """
-        # Set the ACL to public-read for each uploaded file
+        # Save the file first
         blob_name = super()._save(name, content)
         
         try:
-            # Get the blob and make it public
+            # Get the blob and make it public using ACL
             blob = self.bucket.blob(blob_name)
-            blob.make_public()
+            
+            # Try different methods to make the blob public
+            try:
+                # Method 1: Set ACL directly
+                blob.acl.all().grant_read()
+                blob.acl.save()
+                print(f"✅ Made blob public via ACL: {blob_name}")
+            except Exception as e1:
+                try:
+                    # Method 2: Use make_public
+                    blob.make_public()
+                    print(f"✅ Made blob public via make_public: {blob_name}")
+                except Exception as e2:
+                    print(f"⚠️ Could not make blob public: ACL={e1}, make_public={e2}")
+                    
         except Exception as e:
-            print(f"Warning: Could not make blob public: {e}")
+            print(f"⚠️ Error accessing blob for public access: {e}")
         
         return blob_name
