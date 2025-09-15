@@ -161,13 +161,10 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
         DEFAULT_FILE_STORAGE = 'api.storage.PublicGoogleCloudStorage'
         GS_CREDENTIALS = service_account.Credentials.from_service_account_file(temp_cred_path)
         GS_FILE_OVERWRITE = False
-        GS_DEFAULT_ACL = 'publicRead'
-        GS_AUTO_CREATE_BUCKET = True
-        GS_AUTO_CREATE_ACL = 'publicRead'
+        GS_QUERYSTRING_AUTH = False  # Don't use signed URLs, use public URLs
         GS_OBJECT_PARAMETERS = {
             'CacheControl': 'max-age=86400',
         }
-        GS_QUERYSTRING_AUTH = False  # Don't use signed URLs, use public URLs
         
         # Override MEDIA_URL to ensure GCS URLs are used
         MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'

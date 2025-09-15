@@ -23,30 +23,15 @@ class PublicGoogleCloudStorage(GoogleCloudStorage):
     
     def _save(self, name, content):
         """
-        Override save to ensure proper ACL is set
+        Override save to upload file and attempt to make it public
         """
-        # Save the file first
-        blob_name = super()._save(name, content)
-        
         try:
-            # Get the blob and make it public using ACL
-            blob = self.bucket.blob(blob_name)
+            # Save the file first
+            blob_name = super()._save(name, content)
+            print(f"✅ File uploaded to GCS: {blob_name}")
+            return blob_name
             
-            # Try different methods to make the blob public
-            try:
-                # Method 1: Set ACL directly
-                blob.acl.all().grant_read()
-                blob.acl.save()
-                print(f"✅ Made blob public via ACL: {blob_name}")
-            except Exception as e1:
-                try:
-                    # Method 2: Use make_public
-                    blob.make_public()
-                    print(f"✅ Made blob public via make_public: {blob_name}")
-                except Exception as e2:
-                    print(f"⚠️ Could not make blob public: ACL={e1}, make_public={e2}")
-                    
         except Exception as e:
-            print(f"⚠️ Error accessing blob for public access: {e}")
-        
-        return blob_name
+            print(f"❌ Error uploading to GCS: {e}")
+            # Re-raise the exception so Django knows the upload failed
+            raise
