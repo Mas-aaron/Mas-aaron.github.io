@@ -77,11 +77,9 @@ class RestaurantSerializer(serializers.ModelSerializer):
         )
 
     def get_image_url(self, obj):
-        request = self.context.get('request')
         if obj.image and hasattr(obj.image, 'url'):
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url  # Fallback to relative URL
+            # Return the direct URL from the storage backend (GCS or local)
+            return obj.image.url
         return None
 
 
@@ -178,10 +176,8 @@ class MenuItemSerializer(serializers.ModelSerializer):
         return format_ugx_currency(obj.price)
 
     def get_image_url(self, obj):
-        request = self.context.get('request')
         if obj.image and hasattr(obj.image, 'url'):
-            if request:
-                return request.build_absolute_uri(obj.image.url)
+            # Return the direct URL from the storage backend (GCS or local)
             return obj.image.url
         return None
 

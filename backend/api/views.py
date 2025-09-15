@@ -480,19 +480,23 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
                 # Specific notifications are handled below and in other views.
 
                 # Broadcast the status update to the restaurant's dashboard via WebSocket
-                channel_layer = get_channel_layer()
-                if channel_layer and order.restaurant:
-                    restaurant_group_name = f'restaurant_{order.restaurant.id}'
-                    serializer = RestaurantOrderSerializer(order, context={'request': request})
-                    updated_order_data = serializer.data
-                    async_to_sync(channel_layer.group_send)(
-                        restaurant_group_name,
-                        {
-                            'type': 'order_update',
-                            'order': updated_order_data
-                        }
-                    )
-                    logger.info(f"Sent order status update for order {order.id} to group {restaurant_group_name}")
+                try:
+                    channel_layer = get_channel_layer()
+                    if channel_layer and order.restaurant:
+                        restaurant_group_name = f'restaurant_{order.restaurant.id}'
+                        serializer = RestaurantOrderSerializer(order, context={'request': request})
+                        updated_order_data = serializer.data
+                        async_to_sync(channel_layer.group_send)(
+                            restaurant_group_name,
+                            {
+                                'type': 'order_update',
+                                'order': updated_order_data
+                            }
+                        )
+                        logger.info(f"Sent order status update for order {order.id} to group {restaurant_group_name}")
+                except Exception as e:
+                    logger.warning(f"Failed to send WebSocket notification for order {order.id}: {e}")
+                    # Continue execution - WebSocket failure shouldn't break order updates
 
                 # Specific notification if a rider was just assigned
                 if new_status == 'En route to Restaurant' and order.rider:
