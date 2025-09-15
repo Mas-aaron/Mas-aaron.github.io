@@ -178,30 +178,13 @@ class MenuItemSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):
         if obj.image and hasattr(obj.image, 'url'):
             # Return the direct URL from the storage backend (GCS or local)
-            return obj.image.url
+            url = obj.image.url
+            # Ensure GCS URLs are public (remove any query parameters)
+            if 'googleapis.com' in url and '?' in url:
+                url = url.split('?')[0]
+            return url
         return None
 
-    def update(self, instance, validated_data):
-        import logging
-        logger = logging.getLogger(__name__)
-        
-        logger.info(f"MenuItemSerializer.update called")
-        logger.info(f"Instance before update: {instance}")
-        logger.info(f"Instance image before: {instance.image}")
-        logger.info(f"Validated data: {validated_data}")
-        
-        # Check if image is in validated_data
-        if 'image' in validated_data:
-            logger.info(f"Image in validated_data: {validated_data['image']}")
-            logger.info(f"Image type: {type(validated_data['image'])}")
-        
-        # Call the parent update method
-        updated_instance = super().update(instance, validated_data)
-        
-        logger.info(f"Instance after update: {updated_instance}")
-        logger.info(f"Instance image after: {updated_instance.image}")
-        
-        return updated_instance
 
     class Meta:
         model = MenuItem

@@ -913,36 +913,6 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         except Restaurant.DoesNotExist:
             raise ValidationError("User is not associated with a restaurant.")
 
-    def update(self, request, *args, **kwargs):
-        """
-        Custom update method with debugging for image uploads.
-        """
-        logger.info(f"MenuItemViewSet.update called - request.data: {request.data}")
-        logger.info(f"MenuItemViewSet.update called - request.FILES: {request.FILES}")
-        
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        
-        # Log the current image state
-        logger.info(f"Current image: {instance.image}")
-        
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        
-        # Log what's in validated_data
-        logger.info(f"Validated data: {serializer.validated_data}")
-        
-        self.perform_update(serializer)
-        
-        # Log the updated image state
-        instance.refresh_from_db()
-        logger.info(f"Updated image: {instance.image}")
-        logger.info(f"Updated image URL: {instance.image.url if instance.image else None}")
-        
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
 
 
 class MenuCategoryViewSet(viewsets.ModelViewSet):
