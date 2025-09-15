@@ -33,6 +33,29 @@ def health_check(request):
         'timestamp': timezone.now().isoformat()
     })
 
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def configure_gcs_bucket(request):
+    """Configure GCS bucket for public access - Admin only"""
+    try:
+        from django.core.management import call_command
+        from io import StringIO
+        
+        # Capture command output
+        output = StringIO()
+        call_command('configure_gcs', stdout=output)
+        
+        return Response({
+            'status': 'success',
+            'message': 'GCS bucket configuration completed',
+            'output': output.getvalue()
+        })
+    except Exception as e:
+        return Response({
+            'status': 'error',
+            'message': f'Failed to configure GCS bucket: {str(e)}'
+        }, status=500)
+
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.utils import timezone
