@@ -188,9 +188,12 @@ else:
 # Static and media files configuration
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Default file storage - will be overridden by GCS if available
+# Default file storage - fallback to local storage only if GCS is not configured
 if not os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    print("⚠️ Using local file storage - GCS credentials not found")
+else:
+    print("✅ GCS credentials found - using GCS storage backend")
 
 # Configure WhiteNoise for production
 if not DEBUG:
