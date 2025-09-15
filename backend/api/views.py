@@ -74,10 +74,7 @@ def test_gcs_connection(request):
             result['credentials_available'] = True
             result['status'] = 'credentials_found'
         else:
-            result['errors'].append('GOOGLE_APPLICATION_CREDENTIALS_JSON not found in environment')
             result['status'] = 'no_credentials'
-        
-        return JsonResponse(result)
         
     except Exception as e:
         result['errors'].append(f'General error: {str(e)}')
