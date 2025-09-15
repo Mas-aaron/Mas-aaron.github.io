@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+import json
+import tempfile
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -133,8 +135,49 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Google Cloud Storage configuration
+GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME', 'storage-bucket-fortexpress')
+GS_PROJECT_ID = os.getenv('GS_PROJECT_ID', 'fortexpress-5641c')
+
+# Configure Google Cloud Storage if credentials are available
+if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
+    try:
+        from google.oauth2 import service_account
+        
+        credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+        credentials_info = json.loads(credentials_json)
+        
+        # Create temporary credential file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+            json.dump(credentials_info, temp_file)
+            temp_file.flush()
+            temp_cred_path = temp_file.name
+        
+        # Set environment variable for Google auth
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_cred_path
+        
+        # Configure Django Storages
+        DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+        GS_CREDENTIALS = service_account.Credentials.from_service_account_file(temp_cred_path)
+        GS_FILE_OVERWRITE = False
+        GS_DEFAULT_ACL = 'publicRead'
+        
+        # Media URL for GCS
+        MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
+        MEDIA_ROOT = ''  # Not used with GCS
+        
+        print("✅ Google Cloud Storage configured successfully")
+        
+    except Exception as e:
+        print(f"❌ Error configuring Google Cloud Storage: {e}")
+        # Fallback to local storage for development
+        MEDIA_URL = '/media/'
+        MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    # Local development fallback
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static and media files configuration
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
