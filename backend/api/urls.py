@@ -84,6 +84,7 @@ custom_urlpatterns = [
     path('test-notification/', api_views.test_notification, name='test-notification'),
     path('send-template-notification/', api_views.SendTemplateNotificationView.as_view(), name='send-template-notification'),
     path('configure-gcs/', api_views.configure_gcs_bucket, name='configure-gcs'),
+    path('test-gcs/', api_views.test_gcs_connection, name='test-gcs-connection'),
 ]
 
 # Combine all URL patterns
