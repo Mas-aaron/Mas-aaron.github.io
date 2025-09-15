@@ -25,10 +25,15 @@ class PublicGoogleCloudStorage(GoogleCloudStorage):
         """
         Override save to upload file and attempt to make it public
         """
+        print(f"🔄 Starting GCS upload for: {name}")
+        print(f"🔄 Bucket name: {self.bucket_name}")
+        print(f"🔄 Content size: {content.size if hasattr(content, 'size') else 'unknown'}")
+        
         try:
             # Save the file first
             blob_name = super()._save(name, content)
             print(f"✅ File uploaded to GCS: {blob_name}")
+            print(f"✅ Full GCS path: gs://{self.bucket_name}/{blob_name}")
             
             # Try to make the individual object public
             try:
@@ -43,5 +48,7 @@ class PublicGoogleCloudStorage(GoogleCloudStorage):
             
         except Exception as e:
             print(f"❌ Error uploading to GCS: {e}")
+            import traceback
+            print(f"❌ Full traceback: {traceback.format_exc()}")
             # Re-raise the exception so Django knows the upload failed
             raise
