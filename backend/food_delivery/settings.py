@@ -148,8 +148,21 @@ except ImportError:
     STORAGES_AVAILABLE = False
     print("⚠️ django-storages not found, will use local file storage as fallback")
 
+# Always use our custom storage backend (it handles fallback internally)
+DEFAULT_FILE_STORAGE = 'api.storage.PublicGoogleCloudStorage'
+
+# For Django 4.2+ - use STORAGES setting
+STORAGES = {
+    "default": {
+        "BACKEND": "api.storage.PublicGoogleCloudStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 # Configure Google Cloud Storage if credentials are available
-if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') and STORAGES_AVAILABLE:
+if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
     try:
         from google.oauth2 import service_account
         
@@ -165,18 +178,7 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') and STORAGES_AVAILABLE:
         # Set environment variable for Google auth
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_cred_path
         
-        # Configure Django Storages for GCS
-        DEFAULT_FILE_STORAGE = 'api.storage.PublicGoogleCloudStorage'
-        
-        # For Django 4.2+ - use STORAGES setting
-        STORAGES = {
-            "default": {
-                "BACKEND": "api.storage.PublicGoogleCloudStorage",
-            },
-            "staticfiles": {
-                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-            },
-        }
+        # GCS is available - configure credentials
         GS_CREDENTIALS = service_account.Credentials.from_service_account_file(temp_cred_path)
         GS_FILE_OVERWRITE = False
         GS_QUERYSTRING_AUTH = False  # Don't use signed URLs, use public URLs
@@ -195,32 +197,18 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') and STORAGES_AVAILABLE:
         
     except Exception as e:
         print(f"❌ Error configuring Google Cloud Storage: {e}")
-        # Fallback to local storage for development
+        # Still use our custom storage backend for fallback
         MEDIA_URL = '/media/'
         MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
-    # Local development fallback
+    # No GCS credentials - our custom storage will handle local fallback
+    print("⚠️ Using local file storage - GCS credentials not found")
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static and media files configuration
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Add fallback for django-storages import
-try:
-    from storages.backends.gcloud import GoogleCloudStorage
-    STORAGES_AVAILABLE = True
-except ImportError:
-    STORAGES_AVAILABLE = False
-    print("⚠️ django-storages not found, will use local file storage as fallback")
-
-# GCS Configuration
-if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON') and STORAGES_AVAILABLE:
-    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-    print("✅ GCS credentials found - using GCS storage backend")
-else:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    print("⚠️ Using local file storage - GCS credentials not found")
 
 # Configure WhiteNoise for production
 if not DEBUG:
