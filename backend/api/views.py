@@ -22,6 +22,17 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.generics import RetrieveAPIView
+from django.shortcuts import render
+from rest_framework import viewsets, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
+from django.utils import timezone
+from django.http import JsonResponse
+import os
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -37,11 +48,13 @@ def health_check(request):
 def test_gcs_connection(request):
     """Test GCS connection and credentials"""
     from django.conf import settings
+    from django.core.files.storage import default_storage
     
     result = {
         'status': 'testing',
         'credentials_available': False,
         'default_file_storage': getattr(settings, 'DEFAULT_FILE_STORAGE', 'Not set'),
+        'actual_storage_class': str(type(default_storage)),
         'media_url': getattr(settings, 'MEDIA_URL', 'Not set'),
         'gs_bucket_name': getattr(settings, 'GS_BUCKET_NAME', 'Not set'),
         'environment_vars': {},
@@ -75,6 +88,16 @@ def test_gcs_connection(request):
             result['status'] = 'credentials_found'
         else:
             result['status'] = 'no_credentials'
+        
+        # Test if we can create a simple file
+        try:
+            from django.core.files.base import ContentFile
+            test_file = ContentFile(b'test content')
+            file_name = default_storage.save('test_file.txt', test_file)
+            result['test_upload'] = f'Success: {file_name}'
+            result['test_url'] = default_storage.url(file_name)
+        except Exception as upload_error:
+            result['test_upload'] = f'Failed: {str(upload_error)}'
         
     except Exception as e:
         result['errors'].append(f'General error: {str(e)}')
