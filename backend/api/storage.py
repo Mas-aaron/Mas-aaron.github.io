@@ -75,12 +75,10 @@ class SupabaseStorage(Storage):
                 }
             )
             
-            if response.status_code == 200:
-                print(f"✅ File uploaded to Supabase: {unique_name}")
-                return unique_name
-            else:
-                print(f"❌ Supabase upload failed: {response}")
-                raise Exception(f"Upload failed with status {response.status_code}")
+            # If the upload call completes without raising an exception, it's successful.
+            # The supabase-py library raises an exception for non-2xx responses.
+            print(f"✅ File uploaded to Supabase: {unique_name}")
+            return unique_name
                 
         except Exception as e:
             print(f"❌ Error uploading to Supabase: {e}")
