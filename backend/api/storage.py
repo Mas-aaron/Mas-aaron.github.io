@@ -1,100 +1,165 @@
 try:
-    from storages.backends.gcloud import GoogleCloudStorage
-    STORAGES_AVAILABLE = True
+    from supabase import create_client, Client
+    SUPABASE_AVAILABLE = True
 except ImportError:
-    # Fallback when django-storages is not available
-    from django.core.files.storage import FileSystemStorage as GoogleCloudStorage
-    STORAGES_AVAILABLE = False
+    SUPABASE_AVAILABLE = False
 
-
+from django.core.files.storage import Storage
 from django.conf import settings
-from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.utils.deconstruct import deconstructible
 import os
+import uuid
+import mimetypes
+from urllib.parse import urljoin
 
 
-class PublicGoogleCloudStorage(GoogleCloudStorage):
+@deconstructible
+class SupabaseStorage(Storage):
     """
-    Custom Google Cloud Storage backend that ensures public URLs
-    with proper fallback to local storage
+    Custom Supabase Storage backend for Django
     """
     
     def __init__(self, *args, **kwargs):
-        print(f"🔧 Initializing PublicGoogleCloudStorage (storages available: {STORAGES_AVAILABLE})")
+        print(f"🔧 Initializing SupabaseStorage (supabase available: {SUPABASE_AVAILABLE})")
         super().__init__(*args, **kwargs)
         
-        self.bucket_name = getattr(settings, 'GS_BUCKET_NAME', 'storage-bucket-fortexpress')
+        # Get Supabase configuration from settings
+        self.supabase_url = getattr(settings, 'SUPABASE_URL', None)
+        self.supabase_key = getattr(settings, 'SUPABASE_ANON_KEY', None)
+        self.bucket_name = getattr(settings, 'SUPABASE_STORAGE_BUCKET', 'images')
         
-        if STORAGES_AVAILABLE:
-            self.default_acl = 'publicRead'
-            self.querystring_auth = False
-            self._init_bucket()
-        
-        print(f"✅ Storage initialized with bucket: {self.bucket_name}")
+        if SUPABASE_AVAILABLE and self.supabase_url and self.supabase_key:
+            try:
+                self.client: Client = create_client(self.supabase_url, self.supabase_key)
+                print(f"✅ Supabase client initialized with bucket: {self.bucket_name}")
+            except Exception as e:
+                print(f"❌ Failed to initialize Supabase client: {e}")
+                self.client = None
+        else:
+            print("⚠️ Supabase not available or not configured, using local storage fallback")
+            self.client = None
     
-    def _init_bucket(self):
-        """Initialize GCS bucket if not already done"""
+    def _save(self, name, content):
+        """
+        Save file to Supabase Storage
+        """
+        if not self.client:
+            # Fallback to local storage
+            return self._save_local(name, content)
+        
         try:
-            from google.cloud.storage import Client
-            client = Client()
-            self.bucket = client.bucket(self.bucket_name)
-            print(f"✅ GCS bucket initialized: {self.bucket_name}")
+            # Generate unique filename to avoid conflicts
+            file_extension = os.path.splitext(name)[1]
+            unique_name = f"{uuid.uuid4()}{file_extension}"
+            
+            # Get content type
+            content_type, _ = mimetypes.guess_type(name)
+            if not content_type:
+                content_type = 'application/octet-stream'
+            
+            print(f"🔄 Starting Supabase upload for: {unique_name}")
+            print(f"🔄 Bucket name: {self.bucket_name}")
+            print(f"🔄 Content type: {content_type}")
+            
+            # Read file content
+            content.seek(0)
+            file_data = content.read()
+            
+            # Upload to Supabase Storage
+            response = self.client.storage.from_(self.bucket_name).upload(
+                path=unique_name,
+                file=file_data,
+                file_options={
+                    "content-type": content_type
+                }
+            )
+            
+            if response.status_code == 200:
+                print(f"✅ File uploaded to Supabase: {unique_name}")
+                return unique_name
+            else:
+                print(f"❌ Supabase upload failed: {response}")
+                raise Exception(f"Upload failed with status {response.status_code}")
+                
         except Exception as e:
-            print(f"❌ Failed to initialize GCS bucket: {e}")
-            # Don't raise here to allow fallback behavior
+            print(f"❌ Error uploading to Supabase: {e}")
+            import traceback
+            print(f"❌ Full traceback: {traceback.format_exc()}")
+            # Fall back to local storage
+            print("🔄 Falling back to local storage due to Supabase error...")
+            return self._save_local(name, content)
+    
+    def _save_local(self, name, content):
+        """
+        Fallback method to save file locally
+        """
+        from django.core.files.storage import FileSystemStorage
+        local_storage = FileSystemStorage()
+        print(f"⚠️ Using local storage for: {name}")
+        return local_storage._save(name, content)
     
     def url(self, name):
         """
-        Override url method to return appropriate URLs based on storage availability
+        Return the URL for accessing the file
         """
         if not name:
             return None
         
-        if STORAGES_AVAILABLE:
+        if self.client and self.supabase_url:
             try:
-                # Return GCS URL when storages is available
-                return f"https://storage.googleapis.com/{self.bucket_name}/{name}"
-            except Exception:
-                # Fallback if GCS URL construction fails
-                pass
-        
-        # Fallback to local URL when storages is not available or GCS fails
-        return super().url(name)
-    
-    def _save(self, name, content):
-        """
-        Override save to handle both GCS and local storage based on availability
-        """
-        if STORAGES_AVAILABLE:
-            print(f"🔄 Starting GCS upload for: {name}")
-            print(f"🔄 Bucket name: {self.bucket_name}")
-            print(f"🔄 Content size: {content.size if hasattr(content, 'size') else 'unknown'}")
-            
-            try:
-                # Ensure bucket is initialized
-                if not hasattr(self, 'bucket'):
-                    self._init_bucket()
-                
-                # Call parent save method to upload to GCS
-                blob_name = super()._save(name, content)
-                print(f"✅ File uploaded to GCS: {blob_name}")
-                
-                # Try to make the object publicly readable
-                try:
-                    blob = self.bucket.blob(blob_name)
-                    blob.make_public()
-                    print(f"✅ Made object public: {blob_name}")
-                except Exception as acl_error:
-                    print(f"⚠️ Could not set object ACL: {acl_error}")
-                
-                return blob_name
-                
+                # Get public URL from Supabase
+                response = self.client.storage.from_(self.bucket_name).get_public_url(name)
+                if response:
+                    print(f"✅ Generated Supabase URL for: {name}")
+                    return response
             except Exception as e:
-                print(f"❌ Error uploading to GCS: {e}")
-                import traceback
-                print(f"❌ Full traceback: {traceback.format_exc()}")
-                # Fall through to local storage
-                print("🔄 Falling back to local storage due to GCS error...")
+                print(f"❌ Error getting Supabase URL: {e}")
         
-        # Fallback to local storage when django-storages is not available or GCS fails
-        print(f"⚠️ Using local storage for: {name}")
-        return super()._save(name, content)
+        # Fallback to local URL
+        from django.core.files.storage import FileSystemStorage
+        local_storage = FileSystemStorage()
+        return local_storage.url(name)
+    
+    def exists(self, name):
+        """
+        Check if file exists in Supabase Storage
+        """
+        if not self.client:
+            from django.core.files.storage import FileSystemStorage
+            local_storage = FileSystemStorage()
+            return local_storage.exists(name)
+        
+        try:
+            # List files to check if it exists
+            response = self.client.storage.from_(self.bucket_name).list(
+                path="",
+                search=name
+            )
+            return len(response) > 0
+        except Exception:
+            return False
+    
+    def delete(self, name):
+        """
+        Delete file from Supabase Storage
+        """
+        if not self.client:
+            from django.core.files.storage import FileSystemStorage
+            local_storage = FileSystemStorage()
+            return local_storage.delete(name)
+        
+        try:
+            response = self.client.storage.from_(self.bucket_name).remove([name])
+            return response.status_code == 200
+        except Exception as e:
+            print(f"❌ Error deleting from Supabase: {e}")
+            return False
+    
+    def size(self, name):
+        """
+        Get file size
+        """
+        # For simplicity, return 0 if we can't determine size
+        # In a production app, you might want to implement this properly
+        return 0

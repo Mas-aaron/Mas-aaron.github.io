@@ -136,73 +136,41 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = '/static/'
 
-# Google Cloud Storage configuration
-GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME', 'storage-bucket-fortexpress')
-GS_PROJECT_ID = os.getenv('GS_PROJECT_ID', 'fortexpress-5641c')
-
-# Add fallback for django-storages import
-try:
-    from storages.backends.gcloud import GoogleCloudStorage
-    STORAGES_AVAILABLE = True
-except ImportError:
-    STORAGES_AVAILABLE = False
-    print("⚠️ django-storages not found, will use local file storage as fallback")
-
-# Always use our custom storage backend (it handles fallback internally)
-DEFAULT_FILE_STORAGE = 'api.storage.PublicGoogleCloudStorage'
+# Supabase Storage configuration
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
+SUPABASE_STORAGE_BUCKET = os.getenv('SUPABASE_STORAGE_BUCKET', 'images')
 
 # For Django 4.2+ - use STORAGES setting
 STORAGES = {
     "default": {
-        "BACKEND": "api.storage.PublicGoogleCloudStorage",
+        "BACKEND": "api.storage.SupabaseStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
 
-# Configure Google Cloud Storage if credentials are available
-if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
+# Configure Supabase Storage if credentials are available
+if SUPABASE_URL and SUPABASE_ANON_KEY:
     try:
-        from google.oauth2 import service_account
+        # Supabase is configured - use Supabase URLs
+        MEDIA_URL = f'{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_STORAGE_BUCKET}/'
         
-        credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
-        credentials_info = json.loads(credentials_json)
-        
-        # Create temporary credential file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
-            json.dump(credentials_info, temp_file)
-            temp_file.flush()
-            temp_cred_path = temp_file.name
-        
-        # Set environment variable for Google auth
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_cred_path
-        
-        # GCS is available - configure credentials
-        GS_CREDENTIALS = service_account.Credentials.from_service_account_file(temp_cred_path)
-        GS_FILE_OVERWRITE = False
-        GS_QUERYSTRING_AUTH = False  # Don't use signed URLs, use public URLs
-        GS_OBJECT_PARAMETERS = {
-            'CacheControl': 'max-age=86400',
-        }
-        
-        # Override MEDIA_URL to ensure GCS URLs are used
-        MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
-        
-        # Ensure no MEDIA_ROOT is set when using GCS
+        # Ensure no MEDIA_ROOT is set when using Supabase
         if 'MEDIA_ROOT' in globals():
             del MEDIA_ROOT
         
-        print("✅ Google Cloud Storage configured successfully")
+        print("✅ Supabase Storage configured successfully")
         
     except Exception as e:
-        print(f"❌ Error configuring Google Cloud Storage: {e}")
+        print(f"❌ Error configuring Supabase Storage: {e}")
         # Still use our custom storage backend for fallback
         MEDIA_URL = '/media/'
         MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
-    # No GCS credentials - our custom storage will handle local fallback
-    print("⚠️ Using local file storage - GCS credentials not found")
+    # No Supabase credentials - our custom storage will handle local fallback
+    print("⚠️ Using local file storage - Supabase credentials not found")
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
