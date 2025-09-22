@@ -154,8 +154,8 @@ STORAGES = {
 # Configure Supabase Storage if credentials are available
 if SUPABASE_URL and SUPABASE_ANON_KEY:
     try:
-        # Supabase is configured - use Supabase URLs
-        MEDIA_URL = f'{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_STORAGE_BUCKET}/'
+        # Supabase is configured - set a dummy MEDIA_URL (our custom storage will override)
+        MEDIA_URL = '/media/'  # Fallback URL, custom storage will provide full Supabase URLs
         
         # Ensure no MEDIA_ROOT is set when using Supabase
         if 'MEDIA_ROOT' in globals():
