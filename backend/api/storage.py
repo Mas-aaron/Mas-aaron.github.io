@@ -109,8 +109,10 @@ class SupabaseStorage(Storage):
                 # Get public URL from Supabase
                 response = self.client.storage.from_(self.bucket_name).get_public_url(name)
                 if response:
+                    # Clean up the URL to remove any trailing question marks
+                    clean_url = response.split('?')[0]
                     print(f"✅ Generated Supabase URL for: {name}")
-                    return response
+                    return clean_url
             except Exception as e:
                 print(f"❌ Error getting Supabase URL: {e}")
         
