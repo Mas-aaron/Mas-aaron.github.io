@@ -9,6 +9,7 @@ from asgiref.sync import async_to_sync
 from django.db.models import Avg, F, FloatField, ExpressionWrapper, Sum, Count, Q
 from django.db.models.functions import Radians, Power, Sin, Cos, Sqrt, ATan2, TruncMonth
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
 import logging
 import json
@@ -589,8 +590,11 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
                             }
                         )
                         logger.info(f"Sent order status update for order {order.id} to group {restaurant_group_name}")
+                except ConnectionError as e:
+                    logger.debug(f"Redis connection unavailable for WebSocket notification (order {order.id}): {e}")
+                    # Continue execution - WebSocket failure shouldn't break order updates
                 except Exception as e:
-                    logger.warning(f"Failed to send WebSocket notification for order {order.id}: {e}")
+                    logger.warning(f"Failed to send WebSocket notification for order {order.id}: Error {e}")
                     # Continue execution - WebSocket failure shouldn't break order updates
 
                 # Specific notification if a rider was just assigned
@@ -606,13 +610,19 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
             # If order is ready, notify available riders via WebSocket and Push Notification
             if new_status == 'Ready for Pickup':
                 # 1. Notify via WebSocket (existing functionality)
-                channel_layer = get_channel_layer()
-                order_serializer = RestaurantOrderSerializer(order)
-                async_to_sync(channel_layer.group_send)(
-                    'riders_available',
-                    {'type': 'new_order_message', 'order': order_serializer.data}
-                )
-                logger.info(f"Sent 'Ready for Pickup' WebSocket message for order {order.id} to riders_available group.")
+                try:
+                    channel_layer = get_channel_layer()
+                    if channel_layer:
+                        order_serializer = RestaurantOrderSerializer(order)
+                        async_to_sync(channel_layer.group_send)(
+                            'riders_available',
+                            {'type': 'new_order_message', 'order': order_serializer.data}
+                        )
+                        logger.info(f"Sent 'Ready for Pickup' WebSocket message for order {order.id} to riders_available group.")
+                except ConnectionError as e:
+                    logger.debug(f"Redis connection unavailable for rider WebSocket notification (order {order.id}): {e}")
+                except Exception as e:
+                    logger.warning(f"Failed to send rider WebSocket notification for order {order.id}: {e}")
 
                 # 2. Send Push Notifications to all available riders
                 try:
@@ -811,7 +821,7 @@ class DashboardAnalyticsView(APIView):
             return Response({"error": "No restaurant associated with this user."}, status=status.HTTP_404_NOT_FOUND)
 
         # 1. Calculate Header Stats
-        today = datetime.now().date()
+        today = timezone.now().date()
         completed_orders = Order.objects.filter(restaurant=restaurant, status='Delivered')
         total_income = completed_orders.aggregate(total=Sum('total_price'))['total'] or 0
 
@@ -832,7 +842,7 @@ class DashboardAnalyticsView(APIView):
         order_rate_data = (
             Order.objects.filter(
                 restaurant=restaurant,
-                created_at__gte=datetime.now() - timedelta(days=365)
+                created_at__gte=timezone.now() - timedelta(days=365)
             )
             .annotate(month=TruncMonth('created_at'))
             .values('month')

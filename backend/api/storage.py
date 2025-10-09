@@ -8,6 +8,7 @@ from django.core.files.storage import Storage
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.utils.deconstruct import deconstructible
+from django.core.cache import cache
 import os
 import uuid
 import mimetypes
@@ -99,10 +100,16 @@ class SupabaseStorage(Storage):
     
     def url(self, name):
         """
-        Return the URL for accessing the file
+        Return the URL for accessing the file with caching to prevent excessive API calls
         """
         if not name:
             return None
+        
+        # Check cache first to avoid repeated API calls
+        cache_key = f"supabase_url_{self.bucket_name}_{name}"
+        cached_url = cache.get(cache_key)
+        if cached_url:
+            return cached_url
         
         if self.client and self.supabase_url:
             try:
@@ -111,7 +118,12 @@ class SupabaseStorage(Storage):
                 if response:
                     # Clean up the URL to remove any trailing question marks
                     clean_url = response.split('?')[0]
-                    print(f"✅ Generated Supabase URL for: {name}")
+                    # Cache the URL for 1 hour to reduce API calls
+                    cache.set(cache_key, clean_url, 3600)
+                    # Only log occasionally to reduce log spam
+                    if not cache.get(f"logged_{cache_key}"):
+                        print(f"✅ Generated and cached Supabase URL for: {name}")
+                        cache.set(f"logged_{cache_key}", True, 300)  # Log once every 5 minutes
                     return clean_url
             except Exception as e:
                 print(f"❌ Error getting Supabase URL: {e}")

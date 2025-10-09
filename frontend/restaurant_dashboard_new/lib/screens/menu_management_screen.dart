@@ -178,14 +178,15 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
           title: const Text('Edit Menu Item'),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              Future<void> pickImage() async {
+              Future<void> pickImage(StateSetter setState) async {
                 final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
                 if (pickedFile != null) {
-                  if (kIsWeb) {
-                    imageFileBytes = await pickedFile.readAsBytes();
-                  }
+                  final bytes = await pickedFile.readAsBytes();
                   setState(() {
                     imageFile = pickedFile;
+                    if (kIsWeb) {
+                      imageFileBytes = bytes;
+                    }
                   });
                 }
               }
@@ -198,10 +199,13 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                                                                                                if (imageFile != null)
-                          kIsWeb
-                              ? Image.memory(imageFileBytes!, height: 150, fit: BoxFit.cover)
-                              : Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
+                        if (imageFile != null)
+                          // Platform-aware image preview
+                          if (imageFile != null) ...[
+                            kIsWeb
+                                ? (imageFileBytes != null ? Image.memory(imageFileBytes!, height: 150, fit: BoxFit.cover) : Container())
+                                : Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
+                          ]
                         else if (item.imageUrl != null && item.imageUrl!.isNotEmpty)
                           Image.network(
                             item.imageUrl!, 
@@ -219,7 +223,7 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                               );
                             },
                           ),
-                        ElevatedButton(onPressed: pickImage, child: const Text('Change Image')),
+                        ElevatedButton(onPressed: () => pickImage(setState), child: const Text('Select Image')),
                         TextFormField(
                           controller: nameController,
                           decoration: const InputDecoration(labelText: 'Name'),
@@ -525,11 +529,15 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
       context: context,
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
-          Future<void> pickImage() async {
+                    Future<void> pickImage(StateSetter setState) async {
             final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
             if (pickedFile != null) {
-                            setState(() {
+              final bytes = await pickedFile.readAsBytes();
+              setState(() {
                 imageFile = pickedFile;
+                if (kIsWeb) {
+                  imageFileBytes = bytes;
+                }
               });
             }
           }
@@ -544,15 +552,19 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                                                                  if (imageFile != null)
-                        Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
+                                                                  // Platform-aware image preview for the dialog
+                      if (imageFile != null) ...[
+                        kIsWeb
+                            ? (imageFileBytes != null ? Image.memory(imageFileBytes!, height: 150, fit: BoxFit.cover) : Container())
+                            : Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
+                      ]
                       else
                         Container(
                           height: 150,
                           color: Colors.grey[200],
                           child: const Center(child: Text('No Image Selected')),
                         ),
-                      ElevatedButton(onPressed: pickImage, child: const Text('Select Image')),
+                      ElevatedButton(onPressed: () => pickImage(setState), child: const Text('Select Image')),
                       TextFormField(
                         controller: nameController,
                         decoration: const InputDecoration(labelText: 'Name'),

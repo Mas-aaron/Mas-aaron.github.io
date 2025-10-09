@@ -50,7 +50,7 @@ def send_push_notification(user, title, body, data=None, image_url=None):
     Returns True if sent to at least one device, False otherwise
     """
     if not firebase_admin._apps:
-        logger.error("Firebase Admin SDK not initialized. Cannot send push notification.")
+        logger.debug("Firebase Admin SDK not initialized. Skipping push notification.")
         return False
         
     try:
@@ -99,14 +99,12 @@ def send_push_notification(user, title, body, data=None, image_url=None):
                 failure_count += 1
             except (ConnectionError, TransportError, ProtocolError, RequestException) as e:
                 logger.warning(f"Network error sending to device {device.id}: {str(e)}")
-                failure_count += 1
             except FirebaseError as e:
                 logger.error(f"Firebase error sending to device {device.id}: {str(e)}")
                 failure_count += 1
 
         logger.info(f"Notification results for user {user.id}: {success_count} successful, {failure_count} failed")
         return success_count > 0
-
     except Exception as e:
-        logger.error(f"Unexpected error sending notification for user {user.id}: {str(e)}", exc_info=True)
+        logger.error(f"Unexpected error sending notification for user {user.id}: {str(e)}")
         return False
