@@ -9,32 +9,38 @@ class WebSocketService {
   WebSocketService({required this.onMessageReceived});
 
   void connect(String token) {
-    // Construct the final URL by appending the path and token to the base WebSocket URL.
-    final String finalWsUrl = '$webSocketUrl/ws/rider/available_orders/?token=$token';
-    final Uri websocketUri = Uri.parse(finalWsUrl);
+    try {
+      // Construct the final URL by appending the path and token to the base WebSocket URL.
+      final String finalWsUrl = '$webSocketUrl/ws/rider/available_orders/?token=$token';
+      final Uri websocketUri = Uri.parse(finalWsUrl);
 
-    _channel = WebSocketChannel.connect(websocketUri);
+      _channel = WebSocketChannel.connect(websocketUri);
 
-    print('[WebSocket] Attempting to connect to $websocketUri');
+      print('[WebSocket] Attempting to connect to $websocketUri');
 
-    _channel!.stream.listen(
-      (message) {
-        print('[WebSocket Received Raw]: $message');
-        try {
-          final data = jsonDecode(message) as Map<String, dynamic>;
+      _channel!.stream.listen(
+        (message) {
+          print('[WebSocket Received Raw]: $message');
+          try {
+            final data = jsonDecode(message) as Map<String, dynamic>;
 
-          onMessageReceived(data);
-        } catch (e) {
-          print('[WebSocket Error] Failed to decode or process message: $e');
-        }
-      },
-      onDone: () {
-        print('WebSocket connection closed.');
-      },
-      onError: (error) {
-        print('WebSocket error: $error');
-      },
-    );
+            onMessageReceived(data);
+          } catch (e) {
+            print('[WebSocket Error] Failed to decode or process message: $e');
+          }
+        },
+        onDone: () {
+          print('WebSocket connection closed.');
+        },
+        onError: (error) {
+          print('WebSocket error: $error');
+          // Don't throw - just log the error
+        },
+      );
+    } catch (e) {
+      print('[WebSocket] Failed to connect: $e');
+      // Don't throw - just log the error
+    }
   }
 
   void send(Map<String, dynamic> data) {

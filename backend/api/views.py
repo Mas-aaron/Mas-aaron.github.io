@@ -295,6 +295,54 @@ def register_restaurant_device(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def register_rider_device(request):
+    """Register a device specifically for rider notifications"""
+    try:
+        fcm_token = request.data.get('fcm_token')
+        device_type = request.data.get('device_type', 'rider')
+        
+        if not fcm_token:
+            return Response(
+                {'error': 'FCM token is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if user has a rider profile
+        try:
+            rider_profile = RiderProfile.objects.get(user=request.user)
+        except RiderProfile.DoesNotExist:
+            return Response(
+                {'error': 'User is not registered as a rider'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Register or update device for rider notifications
+        device, created = Device.objects.update_or_create(
+            user=request.user,
+            token=fcm_token,
+            defaults={
+                'device_type': device_type,
+                'is_active': True
+            }
+        )
+        
+        logger.info(f"Rider device {'registered' if created else 'updated'} for user {request.user.id}")
+        
+        return Response({
+            'status': 'success',
+            'message': f'Rider device {"registered" if created else "updated"} successfully',
+            'rider_id': rider_profile.id
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error registering rider device: {e}")
+        return Response(
+            {'error': 'Failed to register rider device'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def test_notification(request):
     """Endpoint to test push notifications"""
     try:
@@ -578,8 +626,9 @@ class OrderListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         order = serializer.save(user=self.request.user)
+        
+        # Send WebSocket notification (separate try-catch to not block Firebase)
         try:
-            # Send WebSocket notification
             channel_layer = get_channel_layer()
             if channel_layer:
                 restaurant_id = order.restaurant.id
@@ -592,12 +641,14 @@ class OrderListCreateView(generics.ListCreateAPIView):
                     }
                 )
                 logger.info(f'Sent WebSocket notification for order {order.id} to group restaurant_{restaurant_id}')
-            
-            # Send Firebase push notification to restaurant
-            self._send_restaurant_notification(order)
-            
         except Exception as e:
-            logger.error(f'Failed to send new order notification for order {order.id}: {e}')
+            logger.error(f'Failed to send WebSocket notification for order {order.id}: {e}')
+        
+        # Send Firebase push notification to restaurant (separate try-catch)
+        try:
+            self._send_restaurant_notification(order)
+        except Exception as e:
+            logger.error(f'Failed to send Firebase notification for order {order.id}: {e}')
     
     def _send_restaurant_notification(self, order):
         """Send Firebase push notification to restaurant about new order"""

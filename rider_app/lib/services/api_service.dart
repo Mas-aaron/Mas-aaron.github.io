@@ -7,7 +7,7 @@ import 'package:rider_app/models/order.dart';
 import 'package:rider_app/models/rider_review.dart';
 
 class ApiService {
-    final String _baseUrl = baseUrl;
+  final String _baseUrl = baseUrl;
 
   Future<bool> login(String username, String password) async {
     final response = await http.post(
@@ -21,6 +21,9 @@ class ApiService {
       }),
     );
 
+    print('Login response: ${response.statusCode}');
+    print('Login body: ${response.body}');
+    
     if (response.statusCode == 200) {
       // Save token
       final prefs = await SharedPreferences.getInstance();
@@ -28,11 +31,12 @@ class ApiService {
       await prefs.setString('authToken', data['token']);
       return true; // Login successful
     } else {
-      return false;
+      print('Login failed: ${response.statusCode} - ${response.body}');
+      return false; // Login failed
     }
   }
 
-    Future<Map<String, dynamic>> signUp({required String email, required String password, required String firstName, required String lastName}) async {
+  Future<Map<String, dynamic>> signUp({required String email, required String password, required String firstName, required String lastName}) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/rider/signup/'),
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
@@ -65,7 +69,7 @@ class ApiService {
   }
 
   Future<List<Order>> getAvailableOrders() async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token == null) {
       throw Exception('Not authenticated');
     }
@@ -77,11 +81,15 @@ class ApiService {
       },
     );
 
+    print('Available orders response: ${response.statusCode}');
+    print('Available orders body: ${response.body}');
+    
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       return body.map((dynamic item) => Order.fromJson(item)).toList();
     } else {
-      throw Exception('Failed to load available orders');
+      print('Failed to load available orders: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to load available orders: ${response.statusCode}');
     }
   }
 
@@ -107,7 +115,7 @@ class ApiService {
   }
 
   Future<Order> getOrderDetails(int orderId) async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token == null) {
       throw Exception('Not authenticated');
     }
@@ -127,7 +135,7 @@ class ApiService {
   }
 
   Future<List<Order>> getAssignedOrders() async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token == null) {
       throw Exception('Not authenticated');
     }
@@ -174,7 +182,7 @@ class ApiService {
   }
 
   Future<void> completeOrder(int orderId) async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token == null) {
       throw Exception('Authentication token not found.');
     }
@@ -193,31 +201,31 @@ class ApiService {
   }
 
   Future<void> registerDevice(String fcmToken, String deviceType) async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token == null) {
       throw Exception('Not authenticated');
     }
 
     final response = await http.post(
-      Uri.parse('$_baseUrl/devices/'),
+      Uri.parse('$_baseUrl/register-rider-device/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Token $token',
       },
       body: jsonEncode({
-        'registration_id': fcmToken,
-        'type': deviceType,
+        'fcm_token': fcmToken,
+        'device_type': deviceType,
       }),
     );
 
     if (response.statusCode != 201 && response.statusCode != 200) {
-        print('Failed to register device: ${response.body}');
+      print('Failed to register device: ${response.body}');
       throw Exception('Failed to register device.');
     }
   }
 
   Future<List<RiderReview>> fetchRiderReviews() async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token == null) {
       throw Exception('Not authenticated');
     }
@@ -238,7 +246,7 @@ class ApiService {
   }
 
   Future<void> notifyArrival(int orderId) async {
-    final token = await getToken();
+    final token = await ApiService.getToken();
     if (token == null) {
       throw Exception('Authentication token not found.');
     }
