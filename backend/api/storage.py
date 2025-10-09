@@ -100,25 +100,41 @@ class SupabaseStorage(Storage):
     
     def url(self, name):
         """
-        Return the URL for accessing the file with optional caching to prevent excessive API calls
+        Return the URL for accessing the file with in-memory caching to prevent excessive API calls
         """
         if not name:
             return None
         
-        # Try to use cache if available, but don't fail if cache is unavailable
+        # Use in-memory cache as fallback when Redis is unavailable
+        if not hasattr(self, '_url_cache'):
+            self._url_cache = {}
+            self._cache_timestamps = {}
+        
         cache_key = f"supabase_url_{self.bucket_name}_{name}"
-        cached_url = None
+        
+        # Check in-memory cache first
+        import time
+        current_time = time.time()
+        if cache_key in self._url_cache:
+            # Check if cache entry is still valid (1 hour = 3600 seconds)
+            if current_time - self._cache_timestamps.get(cache_key, 0) < 3600:
+                return self._url_cache[cache_key]
+            else:
+                # Cache expired, remove it
+                del self._url_cache[cache_key]
+                del self._cache_timestamps[cache_key]
+        
+        # Try Redis cache if available
         try:
             cached_url = cache.get(cache_key)
             if cached_url:
+                # Store in in-memory cache too
+                self._url_cache[cache_key] = cached_url
+                self._cache_timestamps[cache_key] = current_time
                 return cached_url
-        except Exception as cache_error:
-            # Cache unavailable (Redis connection issues, etc.) - continue without caching
-            # Only log this occasionally to avoid spam
-            import time
-            if not hasattr(self, '_last_cache_error_log') or time.time() - self._last_cache_error_log > 300:
-                print(f"⚠️ Cache unavailable: {cache_error}")
-                self._last_cache_error_log = time.time()
+        except Exception:
+            # Redis unavailable - continue with in-memory cache only
+            pass
         
         if self.client and self.supabase_url:
             try:
@@ -128,27 +144,21 @@ class SupabaseStorage(Storage):
                     # Clean up the URL to remove any trailing question marks
                     clean_url = response.split('?')[0]
                     
-                    # Try to cache the URL, but don't fail if cache is unavailable
+                    # Store in in-memory cache
+                    self._url_cache[cache_key] = clean_url
+                    self._cache_timestamps[cache_key] = current_time
+                    
+                    # Try to store in Redis cache too
                     try:
                         cache.set(cache_key, clean_url, 3600)
-                        # Only log occasionally to reduce log spam
-                        try:
-                            if not cache.get(f"logged_{cache_key}"):
-                                print(f"✅ Generated and cached Supabase URL for: {name}")
-                                cache.set(f"logged_{cache_key}", True, 300)  # Log once every 5 minutes
-                        except Exception:
-                            # If logging cache fails, just log normally (but less frequently)
-                            import time
-                            if not hasattr(self, '_last_log_time') or time.time() - self._last_log_time > 300:
-                                print(f"✅ Generated Supabase URL for: {name}")
-                                self._last_log_time = time.time()
-                    except Exception as cache_set_error:
-                        # Cache unavailable for writing - just log normally (but less frequently)
-                        import time
-                        if not hasattr(self, '_last_cache_set_error') or time.time() - self._last_cache_set_error > 300:
-                            print(f"⚠️ Cache set failed: {cache_set_error}")
-                            self._last_cache_set_error = time.time()
-                        print(f"✅ Generated Supabase URL for: {name}")
+                    except Exception:
+                        # Redis unavailable - in-memory cache is sufficient
+                        pass
+                    
+                    # Log only occasionally to reduce spam
+                    if not hasattr(self, '_last_log_time') or current_time - self._last_log_time > 300:
+                        print(f"✅ Generated and cached Supabase URL for: {name}")
+                        self._last_log_time = current_time
                     
                     return clean_url
             except Exception as e:

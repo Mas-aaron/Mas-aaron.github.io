@@ -39,24 +39,29 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      // Fetch restaurants and initial location in parallel
-      final results = await Future.wait([
-        _apiService.fetchRestaurants(),
-        context.read<LocationProvider>().determineInitialLocation(),
-      ]);
-
-      final restaurants = results[0] as List<Restaurant>;
-
+      // Fetch restaurants first (this is critical)
+      final restaurants = await _apiService.fetchRestaurants();
+      
       if (mounted) {
         setState(() {
           _restaurants = restaurants;
           _isLoading = false;
         });
       }
+      
+      // Try to get location in the background (non-blocking)
+      try {
+        await context.read<LocationProvider>().determineInitialLocation();
+      } catch (locationError) {
+        print('Location service failed: $locationError');
+        // Continue without location - restaurants are already loaded
+      }
+      
     } catch (e) {
+      print('Restaurant fetch failed: $e');
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to load data. Please check your connection.';
+          _errorMessage = 'Failed to load restaurants. Please check your connection.';
           _isLoading = false;
         });
       }

@@ -151,12 +151,34 @@ class ApiService {
     if (lat != null && lng != null) {
       url += '?lat=$lat&lng=$lng';
     }
+    
+    print('--- Fetching Restaurants ---');
+    print('URL: $url');
+    
     final response = await _makeRequest('GET', url);
+    
+    print('Response Status: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+    
     if (response.statusCode == 200) {
-      List<dynamic> body = jsonDecode(response.body);
-      return body.map((dynamic item) => Restaurant.fromJson(item)).toList();
+      try {
+        List<dynamic> body = jsonDecode(response.body);
+        print('Parsed JSON: ${body.length} restaurants');
+        
+        List<Restaurant> restaurants = body.map((dynamic item) {
+          print('Processing restaurant: ${item['name']}');
+          return Restaurant.fromJson(item);
+        }).toList();
+        
+        print('Successfully parsed ${restaurants.length} restaurants');
+        return restaurants;
+      } catch (parseError) {
+        print('JSON parsing error: $parseError');
+        throw Exception('Failed to parse restaurant data: $parseError');
+      }
     } else {
-      throw Exception('Failed to load restaurants');
+      print('HTTP Error: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to load restaurants: ${response.statusCode}');
     }
   }
 
