@@ -148,28 +148,35 @@ class RiderArrivalView(APIView):
             )
             logger.info(f"Successfully sent push notification for order {order.id}")
             
-            # Send via WebSocket for real-time updates
-            logger.info("Getting channel layer for WebSocket notification.")
-            channel_layer = get_channel_layer()
-            if channel_layer:
-                logger.info(f"Sending WebSocket notification to group customer_{order.user.id}")
-                async_to_sync(channel_layer.group_send)(
-                    f'customer_{order.user.id}',
-                    {
-                        'type': 'rider_arrival_notification',
-                        'order_id': order.id,
-                        'rider_name': rider_name,
-                        'rider_location': {
-                            'latitude': rider_lat,
-                            'longitude': rider_lng
-                        },
-                        'timestamp': timezone.now().isoformat(),
-                        'message': 'Rider has arrived at your location'
-                    }
-                )
-                logger.info(f"Successfully sent WebSocket notification for order {order.id}")
-            else:
-                logger.warning("Channel layer not available. Skipping WebSocket notification.")
+            # Send via WebSocket for real-time updates (with error handling)
+            try:
+                logger.info("Getting channel layer for WebSocket notification.")
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    logger.info(f"Sending WebSocket notification to group customer_{order.user.id}")
+                    async_to_sync(channel_layer.group_send)(
+                        f'customer_{order.user.id}',
+                        {
+                            'type': 'rider_arrival_notification',
+                            'order_id': order.id,
+                            'rider_name': rider_name,
+                            'rider_location': {
+                                'latitude': rider_lat,
+                                'longitude': rider_lng
+                            },
+                            'timestamp': timezone.now().isoformat(),
+                            'message': 'Rider has arrived at your location'
+                        }
+                    )
+                    logger.info(f"✅ WebSocket notification sent successfully to customer_{order.user.id}")
+                else:
+                    logger.warning("Channel layer not available. Skipping WebSocket notification.")
+            except ConnectionError as e:
+                logger.debug(f"Redis connection unavailable for WebSocket notification (order {order.id}): {e}")
+                # Continue execution - WebSocket failure shouldn't break arrival notifications
+            except Exception as e:
+                logger.warning(f"Failed to send WebSocket notification for order {order.id}: {e}")
+                # Continue execution - WebSocket failure shouldn't break arrival notifications
                 
         except Exception as e:
             logger.error(f'Failed to send arrival notification for order {order.id}: {e}', exc_info=True)

@@ -343,6 +343,60 @@ def register_rider_device(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def test_restaurant_notification(request):
+    """Endpoint to test restaurant push notifications"""
+    try:
+        # Check if user is a restaurant owner
+        try:
+            restaurant = Restaurant.objects.get(owner=request.user)
+        except Restaurant.DoesNotExist:
+            return Response({
+                'status': 'failed',
+                'message': 'User is not a restaurant owner'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check for active restaurant devices
+        active_devices = Device.objects.filter(
+            user=request.user,
+            is_active=True,
+            device_type='restaurant'
+        )
+        
+        if not active_devices.exists():
+            return Response({
+                'status': 'failed',
+                'message': 'No active restaurant devices found. Please login to restaurant app.',
+                'device_count': 0
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Send test notification
+        notification_sent = send_push_notification(
+            request.user,
+            "🧪 Test Notification",
+            f"Test notification for {restaurant.name} - System is working!",
+            data={
+                'type': 'test',
+                'restaurant_id': str(restaurant.id),
+                'timestamp': timezone.now().isoformat()
+            }
+        )
+        
+        return Response({
+            'status': 'success' if notification_sent else 'failed',
+            'message': f'Test notification {"sent" if notification_sent else "failed"} to {restaurant.name}',
+            'device_count': active_devices.count(),
+            'restaurant_name': restaurant.name
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in test restaurant notification: {e}")
+        return Response({
+            'status': 'error',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def test_notification(request):
     """Endpoint to test push notifications"""
     try:
@@ -646,9 +700,11 @@ class OrderListCreateView(generics.ListCreateAPIView):
         
         # Send Firebase push notification to restaurant (separate try-catch)
         try:
+            logger.info(f'🔔 Attempting to send restaurant notification for new order {order.id}')
             self._send_restaurant_notification(order)
+            logger.info(f'✅ Restaurant notification process completed for order {order.id}')
         except Exception as e:
-            logger.error(f'Failed to send Firebase notification for order {order.id}: {e}')
+            logger.error(f'❌ Failed to send Firebase notification for order {order.id}: {e}', exc_info=True)
     
     def _send_restaurant_notification(self, order):
         """Send Firebase push notification to restaurant about new order"""
@@ -673,10 +729,11 @@ class OrderListCreateView(generics.ListCreateAPIView):
                 logger.info(f'   Device: {device.id}, Type: {device.device_type}, Active: {device.is_active}, Token: {device.token[:20]}...')
             
             if active_devices.exists():
+                logger.info(f'📤 Sending Firebase notification to {active_devices.count()} restaurant devices')
                 # Send notification to restaurant
                 notification_sent = send_push_notification(
                     restaurant_owner,
-                    f"New Order #{order.id}",
+                    f"🍽️ New Order #{order.id}",
                     f"New order from {order.user.get_full_name() or order.user.username} - UGX {order.total_price:,.0f}",
                     data={
                         'order_id': str(order.id),
@@ -687,11 +744,11 @@ class OrderListCreateView(generics.ListCreateAPIView):
                 )
                 
                 if notification_sent:
-                    logger.info(f'✅ Sent Firebase notification for order {order.id} to restaurant {order.restaurant.name}')
+                    logger.info(f'✅ Successfully sent Firebase notification for order {order.id} to restaurant {order.restaurant.name}')
                 else:
-                    logger.warning(f'⚠️ Failed to send Firebase notification for order {order.id}')
+                    logger.error(f'❌ Failed to send Firebase notification for order {order.id} - notification_sent returned False')
             else:
-                logger.warning(f'📱 No active restaurant devices found for order {order.id}')
+                logger.warning(f'📱 No active restaurant devices found for order {order.id} - Restaurant owner {restaurant_owner.username} needs to login to restaurant app')
                 
         except Exception as e:
             logger.error(f'❌ Error sending restaurant notification for order {order.id}: {e}')
@@ -748,14 +805,33 @@ class OrderUpdateStatusView(generics.UpdateAPIView):
                     logger.warning(f"Failed to send WebSocket notification for order {order.id}: Error {e}")
                     # Continue execution - WebSocket failure shouldn't break order updates
 
-                # Specific notification if a rider was just assigned
-                if new_status == 'En route to Restaurant' and order.rider:
-                    if order.restaurant and order.restaurant.owner:
+                # Send restaurant notifications for key status changes
+                if order.restaurant and order.restaurant.owner:
+                    restaurant_title = ""
+                    restaurant_body = ""
+                    
+                    if new_status == 'Accepted':
+                        restaurant_title = f"Order #{order.id} Confirmed"
+                        restaurant_body = f"Order from {order.user.get_full_name() or order.user.username} has been confirmed."
+                    elif new_status == 'Preparing':
+                        restaurant_title = f"Order #{order.id} In Progress"
+                        restaurant_body = f"Kitchen has started preparing order from {order.user.get_full_name() or order.user.username}."
+                    elif new_status == 'En route to Restaurant' and order.rider:
+                        restaurant_title = f"Rider Assigned - Order #{order.id}"
+                        restaurant_body = f"{order.rider.user.username} has accepted the delivery and is en route to your restaurant."
+                    elif new_status == 'Picked up':
+                        restaurant_title = f"Order #{order.id} Picked Up"
+                        restaurant_body = f"Rider has picked up the order and is heading to the customer."
+                    elif new_status == 'Delivered':
+                        restaurant_title = f"Order #{order.id} Delivered"
+                        restaurant_body = f"Order has been successfully delivered to {order.user.get_full_name() or order.user.username}."
+                    
+                    if restaurant_title and restaurant_body:
                         send_push_notification(
                             order.restaurant.owner,
-                            f"Rider assigned for order #{order.id}",
-                            f"{order.rider.user.username} has accepted the delivery.",
-                            data={'orderId': str(order.id), 'status': new_status}
+                            restaurant_title,
+                            restaurant_body,
+                            data={'orderId': str(order.id), 'status': new_status, 'type': 'status_update'}
                         )
 
             # If order is ready, notify available riders via WebSocket and Push Notification

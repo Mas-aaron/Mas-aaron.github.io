@@ -86,6 +86,7 @@ custom_urlpatterns = [
     # Test/Debug URLs
     path('health/', api_views.health_check, name='health-check'),
     path('test-notification/', api_views.test_notification, name='test-notification'),
+    path('test-restaurant-notification/', api_views.test_restaurant_notification, name='test-restaurant-notification'),
     path('send-template-notification/', api_views.SendTemplateNotificationView.as_view(), name='send-template-notification'),
     path('configure-gcs/', api_views.configure_gcs_bucket, name='configure-gcs'),
     path('test-gcs/', api_views.test_gcs_connection, name='test-gcs-connection'),
