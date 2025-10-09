@@ -677,20 +677,17 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       );
     }
 
-    print('📋 Building ListView with ${_filteredOrders.length} orders');
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       itemCount: _filteredOrders.length,
       itemBuilder: (context, index) {
         final order = _filteredOrders[index];
-        print('🏗️ Building order card for Order #${order.id}');
         return _buildModernOrderCard(order, _expandedOrders.contains(order.id));
       },
     );
   }
 
   Widget _buildModernOrderCard(Order order, bool isExpanded) {
-    print('🎨 Building card for Order #${order.id} - ${order.customerName}');
     final orderTypeIcon = _getOrderTypeIcon(order.orderType ?? 'delivery');
     final orderTypeColor = _getOrderTypeColor(order.orderType ?? 'delivery');
     

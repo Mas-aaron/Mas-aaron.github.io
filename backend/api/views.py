@@ -604,6 +604,7 @@ class OrderListCreateView(generics.ListCreateAPIView):
         try:
             # Get restaurant owner
             restaurant_owner = order.restaurant.owner
+            logger.info(f'🏪 Sending notification to restaurant owner: {restaurant_owner.username} (ID: {restaurant_owner.id})')
             
             # Get active devices for restaurant owner
             active_devices = Device.objects.filter(
@@ -611,6 +612,14 @@ class OrderListCreateView(generics.ListCreateAPIView):
                 is_active=True,
                 device_type='restaurant'
             )
+            
+            logger.info(f'📱 Found {active_devices.count()} active restaurant devices for user {restaurant_owner.id}')
+            
+            # Also check all devices for this user (for debugging)
+            all_devices = Device.objects.filter(user=restaurant_owner)
+            logger.info(f'📱 Total devices for user {restaurant_owner.id}: {all_devices.count()}')
+            for device in all_devices:
+                logger.info(f'   Device: {device.id}, Type: {device.device_type}, Active: {device.is_active}, Token: {device.token[:20]}...')
             
             if active_devices.exists():
                 # Send notification to restaurant
@@ -631,7 +640,7 @@ class OrderListCreateView(generics.ListCreateAPIView):
                 else:
                     logger.warning(f'⚠️ Failed to send Firebase notification for order {order.id}')
             else:
-                logger.info(f'📱 No active restaurant devices found for order {order.id}')
+                logger.warning(f'📱 No active restaurant devices found for order {order.id}')
                 
         except Exception as e:
             logger.error(f'❌ Error sending restaurant notification for order {order.id}: {e}')

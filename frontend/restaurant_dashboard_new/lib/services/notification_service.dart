@@ -65,6 +65,11 @@ class NotificationService {
         return;
       }
 
+      print('📡 Registering restaurant device with backend...');
+      print('🔗 API URL: $_apiBaseUrl/register-restaurant-device/');
+      print('🔑 Auth Token: ${authToken.substring(0, 10)}...');
+      print('📱 FCM Token: ${token.substring(0, 20)}...');
+
       final response = await http.post(
         Uri.parse('$_apiBaseUrl/register-restaurant-device/'),
         headers: {
@@ -77,10 +82,14 @@ class NotificationService {
         }),
       );
 
+      print('📊 Registration response: ${response.statusCode}');
+      print('📄 Response body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('✅ Restaurant device token registered successfully');
       } else {
         print('❌ Failed to register restaurant device token: ${response.statusCode}');
+        print('❌ Error details: ${response.body}');
       }
     } catch (e) {
       print('❌ Error registering restaurant device token: $e');
