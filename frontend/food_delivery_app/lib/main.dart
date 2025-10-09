@@ -46,7 +46,8 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'FortExpress',
+        title: 'FortXpress',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: const Color(0xFFFE5722),
         colorScheme: ColorScheme.fromSwatch().copyWith(

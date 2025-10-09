@@ -124,8 +124,29 @@ class CartProvider with ChangeNotifier {
 
     bool success = false;
     try {
-      await _apiService.addToCart(menuItemId, 1); // Use ApiService
-      await fetchCart(); // Refresh cart state
+      final newCartItem = await _apiService.addToCart(menuItemId, 1);
+      
+      // Update cart locally instead of refetching everything
+      if (_cart != null) {
+        // Check if item already exists in cart
+        final existingItemIndex = _cart!.items.indexWhere(
+          (item) => item.menuItem?.id == menuItemId
+        );
+        
+        if (existingItemIndex != -1) {
+          // Update existing item
+          _cart!.items[existingItemIndex] = newCartItem;
+        } else {
+          // Add new item
+          _cart!.items.add(newCartItem);
+        }
+        
+        // No need to recalculate total - Cart model has a getter that calculates it automatically
+      } else {
+        // If cart is null, fetch it once
+        await fetchCart();
+      }
+      
       _error = null;
       success = true;
     } catch (e) {

@@ -85,15 +85,26 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
   }
 
   Future<void> _fetchOrders() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    
     try {
+      print('🔄 Fetching orders from API...');
       final orders = await _orderService.getOrders();
+      print('✅ Fetched ${orders.length} orders successfully');
+      
       setState(() {
         _allOrders = orders;
         _applyFilter();
         _isLoading = false;
         _hasNewNotification = false; // Clear notification flag when orders are refreshed
       });
+      
+      print('📊 After filter: ${_filteredOrders.length} orders displayed');
     } catch (e) {
+      print('❌ Error fetching orders: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -108,6 +119,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       } else {
         _filteredOrders = _allOrders.where((order) => order.status == _selectedFilter).toList();
       }
+      print('🔍 Applied filter "$_selectedFilter": ${_filteredOrders.length}/${_allOrders.length} orders');
     });
   }
 
@@ -407,39 +419,36 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       ),
       child: Row(
         children: [
-          const Text(
-            'Dashboard',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
           const Spacer(),
           if (_hasNewNotification)
-            Container(
-              margin: const EdgeInsets.only(right: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade100,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.orange.shade300),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.notifications_active, 
-                       color: Colors.orange.shade700, size: 16),
-                  const SizedBox(width: 6),
-                  Text(
-                    'New Order!',
-                    style: TextStyle(
-                      color: Colors.orange.shade700,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
+            Flexible(
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.orange.shade300),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.notifications_active, 
+                         color: Colors.orange.shade700, size: 14),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        'New Order!',
+                        style: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           _buildOrderStats(),
@@ -455,23 +464,26 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
     final preparingCount = _allOrders.where((o) => o.status == 'Preparing').length;
     final readyCount = _allOrders.where((o) => o.status == 'Ready for Pickup').length;
     
-    return Row(
-      children: [
-        _buildStatChip('Pending', pendingCount, Colors.orange),
-        const SizedBox(width: 8),
-        _buildStatChip('Preparing', preparingCount, Colors.blue),
-        const SizedBox(width: 8),
-        _buildStatChip('Ready', readyCount, Colors.green),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildStatChip('Pending', pendingCount, Colors.orange),
+          const SizedBox(width: 6),
+          _buildStatChip('Preparing', preparingCount, Colors.blue),
+          const SizedBox(width: 6),
+          _buildStatChip('Ready', readyCount, Colors.green),
+        ],
+      ),
     );
   }
 
   Widget _buildStatChip(String label, int count, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
@@ -485,14 +497,15 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           Text(
             '$label ($count)',
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w600,
-              fontSize: 12,
+              fontSize: 11,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -664,17 +677,20 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
       );
     }
 
+    print('📋 Building ListView with ${_filteredOrders.length} orders');
     return ListView.builder(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       itemCount: _filteredOrders.length,
       itemBuilder: (context, index) {
         final order = _filteredOrders[index];
+        print('🏗️ Building order card for Order #${order.id}');
         return _buildModernOrderCard(order, _expandedOrders.contains(order.id));
       },
     );
   }
 
   Widget _buildModernOrderCard(Order order, bool isExpanded) {
+    print('🎨 Building card for Order #${order.id} - ${order.customerName}');
     final orderTypeIcon = _getOrderTypeIcon(order.orderType ?? 'delivery');
     final orderTypeColor = _getOrderTypeColor(order.orderType ?? 'delivery');
     
@@ -689,7 +705,8 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
         });
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16.0),
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -704,10 +721,11 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
           border: Border.all(color: Colors.grey.shade100, width: 1),
         ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Enhanced Header
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -723,8 +741,10 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
               ),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -740,28 +760,32 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'Order #${order.id}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                              Flexible(
+                                child: Text(
+                                  'Order #${order.id}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: orderTypeColor.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(8),
                                   border: Border.all(color: Colors.white.withOpacity(0.5)),
                                 ),
                                 child: Text(
                                   (order.orderType ?? 'delivery').toUpperCase(),
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 10,
+                                    fontSize: 9,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -780,19 +804,23 @@ class _OrderManagementScreenState extends State<OrderManagementScreen> {
                       ),
                     ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'UGX ${order.totalPrice.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Text(
+                              'UGX ${order.totalPrice.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),

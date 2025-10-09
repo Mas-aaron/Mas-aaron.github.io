@@ -157,8 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           const Spacer(),
-          const Text('Dashboard', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const Spacer(),
           CircleAvatar(
             backgroundColor: Colors.orange[100],
             child: Icon(Icons.person, color: Colors.orange[600]),

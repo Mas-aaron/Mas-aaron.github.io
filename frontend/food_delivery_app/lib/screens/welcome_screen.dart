@@ -14,7 +14,7 @@ class WelcomeScreen extends StatelessWidget {
           children: <Widget>[
             const Spacer(flex: 2),
             const Text(
-              'FastFood',
+              'FortXpress',
               style: TextStyle(
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
@@ -46,7 +46,7 @@ class WelcomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Relax, Fastfood has got you covered!',
+              'Relax, FortXpress has got you covered!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,

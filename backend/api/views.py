@@ -246,6 +246,55 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def register_restaurant_device(request):
+    """Register a device specifically for restaurant notifications"""
+    try:
+        fcm_token = request.data.get('fcm_token')
+        device_type = request.data.get('device_type', 'restaurant')
+        
+        if not fcm_token:
+            return Response(
+                {'error': 'FCM token is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if user is associated with a restaurant
+        try:
+            restaurant = Restaurant.objects.get(owner=request.user)
+        except Restaurant.DoesNotExist:
+            return Response(
+                {'error': 'User is not associated with any restaurant'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Register or update device for restaurant notifications
+        device, created = Device.objects.update_or_create(
+            user=request.user,
+            token=fcm_token,
+            defaults={
+                'device_type': device_type,
+                'is_active': True
+            }
+        )
+        
+        logger.info(f"Restaurant device {'registered' if created else 'updated'} for user {request.user.id}, restaurant {restaurant.id}")
+        
+        return Response({
+            'status': 'success',
+            'message': f'Restaurant device {"registered" if created else "updated"} successfully',
+            'restaurant_id': restaurant.id,
+            'restaurant_name': restaurant.name
+        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error registering restaurant device: {e}")
+        return Response(
+            {'error': 'Failed to register restaurant device'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def test_notification(request):
     """Endpoint to test push notifications"""
     try:
@@ -530,6 +579,7 @@ class OrderListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         order = serializer.save(user=self.request.user)
         try:
+            # Send WebSocket notification
             channel_layer = get_channel_layer()
             if channel_layer:
                 restaurant_id = order.restaurant.id
@@ -541,9 +591,50 @@ class OrderListCreateView(generics.ListCreateAPIView):
                         'order': json.dumps(order_data, cls=DjangoJSONEncoder)
                     }
                 )
-                logger.info(f'Sent new order notification for order {order.id} to group restaurant_{restaurant_id}')
+                logger.info(f'Sent WebSocket notification for order {order.id} to group restaurant_{restaurant_id}')
+            
+            # Send Firebase push notification to restaurant
+            self._send_restaurant_notification(order)
+            
         except Exception as e:
             logger.error(f'Failed to send new order notification for order {order.id}: {e}')
+    
+    def _send_restaurant_notification(self, order):
+        """Send Firebase push notification to restaurant about new order"""
+        try:
+            # Get restaurant owner
+            restaurant_owner = order.restaurant.owner
+            
+            # Get active devices for restaurant owner
+            active_devices = Device.objects.filter(
+                user=restaurant_owner,
+                is_active=True,
+                device_type='restaurant'
+            )
+            
+            if active_devices.exists():
+                # Send notification to restaurant
+                notification_sent = send_push_notification(
+                    restaurant_owner,
+                    f"New Order #{order.id}",
+                    f"New order from {order.user.get_full_name() or order.user.username} - UGX {order.total_price:,.0f}",
+                    data={
+                        'order_id': str(order.id),
+                        'customer_name': order.user.get_full_name() or order.user.username,
+                        'total_price': str(order.total_price),
+                        'type': 'new_order'
+                    }
+                )
+                
+                if notification_sent:
+                    logger.info(f'✅ Sent Firebase notification for order {order.id} to restaurant {order.restaurant.name}')
+                else:
+                    logger.warning(f'⚠️ Failed to send Firebase notification for order {order.id}')
+            else:
+                logger.info(f'📱 No active restaurant devices found for order {order.id}')
+                
+        except Exception as e:
+            logger.error(f'❌ Error sending restaurant notification for order {order.id}: {e}')
 
 class OrderDetailView(generics.RetrieveAPIView):
     serializer_class = OrderSerializer

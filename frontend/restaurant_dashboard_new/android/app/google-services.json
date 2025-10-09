@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1094257727094",
+    "project_id": "fortexpress-5641c",
+    "storage_bucket": "fortexpress-5641c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1094257727094:android:8c59955f7cd18a3035f157",
+        "android_client_info": {
+          "package_name": "com.example.restaurant_dashboard_new"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZCsX_zwQr3jB9XdByRX4Si2kjZVFQCCY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

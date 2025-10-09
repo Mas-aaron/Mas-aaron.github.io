@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
+import 'services/notification_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/settings_screen.dart';
@@ -12,7 +14,16 @@ import 'screens/signup_screen.dart';
 import 'screens/order_protocol_screen.dart';
 import 'screens/menu_management_screen.dart';
 
-void main() {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  
+  // Initialize notification service
+  final notificationService = NotificationService(navigatorKey: navigatorKey);
+  await notificationService.initialize();
+  
   runApp(
     MultiProvider(
       providers: [
@@ -34,7 +45,8 @@ class MyApp extends StatelessWidget {
         // Show loading screen while initializing
         if (authProvider.isLoading) {
           return MaterialApp(
-            title: 'FortExpress Restaurant',
+            title: 'FortXpress Restaurant',
+            debugShowCheckedModeBanner: false,
             theme: ThemeData(
               brightness: Brightness.light,
               primarySwatch: Colors.orange,
@@ -51,7 +63,7 @@ class MyApp extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'Loading FortExpress Restaurant...',
+                      'Loading FortXpress Restaurant...',
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
@@ -63,7 +75,9 @@ class MyApp extends StatelessWidget {
 
         return OverlaySupport.global(
           child: MaterialApp(
-            title: 'FortExpress Restaurant',
+            navigatorKey: navigatorKey,
+            title: 'FortXpress Restaurant',
+            debugShowCheckedModeBanner: false,
             theme: ThemeData(
               brightness: Brightness.light,
               primarySwatch: Colors.orange,
