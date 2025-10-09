@@ -100,16 +100,25 @@ class SupabaseStorage(Storage):
     
     def url(self, name):
         """
-        Return the URL for accessing the file with caching to prevent excessive API calls
+        Return the URL for accessing the file with optional caching to prevent excessive API calls
         """
         if not name:
             return None
         
-        # Check cache first to avoid repeated API calls
+        # Try to use cache if available, but don't fail if cache is unavailable
         cache_key = f"supabase_url_{self.bucket_name}_{name}"
-        cached_url = cache.get(cache_key)
-        if cached_url:
-            return cached_url
+        cached_url = None
+        try:
+            cached_url = cache.get(cache_key)
+            if cached_url:
+                return cached_url
+        except Exception as cache_error:
+            # Cache unavailable (Redis connection issues, etc.) - continue without caching
+            # Only log this occasionally to avoid spam
+            import time
+            if not hasattr(self, '_last_cache_error_log') or time.time() - self._last_cache_error_log > 300:
+                print(f"⚠️ Cache unavailable: {cache_error}")
+                self._last_cache_error_log = time.time()
         
         if self.client and self.supabase_url:
             try:
@@ -118,12 +127,29 @@ class SupabaseStorage(Storage):
                 if response:
                     # Clean up the URL to remove any trailing question marks
                     clean_url = response.split('?')[0]
-                    # Cache the URL for 1 hour to reduce API calls
-                    cache.set(cache_key, clean_url, 3600)
-                    # Only log occasionally to reduce log spam
-                    if not cache.get(f"logged_{cache_key}"):
-                        print(f"✅ Generated and cached Supabase URL for: {name}")
-                        cache.set(f"logged_{cache_key}", True, 300)  # Log once every 5 minutes
+                    
+                    # Try to cache the URL, but don't fail if cache is unavailable
+                    try:
+                        cache.set(cache_key, clean_url, 3600)
+                        # Only log occasionally to reduce log spam
+                        try:
+                            if not cache.get(f"logged_{cache_key}"):
+                                print(f"✅ Generated and cached Supabase URL for: {name}")
+                                cache.set(f"logged_{cache_key}", True, 300)  # Log once every 5 minutes
+                        except Exception:
+                            # If logging cache fails, just log normally (but less frequently)
+                            import time
+                            if not hasattr(self, '_last_log_time') or time.time() - self._last_log_time > 300:
+                                print(f"✅ Generated Supabase URL for: {name}")
+                                self._last_log_time = time.time()
+                    except Exception as cache_set_error:
+                        # Cache unavailable for writing - just log normally (but less frequently)
+                        import time
+                        if not hasattr(self, '_last_cache_set_error') or time.time() - self._last_cache_set_error > 300:
+                            print(f"⚠️ Cache set failed: {cache_set_error}")
+                            self._last_cache_set_error = time.time()
+                        print(f"✅ Generated Supabase URL for: {name}")
+                    
                     return clean_url
             except Exception as e:
                 print(f"❌ Error getting Supabase URL: {e}")
