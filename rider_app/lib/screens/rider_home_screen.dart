@@ -171,7 +171,7 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'FortExpress Delivery Partner',
+                  'FortXpress Fleet Partner',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
@@ -227,7 +227,7 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'FortExpress',
+                  'FortXpress',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,

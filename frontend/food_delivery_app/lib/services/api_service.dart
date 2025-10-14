@@ -498,4 +498,42 @@ class ApiService {
       throw Exception('Failed to update item quantity: ${response.body}');
     }
   }
+
+  // Password Recovery Methods
+  Future<Map<String, dynamic>> requestPasswordReset(String email) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/password-reset-request/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    } else {
+      return {'success': false, 'message': responseData['error'] ?? 'Failed to send reset email'};
+    }
+  }
+
+  Future<Map<String, dynamic>> changePassword(String currentPassword, String newPassword) async {
+    final headers = await _getAuthHeaders();
+    final body = jsonEncode({
+      'current_password': currentPassword,
+      'new_password': newPassword,
+    });
+    
+    final response = await _makeRequest('POST', '$_baseUrl/change-password/', headers: headers, body: body);
+    final responseData = jsonDecode(response.body);
+    
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    } else {
+      return {'success': false, 'message': responseData['error'] ?? 'Failed to change password'};
+    }
+  }
 }

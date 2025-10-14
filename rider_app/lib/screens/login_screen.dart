@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rider_app/screens/rider_home_screen.dart';
 import 'package:rider_app/services/api_service.dart';
 import 'package:rider_app/screens/signup_screen.dart';
+import 'package:rider_app/screens/password_recovery_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -189,7 +190,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // Add forgot password functionality
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => const PasswordRecoveryScreen()),
+                          );
                         },
                         child: Text(
                           'Forgot Password?',

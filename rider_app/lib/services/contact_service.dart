@@ -141,7 +141,7 @@ class ContactService {
                         try {
                           await sendSMS(
                             phoneNumber,
-                            message: 'Hi! This is your FortExpress delivery rider. I\'m on my way with your order.',
+                            message: 'Hi! This is your FortXpress delivery rider. I\'m on my way with your order.',
                           );
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(

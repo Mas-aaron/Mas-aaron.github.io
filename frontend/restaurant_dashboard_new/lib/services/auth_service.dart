@@ -65,4 +65,52 @@ class AuthService {
       throw Exception('Failed to load user data');
     }
   }
+
+  // Password Recovery Methods
+  Future<Map<String, dynamic>> requestPasswordReset(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/password-reset-request/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    } else {
+      return {'success': false, 'message': responseData['error'] ?? 'Failed to send reset email'};
+    }
+  }
+
+  Future<Map<String, dynamic>> changePassword(String currentPassword, String newPassword) async {
+    final token = await getToken();
+    if (token == null) {
+      return {'success': false, 'message': 'Not authenticated'};
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/change-password/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Token $token',
+      },
+      body: jsonEncode(<String, String>{
+        'current_password': currentPassword,
+        'new_password': newPassword,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    } else {
+      return {'success': false, 'message': responseData['error'] ?? 'Failed to change password'};
+    }
+  }
 }

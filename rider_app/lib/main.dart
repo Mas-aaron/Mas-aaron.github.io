@@ -23,7 +23,8 @@ class RiderApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return OverlaySupport.global(
       child: MaterialApp(
-        title: 'FortExpress Rider',
+        title: 'FortXpress Fleet',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: const ColorScheme.light(
@@ -111,7 +112,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
               ),
               SizedBox(height: 16),
               Text(
-                'FortExpress Rider',
+                'FortXpress Fleet',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,

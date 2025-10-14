@@ -83,6 +83,11 @@ custom_urlpatterns = [
     path('register-restaurant-device/', api_views.register_restaurant_device, name='register-restaurant-device'),
     path('register-rider-device/', api_views.register_rider_device, name='register-rider-device'),
     
+    # Password Recovery URLs
+    path('password-reset-request/', api_views.password_reset_request, name='password-reset-request'),
+    path('password-reset-confirm/', api_views.password_reset_confirm, name='password-reset-confirm'),
+    path('change-password/', api_views.change_password, name='change-password'),
+    
     # Test/Debug URLs
     path('health/', api_views.health_check, name='health-check'),
     path('test-notification/', api_views.test_notification, name='test-notification'),

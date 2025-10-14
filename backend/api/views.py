@@ -1732,3 +1732,177 @@ class MyRiderReviewsView(generics.ListAPIView):
             return RiderReview.objects.filter(rider=rider_profile).order_by('-created_at')
         except RiderProfile.DoesNotExist:
             return RiderReview.objects.none()
+
+
+# Password Recovery Views
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_request(request):
+    """
+    Send password reset email to user
+    """
+    try:
+        email = request.data.get('email')
+        if not email:
+            return Response({
+                'error': 'Email is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Don't reveal if email exists or not for security
+            return Response({
+                'message': 'If an account with this email exists, you will receive a password reset link.'
+            }, status=status.HTTP_200_OK)
+        
+        # Generate token and uid
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        
+        # Create reset link (you can customize this URL)
+        reset_link = f"https://food-delivery-backend-2mcb.onrender.com/reset-password/{uid}/{token}/"
+        
+        # Send email (you'll need to configure email settings)
+        subject = 'FortXpress - Password Reset Request'
+        message = f"""
+        Hello {user.get_full_name() or user.username},
+        
+        You requested a password reset for your FortXpress account.
+        
+        Click the link below to reset your password:
+        {reset_link}
+        
+        If you didn't request this, please ignore this email.
+        
+        Best regards,
+        FortXpress Team
+        """
+        
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            logger.info(f"Password reset email sent to {email}")
+        except Exception as e:
+            logger.error(f"Failed to send password reset email to {email}: {e}")
+            # For now, we'll still return success to not reveal email existence
+        
+        return Response({
+            'message': 'If an account with this email exists, you will receive a password reset link.'
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Password reset request error: {e}")
+        return Response({
+            'error': 'An error occurred while processing your request'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_confirm(request):
+    """
+    Confirm password reset with token
+    """
+    try:
+        uid = request.data.get('uid')
+        token = request.data.get('token')
+        new_password = request.data.get('new_password')
+        
+        if not all([uid, token, new_password]):
+            return Response({
+                'error': 'UID, token, and new password are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate password length
+        if len(new_password) < 8:
+            return Response({
+                'error': 'Password must be at least 8 characters long'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Decode uid
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({
+                'error': 'Invalid reset link'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check token validity
+        if not default_token_generator.check_token(user, token):
+            return Response({
+                'error': 'Invalid or expired reset link'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+        
+        logger.info(f"Password reset successful for user {user.email}")
+        
+        return Response({
+            'message': 'Password has been reset successfully'
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Password reset confirm error: {e}")
+        return Response({
+            'error': 'An error occurred while resetting your password'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Change password for authenticated user
+    """
+    try:
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+        
+        if not all([current_password, new_password]):
+            return Response({
+                'error': 'Current password and new password are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate current password
+        if not request.user.check_password(current_password):
+            return Response({
+                'error': 'Current password is incorrect'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate new password length
+        if len(new_password) < 8:
+            return Response({
+                'error': 'New password must be at least 8 characters long'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Set new password
+        request.user.set_password(new_password)
+        request.user.save()
+        
+        logger.info(f"Password changed successfully for user {request.user.email}")
+        
+        return Response({
+            'message': 'Password changed successfully'
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Change password error: {e}")
+        return Response({
+            'error': 'An error occurred while changing your password'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

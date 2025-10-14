@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Status</title>
+</head>
+<body>
+    <h1>Payment Status</h1>
+    <div>
+        <p>Order Reference: {{ payment.merchant_reference }}</p>
+        <p>Amount: {{ payment.amount }} {{ payment.currency }}</p>
+        <p>Status: {{ payment.status }}</p>
+    </div>
+</body>
+</html>
