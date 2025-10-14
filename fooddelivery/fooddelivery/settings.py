@@ -9,39 +9,25 @@ PESAPAL_CALLBACK_URL = 'https://food-delivery-backend-2mcb.onrender.com/payments
 PESAPAL_IPN_URL = 'https://food-delivery-backend-2mcb.onrender.com/payments/ipn/'
 
 # Database Configuration
-DATABASE_URL = os.environ.get('DATABASE_URL', 'postgres://fortexpressdb_user:QrV1v3qr4IjuikDojNXe9trnUZXw6WPL@dpg-d3n8ndod13ps73fuck0g-a.oregon-postgres.render.com/fortexpressdb')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': dj_database_url.parse(DATABASE_URL)
     }
-    
-    # Enhanced PostgreSQL configuration
-    if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
-        DATABASES['default'].update({
-            'HOST': 'dpg-d3n8ndod13ps73fuck0g-a.oregon-postgres.render.com',
-            'PORT': '5432',
-            'NAME': 'fortexpressdb',
-            'USER': 'fortexpressdb_user',
-            'OPTIONS': {
-                'sslmode': 'require',
-                'keepalives': 1,
-                'keepalives_idle': 30,
-                'keepalives_interval': 10,
-                'keepalives_count': 5,
-                'connect_timeout': 30,
-            }
-        })
 else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
+    }
+
+# Add SSL and connection settings for production
+if 'RENDER' in os.environ:
+    DATABASES['default']['OPTIONS'] = {
+        'sslmode': 'require',
+        'connect_timeout': 30,
     }
 
 # Logging configuration for database issues
