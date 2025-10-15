@@ -113,5 +113,10 @@ TEMPLATES = [
 ]
 
 # Admin Login/Logout URLs
-LOGIN_REDIRECT_URL = 'admin:index'
-LOGOUT_REDIRECT_URL = 'admin:login'
+LOGIN_REDIRECT_URL = '/admin/'
+LOGOUT_REDIRECT_URL = '/admin/login/'
+
+# Static files configuration
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
