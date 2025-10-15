@@ -120,3 +120,9 @@ LOGOUT_REDIRECT_URL = '/admin/login/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Disable prompt for collectstatic in production
+STATICFILES_STORAGE_ENFORCE_MANIFEST_CHECKS = False
+if 'RENDER' in os.environ:
+    DISABLE_COLLECTSTATIC = '1'
