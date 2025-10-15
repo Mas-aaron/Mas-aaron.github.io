@@ -196,8 +196,14 @@ if not DEBUG:
     WHITENOISE_USE_FINDERS = True
     WHITENOISE_AUTOREFRESH = True
 
-# CORS Settings
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True  # For development - change to specific origins in production
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://food-delivery-backend-2mcb.onrender.com',
+    'http://localhost:3000',
+]
 
 # Environment-specific settings
 if DEBUG:

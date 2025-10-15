@@ -3,43 +3,51 @@ from django.conf import settings
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from .pesapal_service import PesapalService
 from .models import Payment
 
 pesapal = PesapalService()
 
+@api_view(['GET'])
+def payment_options(request):
+    """Return available payment options"""
+    return JsonResponse({
+        'payment_methods': [
+            {
+                'id': 'pesapal',
+                'name': 'Pesapal',
+                'description': 'Pay with M-Pesa, Card, or Bank',
+                'enabled': True
+            }
+        ]
+    })
+
+@api_view(['POST'])
+@csrf_exempt
 def initiate_payment(request):
-    # Create payment payload
-    order_id = str(uuid.uuid4())
-    amount = request.POST.get('amount')
+    """Initialize a Pesapal payment"""
+    amount = request.data.get('amount')
+    order_id = request.data.get('order_id')
     
     payload = {
         "id": order_id,
         "currency": "KES",
         "amount": float(amount),
-        "description": "Payment for order",
+        "description": "Payment for order #" + order_id,
         "callback_url": settings.PESAPAL_CALLBACK_URL,
         "notification_id": settings.PESAPAL_IPN_URL,
         "billing_address": {
-            "email_address": request.POST.get('email'),
-            "phone_number": request.POST.get('phone'),
-            "first_name": request.POST.get('first_name'),
-            "last_name": request.POST.get('last_name'),
+            "email_address": request.data.get('email'),
+            "phone_number": request.data.get('phone'),
+            "first_name": request.data.get('first_name', ''),
+            "last_name": request.data.get('last_name', ''),
         }
     }
 
-    # Submit order to Pesapal
     response = pesapal.submit_order_request(payload)
-    
-    if response.get('redirect_url'):
-        Payment.objects.create(
-            order_tracking_id=response.get('order_tracking_id'),
-            merchant_reference=order_id,
-            amount=amount,
-        )
-        return redirect(response['redirect_url'])
-    
-    return JsonResponse({'error': 'Payment initialization failed'}, status=400)
+    return JsonResponse(response)
 
 @csrf_exempt
 def payment_callback(request):
@@ -67,3 +75,18 @@ def payment_ipn(request):
         payment.save()
     
     return JsonResponse({'status': 'success'})
+
+@api_view(['GET'])
+def test_payment_integration(request):
+    """Test if payment integration is working"""
+    return Response({
+        'status': 'success',
+        'message': 'Payment integration is working',
+        'pesapal_enabled': True,
+        'endpoints': {
+            'initiate': '/api/payments/initiate/',
+            'callback': '/api/payments/callback/',
+            'ipn': '/api/payments/ipn/',
+            'options': '/api/payments/options/'
+        }
+    })

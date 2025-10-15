@@ -31,6 +31,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('api/loyalty/', include('loyalty.urls')),
+    path('api/payments/', include('payments.urls')),  # Add Pesapal payment URLs
     path('', root_view),
 ]
 
