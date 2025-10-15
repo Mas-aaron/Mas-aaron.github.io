@@ -14,6 +14,7 @@ from pathlib import Path
 import dj_database_url
 import json
 import tempfile
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -199,11 +200,38 @@ if not DEBUG:
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True  # For development - change to specific origins in production
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://food-delivery-backend-2mcb.onrender.com',
     'http://localhost:3000',
 ]
+
+# Authentication settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'EXCEPTION_HANDLER': 'core.utils.custom_exception_handler'
+}
+
+# JWT settings
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
 
 # Environment-specific settings
 if DEBUG:
