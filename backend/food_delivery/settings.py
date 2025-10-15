@@ -29,6 +29,13 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', 'AIzaSyB2_rwYdL9Tr_L
 
 # Firebase Configuration
 GOOGLE_CLOUD_PROJECT = 'fortexpress-5641c'
+# Pesapal Settings
+PESAPAL_CONSUMER_KEY = 'WladF7f2VLuIhN/kjFw9vdpLJy7rWUeH'
+PESAPAL_CONSUMER_SECRET = 'EcZCXnJcGskMCTrqJyBojVhyUec='
+PESAPAL_BASE_URL = 'https://cybqa.pesapal.com/pesapalv3'  # Sandbox URL
+PESAPAL_CALLBACK_URL = 'https://food-delivery-backend-2mcb.onrender.com/payments/callback/'
+PESAPAL_IPN_URL = 'https://food-delivery-backend-2mcb.onrender.com/payments/ipn/'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
@@ -59,6 +66,8 @@ INSTALLED_APPS = [
     'corsheaders',
     # 'channels',  # Temporarily disabled due to Redis connection issues
     'whitenoise',
+    'core',
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -109,6 +118,10 @@ DATABASES = {
         conn_max_age=600
     )
 }
+# Django Superuser Configuration
+DJANGO_SUPERUSER_USERNAME = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'fortexpress_admin')
+DJANGO_SUPERUSER_EMAIL = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'fortexpress@gmail.com')
+DJANGO_SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'FortExpress@2024!')
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
