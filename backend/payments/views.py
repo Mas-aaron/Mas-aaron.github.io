@@ -90,3 +90,21 @@ def test_payment_integration(request):
             'options': '/api/payments/options/'
         }
     })
+
+@api_view(['GET'])
+def payment_status(request, tracking_id):
+    """Check payment status using tracking ID"""
+    try:
+        status = pesapal.get_transaction_status(tracking_id)
+        return Response({
+            'tracking_id': tracking_id,
+            'status': status.get('payment_status', 'UNKNOWN'),
+            'payment_method': status.get('payment_method', ''),
+            'amount': status.get('amount', ''),
+            'currency': status.get('currency', 'KES')
+        })
+    except Exception as e:
+        return Response({
+            'error': str(e),
+            'status': 'FAILED'
+        }, status=400)

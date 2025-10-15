@@ -9,5 +9,5 @@ urlpatterns = [
     path('ipn/', views.payment_ipn, name='ipn'),
     path('options/', views.payment_options, name='options'),
     path('status/<str:tracking_id>/', views.payment_status, name='status'),
-    path('test/', views.test_payment_integration, name='test'),
+]
 ]
