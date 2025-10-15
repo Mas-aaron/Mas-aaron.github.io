@@ -86,3 +86,32 @@ PESAPAL_IPN_URL = 'https://food-delivery-backend-2mcb.onrender.com/payments/ipn/
 DJANGO_SUPERUSER_USERNAME = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'fortexpress_admin')
 DJANGO_SUPERUSER_EMAIL = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'fortexpress@gmail.com')
 DJANGO_SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'FortExpress@2024!')
+
+# Admin Configuration
+ADMIN_SITE_HEADER = "FortExpress Admin"
+ADMIN_SITE_TITLE = "FortExpress Admin Portal"
+ADMIN_INDEX_TITLE = "Welcome to FortExpress Administration"
+
+# Templates Configuration
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'templates', 'admin'),
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+# Admin Login/Logout URLs
+LOGIN_REDIRECT_URL = 'admin:index'
+LOGOUT_REDIRECT_URL = 'admin:login'
