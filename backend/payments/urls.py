@@ -10,4 +10,4 @@ urlpatterns = [
     path('options/', views.payment_options, name='options'),
     path('status/<str:tracking_id>/', views.payment_status, name='status'),
 ]
-]
+
