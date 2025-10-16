@@ -156,7 +156,7 @@ from .serializers import (
     BankAccountSerializer, PaymentDisputeSerializer, CartSerializer,
     CartItemSerializer, CartItemWriteSerializer, UserSerializer, MessageSerializer,
     DietaryPreferenceSerializer, MenuCategoryCRUDSerializer, BillSerializer,
-    RestaurantDashboardReviewSerializer,
+    RestaurantDashboardReviewSerializer, UserAddressSerializer,
 )
 
 logger = logging.getLogger(__name__)
