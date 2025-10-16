@@ -462,3 +462,44 @@ class OrderActivity(models.Model):
         verbose_name_plural = "Order Activities"
 
 
+class Payment(models.Model):
+    """Model for handling mobile money and other payment methods"""
+    PAYMENT_METHODS = [
+        ('cash_on_delivery', 'Cash on Delivery'),
+        ('mtn_mobile_money', 'MTN Mobile Money'),
+        ('airtel_money', 'Airtel Money'),
+    ]
+    
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
+    method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='cash_on_delivery')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=15, choices=PAYMENT_STATUS, default='pending')
+    
+    # Mobile money specific fields
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    transaction_id = models.CharField(max_length=100, null=True, blank=True)
+    reference = models.CharField(max_length=100, null=True, blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Failure reason
+    failure_reason = models.TextField(null=True, blank=True)
+    
+    def __str__(self):
+        return f'Payment {self.id} - Order #{self.order.id} - {self.get_method_display()} - {self.status}'
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = "Payments"
+
+

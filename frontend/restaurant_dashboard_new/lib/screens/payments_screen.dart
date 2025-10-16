@@ -132,36 +132,40 @@ class _PaymentsScreenState extends State<PaymentsScreen> with SingleTickerProvid
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Payment Manager',
           style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
-        Row(
-          children: [
-            _buildSummaryCard(
-              'Current Week',
-              _selectedPeriod?.netPayoutUgx ?? 'UGX 0',
-              Icons.account_balance_wallet,
-              Colors.green,
-            ),
-            const SizedBox(width: 16),
-            _buildSummaryCard(
-              'Total Orders',
-              _selectedPeriod?.totalOrders.toString() ?? '0',
-              Icons.receipt_long,
-              Colors.blue,
-            ),
-            const SizedBox(width: 16),
-            _buildSummaryCard(
-              'Status',
-              _selectedPeriod?.status.toUpperCase() ?? 'N/A',
-              Icons.info,
-              _selectedPeriod?.status == 'paid' ? Colors.green : Colors.orange,
-            ),
-          ],
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildSummaryCard(
+                'Current Week',
+                _selectedPeriod?.netPayoutUgx ?? 'UGX 0',
+                Icons.account_balance_wallet,
+                Colors.green,
+              ),
+              const SizedBox(width: 16),
+              _buildSummaryCard(
+                'Total Orders',
+                _selectedPeriod?.totalOrders.toString() ?? '0',
+                Icons.receipt_long,
+                Colors.blue,
+              ),
+              const SizedBox(width: 16),
+              _buildSummaryCard(
+                'Status',
+                _selectedPeriod?.status.toUpperCase() ?? 'N/A',
+                Icons.info,
+                _selectedPeriod?.status == 'paid' ? Colors.green : Colors.orange,
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -175,7 +179,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> with SingleTickerProvid
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 5,
           ),
@@ -399,25 +403,32 @@ class _PaymentsScreenState extends State<PaymentsScreen> with SingleTickerProvid
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Order #${payment.orderNumber}',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      payment.customerName,
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    Text(
-                      dateFormat.format(payment.orderDate),
-                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                    ),
-                  ],
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Order #${payment.orderNumber}',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        payment.customerName,
+                        style: TextStyle(color: Colors.grey[600]),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        dateFormat.format(payment.orderDate),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      ),
+                    ],
+                  ),
                 ),
-                Column(
+                Expanded(
+                  flex: 1,
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
@@ -444,6 +455,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> with SingleTickerProvid
                       ),
                     ),
                   ],
+                  ),
                 ),
               ],
             ),

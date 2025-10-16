@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/screens/set_location_screen.dart';
+import 'package:food_delivery_app/screens/payment_method_screen.dart';
 import 'package:food_delivery_app/widgets/order_type_selector.dart';
 import 'package:food_delivery_app/widgets/tip_selector.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,7 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   bool _isLoading = false;
 
-  Future<void> _placeOrder() async {
+  Future<void> _proceedToPayment() async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
     final locationProvider = Provider.of<LocationProvider>(context, listen: false);
     final position = locationProvider.currentPosition;
@@ -34,6 +35,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       return;
     }
 
+    // Calculate total amount
+    const deliveryFee = 5.00;
+    final subtotal = widget.cart.totalPrice;
+    final tip = cartProvider.tipAmount;
+    final hasDeliveryFee = cartProvider.orderType == OrderType.delivery;
+    final total = subtotal + (hasDeliveryFee ? deliveryFee : 0) + tip;
+
+    // First create the order
     setState(() {
       _isLoading = true;
     });
@@ -49,10 +58,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
 
     if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order placed successfully!'), backgroundColor: Colors.green),
+      final orderId = result['order_id']?.toString() ?? '';
+      
+      // Navigate to payment method selection
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PaymentMethodScreen(
+            amount: total,
+            orderId: orderId,
+            onPaymentSuccess: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Order placed successfully!'), backgroundColor: Colors.green),
+              );
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
+        ),
       );
-      Navigator.of(context).popUntil((route) => route.isFirst);
     } else {
       final errorMessage = result['error'] ?? 'Failed to place order. Please try again.';
       ScaffoldMessenger.of(context).showSnackBar(
@@ -378,10 +400,68 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildPaymentCard() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: const Icon(Icons.payment_outlined),
-        title: const Text('Cash on Delivery'),
-        trailing: TextButton(onPressed: () {}, child: const Text('Change')),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.payment_outlined, color: Colors.orange),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Payment will be selected on next step',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _buildPaymentOption(Icons.phone_android, 'MTN Money', Colors.yellow.shade700),
+                const SizedBox(width: 8),
+                _buildPaymentOption(Icons.phone_android, 'Airtel Money', Colors.red.shade600),
+                const SizedBox(width: 8),
+                _buildPaymentOption(Icons.money, 'Cash', Colors.green.shade600),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentOption(IconData icon, String label, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: color,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -443,7 +523,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: _isLoading ? null : _placeOrder,
+          onPressed: _isLoading ? null : _proceedToPayment,
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

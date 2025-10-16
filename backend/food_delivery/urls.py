@@ -19,6 +19,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import JsonResponse
+from rest_framework_simplejwt.views import TokenRefreshView
+from api import views  # Import views from the api app
 
 def root_view(request):
     return JsonResponse({
@@ -32,6 +34,7 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/loyalty/', include('loyalty.urls')),
     path('api/payments/', include('payments.urls')),  # Add Pesapal payment URLs
+    path('api/auth/logout/', views.LogoutView.as_view(), name='auth_logout'),  # Add logout URL
     path('', root_view),
 ]
 

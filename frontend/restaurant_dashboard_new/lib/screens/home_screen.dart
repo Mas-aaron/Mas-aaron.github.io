@@ -157,9 +157,17 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           const Spacer(),
-          CircleAvatar(
-            backgroundColor: Colors.orange[100],
-            child: Icon(Icons.person, color: Colors.orange[600]),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+            child: CircleAvatar(
+              backgroundColor: Colors.orange[100],
+              child: Icon(Icons.person, color: Colors.orange[600]),
+            ),
           ),
         ],
       ),

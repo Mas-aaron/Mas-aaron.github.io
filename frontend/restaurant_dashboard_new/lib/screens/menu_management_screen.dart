@@ -1,769 +1,628 @@
 import 'package:flutter/material.dart';
-import '../services/menu_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../models/menu_item.dart';
 import '../models/menu_category.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:restaurant_dashboard_new/utils/currency_formatter.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:typed_data';
-
-
+import '../services/menu_service.dart';
+import 'manage_categories_screen.dart';
 
 class MenuManagementScreen extends StatefulWidget {
+  const MenuManagementScreen({super.key});
   static const routeName = '/menu-management';
 
-  const MenuManagementScreen({super.key});
-
   @override
-  _MenuManagementScreenState createState() => _MenuManagementScreenState();
+  State<MenuManagementScreen> createState() => _MenuManagementScreenState();
 }
 
 class _MenuManagementScreenState extends State<MenuManagementScreen> {
   final MenuService _menuService = MenuService();
-  late Future<List<MenuItem>> _menuItemsFuture;
+  List<MenuItem> _menuItems = [];
   List<MenuCategory> _categories = [];
-  int? _selectedCategoryId;
-  bool _isLoadingCategories = true;
-  XFile? imageFile;
-  Uint8List? imageFileBytes;
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _menuItemsFuture = _menuService.getMenu();
-    _fetchCategories();
+    _loadMenuItems();
   }
 
-  void _refreshMenuItems() {
-    setState(() {
-      _menuItemsFuture = _menuService.getMenu();
-    });
-  }
-
-  Future<void> _fetchCategories() async {
+  Future<void> _loadMenuItems() async {
     try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+      
+      final items = await _menuService.getMenu();
       final categories = await _menuService.getMenuCategories();
       setState(() {
-        _categories = categories ?? [];
-        if (_categories.isNotEmpty) {
-          _selectedCategoryId = _categories.first.id;
-        } else {
-          _selectedCategoryId = null;
-        }
-        _isLoadingCategories = false;
+        _menuItems = items;
+        _categories = categories;
+        _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _categories = [];
-        _selectedCategoryId = null;
-        _isLoadingCategories = false;
+        _error = e.toString();
+        _isLoading = false;
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load categories: $e')),
-        );
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(),
-          const SizedBox(height: 24),
-          Expanded(
-            child: FutureBuilder<List<MenuItem>>(
-              future: _menuItemsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No menu items found.'));
-                }
-
-                final menuItems = snapshot.data!;
-
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 300, // Max width for each item
-                    childAspectRatio: 2 / 2.5, // Aspect ratio for each item
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Menu Management'),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Colors.black87,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.category_outlined, size: 20),
+                    label: const Text('Manage Categories'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ManageCategoriesScreen()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      foregroundColor: Theme.of(context).primaryColor,
+                      side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
                   ),
-                  itemCount: menuItems.length,
-                  itemBuilder: (context, index) {
-                    final item = menuItems[index];
-                    return _MenuItemCard(item: item, onEdit: () => _showEditMenuItemDialog(item), onDelete: () => _deleteItem(item.id));
-                  },
-                );
-              },
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.add, size: 20),
+                    label: const Text('Add Menu Item'),
+                    onPressed: () => _showAddMenuItemDialog(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            Expanded(
+              child: _buildMenuContent(),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Wrap(
-      alignment: WrapAlignment.spaceBetween,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      runSpacing: 16,
-      spacing: 16,
-      children: [
-        const Text('Menu Management', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
+  Widget _buildMenuContent() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.orange),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton.icon(
-              onPressed: _showManageCategoriesDialog,
-              icon: const Icon(Icons.category),
-              label: const Text('Manage Categories'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.grey[700],
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            ElevatedButton.icon(
-              onPressed: _showAddMenuItemDialog,
-              icon: const Icon(Icons.add),
-              label: const Text('Add Menu Item'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+            Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text('Failed to load menu items', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+            const SizedBox(height: 8),
+            Text(_error!, style: TextStyle(fontSize: 14, color: Colors.grey[500]), textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadMenuItems,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
-      ],
+      );
+    }
+
+    if (_menuItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.restaurant_menu, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text('No menu items found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+            const SizedBox(height: 8),
+            Text('Add your first menu item to get started', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadMenuItems,
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.7,
+        ),
+        itemCount: _menuItems.length,
+        itemBuilder: (context, index) {
+          return MenuItemCard(
+            item: _menuItems[index],
+            onEdit: _editMenuItem,
+            onDelete: _deleteMenuItem,
+          );
+        },
+      ),
     );
   }
 
-  void _deleteItem(int id) async {
-    try {
-      await _menuService.deleteMenuItem(id);
-      _refreshMenuItems();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete item: $e')));
-      }
-    }
-  }
-
-      void _showEditMenuItemDialog(MenuItem item) {
-    final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController(text: item.name);
-    final descriptionController = TextEditingController(text: item.description);
-    final priceController = TextEditingController(text: CurrencyFormatter.formatUGX(item.price));
-    XFile? imageFile;
-    int? selectedCategoryId = item.category;
-    bool isAvailable = item.isAvailable;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Menu Item'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              Future<void> pickImage(StateSetter setState) async {
-                final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-                if (pickedFile != null) {
-                  final bytes = await pickedFile.readAsBytes();
-                  setState(() {
-                    imageFile = pickedFile;
-                    if (kIsWeb) {
-                      imageFileBytes = bytes;
-                    }
-                  });
-                }
-              }
-
-              return SizedBox(
-                width: 400, // Constrain width to prevent layout errors
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (imageFile != null)
-                          // Platform-aware image preview
-                          if (imageFile != null) ...[
-                            kIsWeb
-                                ? (imageFileBytes != null ? Image.memory(imageFileBytes!, height: 150, fit: BoxFit.cover) : Container())
-                                : Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
-                          ]
-                        else if (item.imageUrl != null && item.imageUrl!.isNotEmpty)
-                          Image.network(
-                            item.imageUrl!, 
-                            height: 150, 
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 150,
-                                color: Colors.grey[200],
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  color: Colors.grey[400],
-                                  size: 40,
-                                ),
-                              );
-                            },
-                          ),
-                        ElevatedButton(onPressed: () => pickImage(setState), child: const Text('Select Image')),
-                        TextFormField(
-                          controller: nameController,
-                          decoration: const InputDecoration(labelText: 'Name'),
-                          validator: (value) => value!.isEmpty ? 'Enter a name' : null,
-                        ),
-                        TextFormField(
-                          controller: descriptionController,
-                          decoration: const InputDecoration(labelText: 'Description'),
-                          validator: (value) => value!.isEmpty ? 'Enter a description' : null,
-                        ),
-                        TextFormField(
-                          controller: priceController,
-                          decoration: const InputDecoration(labelText: 'Price (UGX)'),
-                          keyboardType: TextInputType.number,
-                          validator: (value) => value!.isEmpty ? 'Enter a price' : null,
-                        ),
-                        _categories.isEmpty
-                            ? Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange[50],
-                                  border: Border.all(color: Colors.orange[200]!),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(Icons.category, color: Colors.orange[600], size: 32),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'No categories available',
-                                      style: TextStyle(
-                                        color: Colors.orange[800],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Please create a category first using "Manage Categories"',
-                                      style: TextStyle(
-                                        color: Colors.orange[600],
-                                        fontSize: 12,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : DropdownButtonFormField<int>(
-                                value: selectedCategoryId,
-                                items: _categories.map((MenuCategory category) {
-                                  return DropdownMenuItem<int>(
-                                    value: category.id,
-                                    child: Text(category.name),
-                                  );
-                                }).toList(),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    selectedCategoryId = newValue;
-                                  });
-                                },
-                                decoration: const InputDecoration(labelText: 'Category'),
-                                validator: (value) => value == null ? 'Select a category' : null,
-                              ),
-                        SwitchListTile(
-                          title: const Text('Available'),
-                          value: isAvailable,
-                          onChanged: (bool value) {
-                            setState(() {
-                              isAvailable = value;
-                            });
-                          },
-                        ),
-                      ],
+  Widget _buildImagePicker(XFile? selectedImage, Function(XFile?) onImageSelected) {
+    return Container(
+      width: double.infinity,
+      height: 120,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: selectedImage != null
+          ? Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File(selectedImage.path),
+                    width: double.infinity,
+                    height: 120,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: GestureDetector(
+                    onTap: () => onImageSelected(null),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: Colors.white, size: 16),
                     ),
                   ),
                 ),
-              );
-            },
+              ],
+            )
+          : InkWell(
+              onTap: () async {
+                final ImagePicker picker = ImagePicker();
+                final XFile? image = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  maxWidth: 800,
+                  maxHeight: 600,
+                  imageQuality: 80,
+                );
+                if (image != null) {
+                  onImageSelected(image);
+                }
+              },
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add_photo_alternate, size: 40, color: Colors.grey),
+                  SizedBox(height: 8),
+                  Text('Tap to add image', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                ],
+              ),
+            ),
+    );
+  }
+
+  void _showAddMenuItemDialog() {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final priceController = TextEditingController();
+    MenuCategory? selectedCategory;
+    XFile? selectedImage;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Add Menu Item'),
+          content: SizedBox(
+            width: 300,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Item Name',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: priceController,
+                    decoration: const InputDecoration(
+                      labelText: 'Price (UGX)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<MenuCategory>(
+                    value: selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(category.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        selectedCategory = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildImagePicker(selectedImage, (XFile? image) {
+                    setDialogState(() {
+                      selectedImage = image;
+                    });
+                  }),
+                ],
+              ),
+            ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
               onPressed: () async {
-                if (formKey.currentState!.validate()) {
+                if (nameController.text.isNotEmpty &&
+                    descriptionController.text.isNotEmpty &&
+                    priceController.text.isNotEmpty &&
+                    selectedCategory != null) {
                   try {
+                    final price = double.parse(priceController.text);
+                    await _menuService.addMenuItem(
+                      nameController.text,
+                      descriptionController.text,
+                      price,
+                      selectedCategory!.id,
+                      selectedImage,
+                    );
+                    Navigator.pop(context);
+                    _loadMenuItems();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Menu item added successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to add menu item: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please fill all fields'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              child: const Text('Add', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _editMenuItem(MenuItem item) {
+    final nameController = TextEditingController(text: item.name);
+    final descriptionController = TextEditingController(text: item.description);
+    final priceController = TextEditingController(text: item.price.toString());
+    MenuCategory? selectedCategory = _categories.firstWhere(
+      (cat) => cat.id == item.category,
+      orElse: () => _categories.isNotEmpty ? _categories.first : MenuCategory(id: 0, name: 'Unknown'),
+    );
+    XFile? selectedImage;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Edit ${item.name}'),
+          content: SizedBox(
+            width: 300,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Item Name',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: priceController,
+                    decoration: const InputDecoration(
+                      labelText: 'Price (UGX)',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<MenuCategory>(
+                    value: selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category,
+                        child: Text(category.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        selectedCategory = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildImagePicker(selectedImage, (XFile? image) {
+                    setDialogState(() {
+                      selectedImage = image;
+                    });
+                  }),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.isNotEmpty &&
+                    descriptionController.text.isNotEmpty &&
+                    priceController.text.isNotEmpty &&
+                    selectedCategory != null) {
+                  try {
+                    final price = double.parse(priceController.text);
                     await _menuService.updateMenuItem(
                       item.id,
                       nameController.text,
                       descriptionController.text,
-                      CurrencyFormatter.parseUGX(priceController.text).toDouble(),
-                      selectedCategoryId!,
-                      isAvailable,
-                      imageFile,
+                      price,
+                      selectedCategory!.id,
+                      item.isAvailable,
+                      selectedImage,
                     );
-                    if (mounted) Navigator.of(context).pop();
-                    _refreshMenuItems();
-                  } catch (e) {
+                    Navigator.pop(context);
+                    _loadMenuItems();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to update item: $e')),
+                        const SnackBar(
+                          content: Text('Menu item updated successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
                       );
                     }
-                  }
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showManageCategoriesDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            void refreshCategories() {
-              _fetchCategories().then((_) => setState(() {}));
-            }
-
-            return AlertDialog(
-              title: const Text('Manage Categories'),
-              content: SizedBox(
-                width: 400, // Constrain width
-                child: _isLoadingCategories
-                    ? const Center(child: CircularProgressIndicator())
-                    : _categories.isEmpty
-                        ? Container(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.category, size: 48, color: Colors.grey[400]),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No categories yet',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Create your first category to start organizing your menu items.',
-                                  style: TextStyle(color: Colors.grey[500]),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          )
-                        : SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: _categories.map((category) {
-                                return ListTile(
-                                  title: Text(category.name),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.blue),
-                                        onPressed: () => _showEditCategoryDialog(category, refreshCategories),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () => _showDeleteCategoryConfirmation(category, refreshCategories),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final nameController = TextEditingController();
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Add Category'),
-                        content: TextField(
-                          controller: nameController,
-                          decoration: const InputDecoration(labelText: 'Category Name'),
-                        ),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-                          ElevatedButton(
-                            onPressed: () async {
-                              if (nameController.text.isNotEmpty) {
-                                try {
-                                  await _menuService.addMenuCategory(nameController.text);
-                                  if (mounted) Navigator.of(context).pop();
-                                  refreshCategories();
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Failed to add category: $e')),
-                                    );
-                                  }
-                                }
-                              }
-                            },
-                            child: const Text('Add'),
-                          ),
-                        ],
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to update menu item: $e'),
+                        backgroundColor: Colors.red,
                       ),
                     );
-                  },
-                  child: const Text('Add Category'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showEditCategoryDialog(MenuCategory category, VoidCallback onUpdate) {
-    final nameController = TextEditingController(text: category.name);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit Category'),
-        content: TextField(
-          controller: nameController,
-          decoration: const InputDecoration(labelText: 'Category Name'),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.isNotEmpty) {
-                try {
-                  await _menuService.updateMenuCategory(category.id, nameController.text);
-                  if (mounted) Navigator.of(context).pop();
-                  onUpdate();
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to update category: $e')),
-                    );
                   }
-                }
-              }
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteCategoryConfirmation(MenuCategory category, VoidCallback onUpdate) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirm Deletion'),
-        content: Text('Are you sure you want to delete the category "${category.name}"? This action cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              try {
-                await _menuService.deleteMenuCategory(category.id);
-                if (mounted) Navigator.of(context).pop();
-                onUpdate();
-              } catch (e) {
-                if (mounted) {
+                } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to delete category: $e')),
+                    const SnackBar(
+                      content: Text('Please fill all fields'),
+                      backgroundColor: Colors.orange,
+                    ),
                   );
                 }
-              }
-            },
-            child: const Text('Delete'),
-          ),
-        ],
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              child: const Text('Save', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-      void _showAddMenuItemDialog() {
-    final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController();
-    final descriptionController = TextEditingController();
-    final priceController = TextEditingController();
-    XFile? imageFile;
-    int? selectedCategoryId;
-
-    showDialog(
+  void _deleteMenuItem(MenuItem item) async {
+    final shouldDelete = await showDialog<bool>(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(builder: (context, setState) {
-                    Future<void> pickImage(StateSetter setState) async {
-            final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-            if (pickedFile != null) {
-              final bytes = await pickedFile.readAsBytes();
-              setState(() {
-                imageFile = pickedFile;
-                if (kIsWeb) {
-                  imageFileBytes = bytes;
-                }
-              });
-            }
-          }
-
-          return AlertDialog(
-            title: const Text('Add New Menu Item'),
-            content: SizedBox(
-              width: 400, // Constrain width to prevent layout errors
-              child: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                                                                  // Platform-aware image preview for the dialog
-                      if (imageFile != null) ...[
-                        kIsWeb
-                            ? (imageFileBytes != null ? Image.memory(imageFileBytes!, height: 150, fit: BoxFit.cover) : Container())
-                            : Image.file(File(imageFile!.path), height: 150, fit: BoxFit.cover)
-                      ]
-                      else
-                        Container(
-                          height: 150,
-                          color: Colors.grey[200],
-                          child: const Center(child: Text('No Image Selected')),
-                        ),
-                      ElevatedButton(onPressed: () => pickImage(setState), child: const Text('Select Image')),
-                      TextFormField(
-                        controller: nameController,
-                        decoration: const InputDecoration(labelText: 'Name'),
-                        validator: (value) => value!.isEmpty ? 'Enter a name' : null,
-                      ),
-                      TextFormField(
-                        controller: descriptionController,
-                        decoration: const InputDecoration(labelText: 'Description'),
-                        validator: (value) => value!.isEmpty ? 'Enter a description' : null,
-                      ),
-                      TextFormField(
-                        controller: priceController,
-                        decoration: const InputDecoration(labelText: 'Price (UGX)'),
-                        keyboardType: TextInputType.number,
-                        validator: (value) => value!.isEmpty ? 'Enter a price' : null,
-                      ),
-                      _categories.isEmpty
-                          ? Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.orange[50],
-                                border: Border.all(color: Colors.orange[200]!),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.category, color: Colors.orange[600], size: 32),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'No categories available',
-                                    style: TextStyle(
-                                      color: Colors.orange[800],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Please create a category first using "Manage Categories"',
-                                    style: TextStyle(
-                                      color: Colors.orange[600],
-                                      fontSize: 12,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            )
-                          : DropdownButtonFormField<int>(
-                              value: selectedCategoryId,
-                              items: _categories.map((MenuCategory category) {
-                                return DropdownMenuItem<int>(
-                                  value: category.id,
-                                  child: Text(category.name),
-                                );
-                              }).toList(),
-                              onChanged: (newValue) {
-                                setState(() {
-                                  selectedCategoryId = newValue;
-                                });
-                              },
-                              decoration: const InputDecoration(labelText: 'Category'),
-                              validator: (value) => value == null ? 'Select a category' : null,
-                            ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                onPressed: () async {
-                  if (_categories.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please create at least one category before adding menu items.')),
-                    );
-                    return;
-                  }
-                  if (formKey.currentState!.validate()) {
-                    if (selectedCategoryId == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please select a category first.')),
-                      );
-                      return;
-                    }
-                    try {
-                      await _menuService.addMenuItem(
-                        nameController.text,
-                        descriptionController.text,
-                        CurrencyFormatter.parseUGX(priceController.text).toDouble(),
-                        selectedCategoryId!,
-                        imageFile,
-                      );
-                      if (mounted) Navigator.of(context).pop();
-                      _refreshMenuItems();
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to add item: $e')),
-                        );
-                      }
-                    }
-                  }
-                },
-                child: const Text('Add Item'),
-              ),
-            ],
-          );
-        });
-      },
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Menu Item'),
+        content: Text('Are you sure you want to delete "${item.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
+
+    if (shouldDelete == true) {
+      try {
+        await _menuService.deleteMenuItem(item.id);
+        _loadMenuItems();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${item.name} deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete ${item.name}: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 }
 
-class _MenuItemCard extends StatelessWidget {
+class MenuItemCard extends StatelessWidget {
   final MenuItem item;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final Function(MenuItem) onEdit;
+  final Function(MenuItem) onDelete;
 
-  const _MenuItemCard({required this.item, required this.onEdit, required this.onDelete});
+  const MenuItemCard({
+    Key? key, 
+    required this.item,
+    required this.onEdit,
+    required this.onDelete,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-            child: (item.imageUrl?.isNotEmpty == true)
-              ? Image.network(
-                  item.imageUrl!,
-                  height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 120,
-                      color: Colors.grey[200],
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: Colors.grey[400],
-                        size: 40,
-                      ),
-                    );
-                  },
-                ) : Container(
-                    height: 120,
-                    color: Colors.grey[200],
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+          Expanded(
+            flex: 3,
+            child: Container(
+              color: Colors.grey.shade200,
+              child: item.imageUrl != null
+                  ? Image.network(item.imageUrl!, fit: BoxFit.cover)
+                  : const Center(child: Icon(Icons.fastfood_outlined, color: Colors.grey, size: 40)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.description,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'UGX ${item.price.toStringAsFixed(0)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    Row(
                       children: [
-                        Icon(
-                          Icons.image,
-                          color: Colors.grey[400],
-                          size: 40,
+                        SizedBox(
+                          height: 28, width: 28,
+                          child: IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.blue, size: 16),
+                            onPressed: () => onEdit(item),
+                            padding: EdgeInsets.zero,
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No Image',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                        SizedBox(
+                          height: 28, width: 28,
+                          child: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red, size: 16),
+                            onPressed: () => onDelete(item),
+                            padding: EdgeInsets.zero,
                           ),
                         ),
                       ],
                     ),
-                  ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Text(item.description, style: TextStyle(fontSize: 12, color: Colors.grey[600]), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 8),
-                  Text(CurrencyFormatter.formatUGX(item.price), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange)),
-                  const Spacer(),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(icon: const Icon(Icons.edit, size: 20, color: Colors.blue), onPressed: onEdit),
-                IconButton(icon: const Icon(Icons.delete, size: 20, color: Colors.red), onPressed: onDelete),
+                  ],
+                ),
               ],
             ),
           ),

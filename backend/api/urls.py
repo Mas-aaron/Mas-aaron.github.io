@@ -86,7 +86,13 @@ custom_urlpatterns = [
     # Password Recovery URLs
     path('password-reset-request/', api_views.password_reset_request, name='password-reset-request'),
     path('password-reset-confirm/', api_views.password_reset_confirm, name='password-reset-confirm'),
-    path('change-password/', api_views.change_password, name='change-password'),
+    path('change-password/', views.change_password, name='change_password'),
+    
+    # Payment endpoints
+    path('payments/initiate/', views.initiate_payment, name='initiate_payment'),
+    path('payments/<int:payment_id>/status/', views.check_payment_status, name='check_payment_status'),
+    path('payments/<int:payment_id>/cancel/', views.cancel_payment, name='cancel_payment'),
+    path('payments/history/', views.payment_history, name='payment_history'),
     
     # Test/Debug URLs
     path('health/', api_views.health_check, name='health-check'),

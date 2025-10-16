@@ -9,7 +9,7 @@ from .models import (
     Restaurant, MenuCategory, MenuItem, RiderProfile, Order, Cart, CartItem, 
     NotificationTemplate, OrderItem, DietaryPreference, OrderReview, 
     RiderReview, Device, Bill, PaymentPeriod, OrderPayment, BankAccount, 
-    PaymentDispute
+    PaymentDispute, Payment
 )
 from .notifications import send_push_notification
 
@@ -185,3 +185,11 @@ admin.site.register(PaymentPeriod)
 admin.site.register(OrderPayment)
 admin.site.register(BankAccount)
 admin.site.register(PaymentDispute)
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'method', 'amount', 'status', 'phone_number', 'created_at')
+    list_filter = ('method', 'status', 'created_at')
+    search_fields = ('order__id', 'phone_number', 'transaction_id', 'reference')
+    readonly_fields = ('created_at', 'updated_at')
+    ordering = ('-created_at',)

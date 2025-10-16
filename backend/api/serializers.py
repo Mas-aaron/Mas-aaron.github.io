@@ -23,7 +23,10 @@ class MenuItemBulkUploadSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         import csv, io
-        from .models import MenuCategory, MenuItem
+        from .models import (
+            Restaurant, MenuItem, Order, OrderItem, Customer, Rider, 
+            MenuCategory, OrderReview, RestaurantReview, NotificationTemplate, Device, Payment
+        )
         file = validated_data['file']
         restaurant_id = validated_data['restaurant_id']
         decoded = file.read().decode('utf-8')
@@ -60,7 +63,7 @@ class RestaurantProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Restaurant
-        fields = ('id', 'name', 'address', 'phone_number', 'image', 'order_protocol')
+        fields = ('id', 'name', 'address', 'phone_number', 'email', 'image', 'order_protocol')
         read_only_fields = ('id',)
 
 
@@ -809,3 +812,54 @@ class RiderReviewSerializer(serializers.ModelSerializer):
         rider = order.rider
         review = RiderReview.objects.create(rider=rider, **validated_data)
         return review
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    """Serializer for Payment model"""
+    method_display = serializers.CharField(source='get_method_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    order_id = serializers.CharField(source='order.id', read_only=True)
+    
+    class Meta:
+        model = Payment
+        fields = [
+            'id', 'order_id', 'method', 'method_display', 'amount', 
+            'status', 'status_display', 'phone_number', 'transaction_id', 
+            'reference', 'created_at', 'updated_at', 'failure_reason'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'transaction_id']
+
+
+class PaymentInitiateSerializer(serializers.Serializer):
+    """Serializer for initiating payments"""
+    order_id = serializers.CharField()
+    payment_method = serializers.ChoiceField(choices=Payment.PAYMENT_METHODS)
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    phone_number = serializers.CharField(max_length=20, required=False)
+    
+    def validate_phone_number(self, value):
+        """Validate phone number for mobile money payments"""
+        payment_method = self.initial_data.get('payment_method')
+        
+        if payment_method in ['mtn_mobile_money', 'airtel_money']:
+            if not value:
+                raise serializers.ValidationError("Phone number is required for mobile money payments")
+            
+            # Remove any non-digit characters and validate format
+            cleaned_number = ''.join(filter(str.isdigit, value))
+            
+            if not cleaned_number.startswith('256'):
+                raise serializers.ValidationError("Phone number must start with 256")
+            
+            if len(cleaned_number) != 12:
+                raise serializers.ValidationError("Phone number must be 12 digits including country code")
+            
+            # Validate network prefixes
+            if payment_method == 'mtn_mobile_money':
+                if not (cleaned_number[3:5] in ['77', '78']):
+                    raise serializers.ValidationError("Invalid MTN number. Must start with 77 or 78")
+            elif payment_method == 'airtel_money':
+                if not (cleaned_number[3:5] in ['70', '75']):
+                    raise serializers.ValidationError("Invalid Airtel number. Must start with 70 or 75")
+        
+        return value

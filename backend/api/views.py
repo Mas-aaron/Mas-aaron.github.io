@@ -140,18 +140,13 @@ from .models import (
     Bill,
     Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, 
     Order, OrderItem, Message, Notification, DietaryPreference, CustomerProfile, 
-    UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview, PaymentPeriod, BankAccount, PaymentDispute
+    UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview, PaymentPeriod, BankAccount, PaymentDispute, Payment
 )
 from .dispatch_service import find_and_assign_rider
 from loyalty.services import LoyaltyService
 from .serializers import (
-    UserSerializer,
-    RestaurantSerializer,
-    MenuItemSerializer,
-    CartSerializer,
-    CartItemSerializer,
-    CartItemWriteSerializer,
-    OrderSerializer,
+    MenuItemSerializer, RestaurantSerializer, OrderSerializer, OrderItemSerializer,
+    CustomerSignUpSerializer, CustomerProfileSerializer, MenuCategorySerializer,
     RestaurantSignUpSerializer,
     RiderSignUpSerializer,
     CustomerProfileSerializer,
@@ -159,19 +154,14 @@ from .serializers import (
     OrderUpdateStatusSerializer,
     RestaurantOrderSerializer,
     RiderOrderSerializer,
-    MessageSerializer,
-    MenuCategoryCRUDSerializer,
-    BillSerializer,
-    RestaurantDashboardReviewSerializer,
-    DietaryPreferenceSerializer,
-    UserAddressSerializer,
-    ReviewSerializer,
     OrderReviewSerializer,
+    RestaurantReviewSerializer,
+    RestaurantOrderReviewSerializer,
     RiderReviewSerializer,
     DeviceSerializer,
-    RestaurantOrderReviewSerializer,
     MenuItemBulkUploadSerializer,
-    ModifierGroupSerializer,
+    PaymentSerializer,
+    PaymentInitiateSerializer,
     ModifierSerializer,
     NotificationSerializer,
     PaymentPeriodSerializer,
@@ -1906,3 +1896,139 @@ def change_password(request):
         return Response({
             'error': 'An error occurred while changing your password'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Payment Views
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def initiate_payment(request):
+    """Initiate a payment for an order"""
+    serializer = PaymentInitiateSerializer(data=request.data)
+    
+    if not serializer.is_valid():
+        return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        order_id = serializer.validated_data['order_id']
+        payment_method = serializer.validated_data['payment_method']
+        amount = serializer.validated_data['amount']
+        phone_number = serializer.validated_data.get('phone_number')
+        
+        # Get the order
+        try:
+            order = Order.objects.get(id=order_id, user=request.user)
+        except Order.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check if payment already exists
+        if hasattr(order, 'payment'):
+            return Response({'error': 'Payment already exists for this order'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create payment record
+        payment = Payment.objects.create(
+            order=order,
+            method=payment_method,
+            amount=amount,
+            phone_number=phone_number,
+            status='pending'
+        )
+        
+        # Generate reference number
+        payment.reference = f"PAY{payment.id:06d}"
+        payment.save()
+        
+        if payment_method == 'cash_on_delivery':
+            # For cash on delivery, mark as completed immediately
+            payment.status = 'completed'
+            payment.save()
+            
+            return Response({
+                'payment_id': payment.id,
+                'reference': payment.reference,
+                'message': 'Cash on delivery payment confirmed'
+            }, status=status.HTTP_200_OK)
+        
+        elif payment_method in ['mtn_mobile_money', 'airtel_money']:
+            # For mobile money, initiate the payment process
+            payment.status = 'processing'
+            payment.save()
+            
+            # Here you would integrate with MTN/Airtel APIs
+            # For now, we'll simulate the process
+            
+            return Response({
+                'payment_id': payment.id,
+                'reference': payment.reference,
+                'message': f'Payment request sent to {phone_number}. Please check your phone to complete the payment.'
+            }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Payment initiation error: {e}")
+        return Response({'error': 'Failed to initiate payment'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_payment_status(request, payment_id):
+    """Check the status of a payment"""
+    try:
+        payment = Payment.objects.get(id=payment_id, order__user=request.user)
+        
+        # For mobile money payments, you would check with the provider API here
+        # For simulation, we'll randomly complete some payments
+        if payment.status == 'processing' and payment.method in ['mtn_mobile_money', 'airtel_money']:
+            import random
+            if random.choice([True, False, False]):  # 33% chance of completion
+                payment.status = 'completed'
+                payment.transaction_id = f"TXN{payment.id:08d}"
+                payment.save()
+        
+        serializer = PaymentSerializer(payment)
+        return Response({
+            'status': payment.status,
+            'transaction_id': payment.transaction_id,
+            'message': f'Payment is {payment.status}',
+            'payment': serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Payment.DoesNotExist:
+        return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Payment status check error: {e}")
+        return Response({'error': 'Failed to check payment status'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cancel_payment(request, payment_id):
+    """Cancel a pending payment"""
+    try:
+        payment = Payment.objects.get(id=payment_id, order__user=request.user)
+        
+        if payment.status not in ['pending', 'processing']:
+            return Response({'error': 'Cannot cancel this payment'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        payment.status = 'cancelled'
+        payment.save()
+        
+        return Response({'message': 'Payment cancelled successfully'}, status=status.HTTP_200_OK)
+        
+    except Payment.DoesNotExist:
+        return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Payment cancellation error: {e}")
+        return Response({'error': 'Failed to cancel payment'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def payment_history(request):
+    """Get payment history for the authenticated user"""
+    try:
+        payments = Payment.objects.filter(order__user=request.user).order_by('-created_at')
+        serializer = PaymentSerializer(payments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Payment history error: {e}")
+        return Response({'error': 'Failed to load payment history'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
