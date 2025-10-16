@@ -1961,6 +1961,25 @@ def initiate_payment(request):
                 'message': f'Payment request sent to {phone_number}. Please check your phone to complete the payment.'
             }, status=status.HTTP_200_OK)
         
+        elif payment_method == 'pesapal':
+            # For Pesapal, initiate the payment process
+            payment.status = 'processing'
+            payment.save()
+            
+            # Here you would integrate with Pesapal API
+            # For now, we'll return the payment details for frontend handling
+            
+            return Response({
+                'success': True,
+                'payment_id': payment.id,
+                'reference': payment.reference,
+                'redirect_url': f'https://pesapal.com/payment/{payment.reference}',  # Placeholder URL
+                'message': 'Payment initiated successfully. You will be redirected to Pesapal.'
+            }, status=status.HTTP_200_OK)
+        
+        else:
+            return Response({'error': f'Payment method {payment_method} not supported'}, status=status.HTTP_400_BAD_REQUEST)
+        
     except Exception as e:
         logger.error(f"Payment initiation error: {e}")
         return Response({'error': 'Failed to initiate payment'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
