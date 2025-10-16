@@ -151,10 +151,12 @@ from .serializers import (
     OrderUpdateStatusSerializer, RestaurantOrderSerializer, RiderOrderSerializer,
     OrderReviewSerializer, RestaurantReviewSerializer, RestaurantOrderReviewSerializer,
     RiderReviewSerializer, DeviceSerializer, MenuItemBulkUploadSerializer,
-    PaymentSerializer, PaymentInitiateSerializer, ModifierSerializer,
+    PaymentSerializer, PaymentInitiateSerializer, ModifierSerializer, ModifierGroupSerializer,
     NotificationSerializer, PaymentPeriodSerializer, OrderPaymentSerializer,
     BankAccountSerializer, PaymentDisputeSerializer, CartSerializer,
-    CartItemSerializer, CartItemWriteSerializer,
+    CartItemSerializer, CartItemWriteSerializer, UserSerializer, MessageSerializer,
+    DietaryPreferenceSerializer, MenuCategoryCRUDSerializer, BillSerializer,
+    RestaurantDashboardReviewSerializer,
 )
 
 logger = logging.getLogger(__name__)
