@@ -1902,7 +1902,18 @@ def initiate_payment(request):
     logger.info(f"Request method: {request.method}")
     logger.info(f"Request path: {request.path}")
     
-    serializer = PaymentInitiateSerializer(data=request.data)
+    # Handle missing payment_method by defaulting to pesapal if not provided
+    request_data = request.data.copy()
+    if 'payment_method' not in request_data:
+        logger.warning("payment_method missing, defaulting to pesapal")
+        request_data['payment_method'] = 'pesapal'
+    
+    # Handle phone vs phone_number field name inconsistency
+    if 'phone' in request_data and 'phone_number' not in request_data:
+        logger.warning("Converting 'phone' field to 'phone_number'")
+        request_data['phone_number'] = request_data.pop('phone')
+    
+    serializer = PaymentInitiateSerializer(data=request_data)
     
     if not serializer.is_valid():
         # Convert serializer errors to a readable string
@@ -1980,7 +1991,7 @@ def initiate_payment(request):
                 'success': True,
                 'payment_id': payment.id,
                 'reference': payment.reference,
-                'redirect_url': f'https://pesapal.com/payment/{payment.reference}',  # Placeholder URL
+                'redirect_url': f'https://demo.pesapal.com/API/PostPesapalDirectOrderV4?reference={payment.reference}&amount={amount}&description=Order%20Payment',  # More realistic Pesapal URL
                 'message': 'Payment initiated successfully. You will be redirected to Pesapal.'
             }, status=status.HTTP_200_OK)
         
