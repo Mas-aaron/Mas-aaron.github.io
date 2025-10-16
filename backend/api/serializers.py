@@ -863,3 +863,76 @@ class PaymentInitiateSerializer(serializers.Serializer):
                     raise serializers.ValidationError("Invalid Airtel number. Must start with 70 or 75")
         
         return value
+
+
+# Missing serializers that are referenced in views
+class CustomerProfileSerializer(serializers.ModelSerializer):
+    """Serializer for customer profile"""
+    class Meta:
+        model = CustomerProfile
+        fields = '__all__'
+
+
+class RestaurantReviewSerializer(serializers.ModelSerializer):
+    """Serializer for restaurant reviews"""
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+
+class RestaurantOrderReviewSerializer(serializers.ModelSerializer):
+    """Serializer for restaurant order reviews"""
+    class Meta:
+        model = OrderReview
+        fields = '__all__'
+
+
+class RiderReviewSerializer(serializers.ModelSerializer):
+    """Serializer for rider reviews"""
+    class Meta:
+        model = RiderReview
+        fields = '__all__'
+
+
+class PaymentPeriodSerializer(serializers.ModelSerializer):
+    """Serializer for payment periods"""
+    class Meta:
+        model = PaymentPeriod
+        fields = '__all__'
+
+
+class OrderPaymentSerializer(serializers.ModelSerializer):
+    """Serializer for order payments"""
+    class Meta:
+        model = Order  # Using Order model as OrderPayment doesn't exist
+        fields = ('id', 'total_price', 'status', 'created_at')
+
+
+class BankAccountSerializer(serializers.ModelSerializer):
+    """Serializer for bank accounts"""
+    class Meta:
+        model = BankAccount
+        fields = '__all__'
+
+
+class PaymentDisputeSerializer(serializers.ModelSerializer):
+    """Serializer for payment disputes"""
+    class Meta:
+        model = PaymentDispute
+        fields = '__all__'
+
+
+class CustomerSignUpSerializer(serializers.ModelSerializer):
+    """Serializer for customer signup"""
+    password = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', 'first_name', 'last_name')
+    
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User.objects.create_user(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
