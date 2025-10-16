@@ -238,7 +238,7 @@ class CartProvider with ChangeNotifier {
       double? lat = _orderType == OrderType.delivery ? latitude : null;
       double? lng = _orderType == OrderType.delivery ? longitude : null;
       
-      await _apiService.placeOrder(
+      final order = await _apiService.placeOrder(
         address ?? '', 
         lat ?? 0.0, 
         lng ?? 0.0,
@@ -250,7 +250,7 @@ class CartProvider with ChangeNotifier {
       await fetchCart(); // Refresh cart, which should now be empty
       _isLoading = false;
       notifyListeners();
-      return {'success': true};
+      return {'success': true, 'order_id': order.id};
     } catch (e) {
       String errorMessage = e.toString();
       if (errorMessage.startsWith('Exception: ')) {
