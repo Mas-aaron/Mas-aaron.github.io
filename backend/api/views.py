@@ -1898,6 +1898,9 @@ def initiate_payment(request):
     """Initiate a payment for an order"""
     # Debug logging
     logger.info(f"Payment initiation request data: {request.data}")
+    logger.info(f"Request headers: {dict(request.headers)}")
+    logger.info(f"Request method: {request.method}")
+    logger.info(f"Request path: {request.path}")
     
     serializer = PaymentInitiateSerializer(data=request.data)
     
