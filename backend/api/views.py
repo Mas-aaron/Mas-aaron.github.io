@@ -145,18 +145,22 @@ from .models import (
 from .dispatch_service import find_and_assign_rider
 from loyalty.services import LoyaltyService
 from .serializers import (
-    MenuItemSerializer, RestaurantSerializer, OrderSerializer, OrderItemSerializer,
-    CustomerSignUpSerializer, CustomerProfileSerializer, MenuCategorySerializer,
-    RestaurantSignUpSerializer, RiderSignUpSerializer, RestaurantProfileSerializer,
-    OrderUpdateStatusSerializer, RestaurantOrderSerializer, RiderOrderSerializer,
-    OrderReviewSerializer, RestaurantReviewSerializer, RestaurantOrderReviewSerializer,
-    RiderReviewSerializer, DeviceSerializer, MenuItemBulkUploadSerializer,
-    PaymentSerializer, PaymentInitiateSerializer, ModifierSerializer, ModifierGroupSerializer,
-    NotificationSerializer, PaymentPeriodSerializer, OrderPaymentSerializer,
-    BankAccountSerializer, PaymentDisputeSerializer, CartSerializer,
-    CartItemSerializer, CartItemWriteSerializer, UserSerializer, MessageSerializer,
-    DietaryPreferenceSerializer, MenuCategoryCRUDSerializer, BillSerializer,
-    RestaurantDashboardReviewSerializer, UserAddressSerializer,
+    # Import ALL serializers to avoid missing import errors
+    MenuItemBulkUploadSerializer, RestaurantProfileSerializer, RestaurantSerializer,
+    UserSerializer, RestaurantSignUpSerializer, ModifierSerializer, ModifierGroupSerializer,
+    MenuItemSerializer, MenuCategoryCRUDSerializer, MenuCategorySerializer,
+    MenuCategoryListSerializer, CartItemSerializer, RestaurantOrderItemSerializer,
+    RestaurantOrderSerializer, CartItemWriteSerializer, CartSerializer,
+    OrderItemSerializer, OrderReviewSerializer, RiderPublicProfileSerializer,
+    CustomerContactSerializer, OrderSerializer, RiderNotificationOrderSerializer,
+    CustomerSerializer, RiderOrderSerializer, OrderUpdateStatusSerializer,
+    NotificationSerializer, MessageSerializer, DeviceSerializer, RiderSignUpSerializer,
+    DietaryPreferenceSerializer, UserAddressSerializer, CustomerProfileSerializer,
+    RestaurantDashboardReviewSerializer, BillSerializer, PaymentSerializer,
+    PaymentInitiateSerializer, CustomerSignUpSerializer, RestaurantReviewSerializer,
+    RestaurantOrderReviewSerializer, RiderReviewSerializer, PaymentPeriodSerializer,
+    OrderPaymentSerializer, BankAccountSerializer, PaymentDisputeSerializer,
+    ReviewSerializer,  # Add the missing ReviewSerializer
 )
 
 logger = logging.getLogger(__name__)
