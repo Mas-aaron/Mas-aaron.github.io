@@ -1896,6 +1896,9 @@ def change_password(request):
 @permission_classes([IsAuthenticated])
 def initiate_payment(request):
     """Initiate a payment for an order"""
+    # Debug logging
+    logger.info(f"Payment initiation request data: {request.data}")
+    
     serializer = PaymentInitiateSerializer(data=request.data)
     
     if not serializer.is_valid():
@@ -1905,6 +1908,7 @@ def initiate_payment(request):
             for error in errors:
                 error_messages.append(f"{field}: {error}")
         error_message = "; ".join(error_messages) if error_messages else "Invalid data provided"
+        logger.error(f"Payment validation failed: {error_message}")
         return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
     
     try:

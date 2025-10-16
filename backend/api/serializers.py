@@ -837,6 +837,21 @@ class PaymentInitiateSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=10, decimal_places=2)
     phone_number = serializers.CharField(max_length=20, required=False)
     
+    def validate_order_id(self, value):
+        """Validate order ID"""
+        if not value or value.strip() == '':
+            raise serializers.ValidationError("Order ID cannot be empty")
+        
+        # Check if order ID is numeric (assuming integer IDs)
+        try:
+            order_id = int(value)
+            if order_id <= 0:
+                raise serializers.ValidationError("Order ID must be a positive number")
+        except ValueError:
+            raise serializers.ValidationError("Order ID must be a valid number")
+        
+        return value
+    
     def validate_phone_number(self, value):
         """Validate phone number for mobile money payments"""
         payment_method = self.initial_data.get('payment_method')
