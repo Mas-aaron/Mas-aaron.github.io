@@ -1899,7 +1899,13 @@ def initiate_payment(request):
     serializer = PaymentInitiateSerializer(data=request.data)
     
     if not serializer.is_valid():
-        return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # Convert serializer errors to a readable string
+        error_messages = []
+        for field, errors in serializer.errors.items():
+            for error in errors:
+                error_messages.append(f"{field}: {error}")
+        error_message = "; ".join(error_messages) if error_messages else "Invalid data provided"
+        return Response({'error': error_message}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
         order_id = serializer.validated_data['order_id']
