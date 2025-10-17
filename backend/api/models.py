@@ -118,8 +118,9 @@ class PaymentDispute(models.Model):
     reason = models.TextField()
     amount_disputed = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=DISPUTE_STATUS, default='open')
-    restaurant_response = models.TextField(blank=True, null=True)
-    resolution_notes = models.TextField(blank=True, null=True)
+    pesapal_tracking_id = models.CharField(max_length=100, blank=True, null=True)
+    mtn_reference_id = models.CharField(max_length=100, blank=True, null=True)
+    failure_reason = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     
@@ -491,6 +492,7 @@ class Payment(models.Model):
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
     reference = models.CharField(max_length=100, null=True, blank=True)
     pesapal_tracking_id = models.CharField(max_length=255, blank=True, null=True)
+    mtn_reference_id = models.CharField(max_length=100, blank=True, null=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1965,19 +1965,65 @@ def initiate_payment(request):
                 'message': 'Cash on delivery payment confirmed'
             }, status=status.HTTP_200_OK)
         
-        elif payment_method in ['mtn_mobile_money', 'airtel_money']:
-            # For mobile money, initiate the payment process
-            payment.status = 'processing'
-            payment.save()
+        elif payment_method == 'mtn_mobile_money':
+            # DIRECT MTN MOBILE MONEY INTEGRATION
+            if not phone_number:
+                return Response({'error': 'Phone number is required for MTN Mobile Money'}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Here you would integrate with MTN/Airtel APIs
-            # For now, we'll simulate the process
+            try:
+                from payments.mtn_mobile_money import MTNMobileMoneyAPI
+                mtn_api = MTNMobileMoneyAPI()
+                
+                # Request payment from MTN
+                result = mtn_api.request_to_pay(
+                    phone_number=phone_number,
+                    amount=amount,
+                    external_id=payment.reference,
+                    payer_message=f"FortExpress Order #{order.id}"
+                )
+                
+                if result['success']:
+                    payment.mtn_reference_id = result['reference_id']
+                    payment.status = 'processing'
+                    payment.save()
+                    
+                    return Response({
+                        'success': True,
+                        'payment_id': payment.id,
+                        'reference': payment.reference,
+                        'mtn_reference': result['reference_id'],
+                        'message': result['message']
+                    }, status=status.HTTP_200_OK)
+                else:
+                    payment.status = 'failed'
+                    payment.failure_reason = result['error']
+                    payment.save()
+                    
+                    return Response({
+                        'success': False,
+                        'error': result['error']
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                    
+            except Exception as e:
+                logger.error(f"MTN Mobile Money error: {str(e)}")
+                payment.status = 'failed'
+                payment.failure_reason = str(e)
+                payment.save()
+                
+                return Response({
+                    'success': False,
+                    'error': f'MTN Mobile Money integration failed: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        elif payment_method == 'airtel_money':
+            # AIRTEL MONEY INTEGRATION (To be implemented)
+            if not phone_number:
+                return Response({'error': 'Phone number is required for Airtel Money'}, status=status.HTTP_400_BAD_REQUEST)
             
+            # TODO: Implement Airtel Money API integration
             return Response({
-                'payment_id': payment.id,
-                'reference': payment.reference,
-                'message': f'Payment request sent to {phone_number}. Please check your phone to complete the payment.'
-            }, status=status.HTTP_200_OK)
+                'error': 'Airtel Money integration coming soon'
+            }, status=status.HTTP_501_NOT_IMPLEMENTED)
         
         elif payment_method in ['pesapal', 'pesapal_mtn', 'pesapal_airtel']:
             # REAL PESAPAL INTEGRATION FOR UGANDA

@@ -362,3 +362,12 @@ PESAPAL_CONFIG = {
     'IPN_URL': os.getenv('PESAPAL_IPN_URL', 'https://food-delivery-backend-2mcb.onrender.com/api/payments/pesapal-ipn/'),
     'IPN_ID': os.getenv('PESAPAL_IPN_ID', ''),
 }
+
+# MTN Mobile Money Configuration for Direct Integration
+MTN_MOMO_CONFIG = {
+    'SUBSCRIPTION_KEY': os.getenv('MTN_MOMO_SUBSCRIPTION_KEY', ''),
+    'USER_ID': os.getenv('MTN_MOMO_USER_ID', ''),
+    'API_KEY': os.getenv('MTN_MOMO_API_KEY', ''),
+    'BASE_URL': os.getenv('MTN_MOMO_BASE_URL', 'https://sandbox.momodeveloper.mtn.com'),
+    'TARGET_ENVIRONMENT': os.getenv('MTN_MOMO_ENVIRONMENT', 'sandbox'),
+}
