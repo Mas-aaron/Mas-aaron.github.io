@@ -2010,14 +2010,29 @@ def check_payment_status(request, payment_id):
     try:
         payment = Payment.objects.get(id=payment_id, order__user=request.user)
         
-        # For mobile money payments, you would check with the provider API here
-        # For simulation, we'll randomly complete some payments
-        if payment.status == 'processing' and payment.method in ['mtn_mobile_money', 'airtel_money']:
+        # For mobile money and Pesapal payments, simulate completion
+        # In production, you would check with the actual provider APIs
+        if payment.status == 'processing':
             import random
-            if random.choice([True, False, False]):  # 33% chance of completion
-                payment.status = 'completed'
-                payment.transaction_id = f"TXN{payment.id:08d}"
-                payment.save()
+            
+            if payment.method in ['mtn_mobile_money', 'airtel_money']:
+                # 33% chance of completion for mobile money
+                if random.choice([True, False, False]):
+                    payment.status = 'completed'
+                    payment.transaction_id = f"TXN{payment.id:08d}"
+                    payment.save()
+            
+            elif payment.method == 'pesapal':
+                # 50% chance of completion for Pesapal (higher success rate for demo)
+                if random.choice([True, False]):
+                    payment.status = 'completed'
+                    payment.transaction_id = f"PESAPAL{payment.id:08d}"
+                    payment.save()
+                    
+                    # Update order status to paid when payment is completed
+                    if payment.order:
+                        payment.order.status = 'confirmed'
+                        payment.order.save()
         
         serializer = PaymentSerializer(payment)
         return Response({
@@ -2054,6 +2069,39 @@ def cancel_payment(request, payment_id):
     except Exception as e:
         logger.error(f"Payment cancellation error: {e}")
         return Response({'error': 'Failed to cancel payment'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_payment(request, payment_id):
+    """Manually complete a payment (for testing purposes)"""
+    try:
+        payment = Payment.objects.get(id=payment_id, order__user=request.user)
+        
+        if payment.status != 'processing':
+            return Response({'error': 'Payment is not in processing state'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Complete the payment
+        payment.status = 'completed'
+        payment.transaction_id = f"MANUAL{payment.id:08d}"
+        payment.save()
+        
+        # Update order status
+        if payment.order:
+            payment.order.status = 'confirmed'
+            payment.order.save()
+        
+        return Response({
+            'message': 'Payment completed successfully',
+            'status': payment.status,
+            'transaction_id': payment.transaction_id
+        }, status=status.HTTP_200_OK)
+        
+    except Payment.DoesNotExist:
+        return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Payment completion error: {e}")
+        return Response({'error': 'Failed to complete payment'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])

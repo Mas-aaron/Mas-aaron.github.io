@@ -93,6 +93,7 @@ custom_urlpatterns = [
     path('payments/<int:payment_id>/status/', api_views.check_payment_status, name='check_payment_status'),
     path('payments/status/<int:payment_id>/', api_views.check_payment_status, name='check_payment_status_alt'),
     path('payments/<int:payment_id>/cancel/', api_views.cancel_payment, name='cancel_payment'),
+    path('payments/<int:payment_id>/complete/', api_views.complete_payment, name='complete_payment'),
     path('payments/history/', api_views.payment_history, name='payment_history'),
     
     # Test/Debug URLs
