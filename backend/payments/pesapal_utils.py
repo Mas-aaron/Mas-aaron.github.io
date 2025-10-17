@@ -44,9 +44,17 @@ class PesaPalAPI:
             response.raise_for_status()
             
             data = response.json()
-            token = data.get('token')
-            logger.info("Successfully obtained PesaPal access token")
-            return token
+            logger.info(f"PesaPal auth response: {data}")
+            
+            # Try different possible token field names
+            token = data.get('token') or data.get('access_token') or data.get('Token')
+            
+            if token:
+                logger.info("✅ Successfully obtained PesaPal access token")
+                return token
+            else:
+                logger.error(f"❌ No token found in response. Available keys: {list(data.keys())}")
+                return None
             
         except requests.exceptions.RequestException as e:
             logger.error(f"PesaPal token request failed: {str(e)}")

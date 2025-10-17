@@ -2335,13 +2335,19 @@ def debug_pesapal_config(request):
         response = requests.post(auth_url, json=payload, timeout=10)
         debug_info['auth_test'] = {
             'status_code': response.status_code,
-            'response': response.text if response.status_code != 200 else 'SUCCESS - Token received',
+            'response_text': response.text,
             'url_used': auth_url
         }
         
         if response.status_code == 200:
-            data = response.json()
-            debug_info['auth_test']['token_received'] = bool(data.get('token'))
+            try:
+                data = response.json()
+                debug_info['auth_test']['response_json'] = data
+                debug_info['auth_test']['token_received'] = bool(data.get('token'))
+                debug_info['auth_test']['token_key_exists'] = 'token' in data
+                debug_info['auth_test']['all_keys'] = list(data.keys()) if isinstance(data, dict) else 'Not a dict'
+            except:
+                debug_info['auth_test']['json_parse_error'] = True
             
     except Exception as e:
         debug_info['auth_test'] = {'error': str(e)}
