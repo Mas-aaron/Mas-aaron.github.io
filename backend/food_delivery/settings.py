@@ -30,9 +30,9 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', 'AIzaSyB2_rwYdL9Tr_L
 
 # Firebase Configuration
 GOOGLE_CLOUD_PROJECT = 'fortexpress-5641c'
-# Pesapal Settings - Updated with valid Uganda demo credentials
-PESAPAL_CONSUMER_KEY = 'TDpigBOOhs+zAl8cwH2Fl82jJGyD8xev'
-PESAPAL_CONSUMER_SECRET = '1KpqkfsMaihIcOlhnBo/gBZ5smw='
+# Pesapal Settings - FortExpress Production Credentials
+PESAPAL_CONSUMER_KEY = 'WladF7f2VLuIhN/kjFw9vdpLJy7rWUeH'
+PESAPAL_CONSUMER_SECRET = 'EcZCXnJcGskMCTrqJyBojVhyUec='
 PESAPAL_BASE_URL = 'https://cybqa.pesapal.com/pesapalv3'  # Sandbox URL
 PESAPAL_CALLBACK_URL = 'https://food-delivery-backend-2mcb.onrender.com/payments/callback/'
 PESAPAL_IPN_URL = 'https://food-delivery-backend-2mcb.onrender.com/payments/ipn/'
@@ -356,8 +356,8 @@ else:
 PESAPAL_CONFIG = {
     'CONSUMER_KEY': os.getenv('PESAPAL_CONSUMER_KEY', PESAPAL_CONSUMER_KEY),
     'CONSUMER_SECRET': os.getenv('PESAPAL_CONSUMER_SECRET', PESAPAL_CONSUMER_SECRET),
-    'API_URL': os.getenv('PESAPAL_API_URL', 'https://cybqa.pesapal.com/pesapalv3'),  # Sandbox for testing
-    # 'API_URL': 'https://pay.pesapal.com/v3',  # Live URL for production
+    # 'API_URL': os.getenv('PESAPAL_API_URL', 'https://cybqa.pesapal.com/pesapalv3'),  # Sandbox for testing
+    'API_URL': os.getenv('PESAPAL_API_URL', 'https://pay.pesapal.com/v3'),  # Live URL for production
     'CALLBACK_URL': os.getenv('PESAPAL_CALLBACK_URL', 'https://food-delivery-backend-2mcb.onrender.com/api/payments/pesapal-callback/'),
     'IPN_URL': os.getenv('PESAPAL_IPN_URL', 'https://food-delivery-backend-2mcb.onrender.com/api/payments/pesapal-ipn/'),
     'IPN_ID': os.getenv('PESAPAL_IPN_ID', ''),
