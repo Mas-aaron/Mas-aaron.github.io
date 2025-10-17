@@ -105,6 +105,7 @@ custom_urlpatterns = [
     path('send-template-notification/', api_views.SendTemplateNotificationView.as_view(), name='send-template-notification'),
     path('configure-gcs/', api_views.configure_gcs_bucket, name='configure-gcs'),
     path('test-gcs/', api_views.test_gcs_connection, name='test-gcs-connection'),
+    path('debug-pesapal/', api_views.debug_pesapal_config, name='debug-pesapal'),
 ]
 
 # Combine all URL patterns

@@ -2300,3 +2300,50 @@ def pesapal_ipn(request):
     except Exception as e:
         logger.error(f"PesaPal IPN error: {str(e)}")
         return Response({'status': 'error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def debug_pesapal_config(request):
+    """Debug PesaPal configuration"""
+    from django.conf import settings
+    import requests
+    import json
+    
+    config = settings.PESAPAL_CONFIG
+    
+    debug_info = {
+        'consumer_key_exists': bool(config.get('CONSUMER_KEY')),
+        'consumer_key_preview': config.get('CONSUMER_KEY', '')[:8] + '...' if config.get('CONSUMER_KEY') else 'MISSING',
+        'consumer_secret_exists': bool(config.get('CONSUMER_SECRET')),
+        'api_url': config.get('API_URL'),
+        'callback_url': config.get('CALLBACK_URL'),
+        'ipn_id_exists': bool(config.get('IPN_ID')),
+    }
+    
+    # Test authentication
+    try:
+        auth_url = f"{config['API_URL']}/api/Auth/RequestToken"
+        payload = {
+            'consumer_key': config['CONSUMER_KEY'],
+            'consumer_secret': config['CONSUMER_SECRET']
+        }
+        
+        logger.info(f"🔐 Testing PesaPal auth at: {auth_url}")
+        logger.info(f"🔑 Using key: {config['CONSUMER_KEY'][:8]}...")
+        
+        response = requests.post(auth_url, json=payload, timeout=10)
+        debug_info['auth_test'] = {
+            'status_code': response.status_code,
+            'response': response.text if response.status_code != 200 else 'SUCCESS - Token received',
+            'url_used': auth_url
+        }
+        
+        if response.status_code == 200:
+            data = response.json()
+            debug_info['auth_test']['token_received'] = bool(data.get('token'))
+            
+    except Exception as e:
+        debug_info['auth_test'] = {'error': str(e)}
+    
+    return Response(debug_info)

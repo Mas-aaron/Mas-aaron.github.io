@@ -30,7 +30,7 @@ GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', 'AIzaSyB2_rwYdL9Tr_L
 
 # Firebase Configuration
 GOOGLE_CLOUD_PROJECT = 'fortexpress-5641c'
-# Pesapal Settings
+# Pesapal Settings (Legacy - will be removed)
 PESAPAL_CONSUMER_KEY = 'WladF7f2VLuIhN/kjFw9vdpLJy7rWUeH'
 PESAPAL_CONSUMER_SECRET = 'EcZCXnJcGskMCTrqJyBojVhyUec='
 PESAPAL_BASE_URL = 'https://cybqa.pesapal.com/pesapalv3'  # Sandbox URL
@@ -352,13 +352,13 @@ else:
         }
     }
 
-# PesaPal Configuration
+# PesaPal Configuration - Updated to use hardcoded values as fallback
 PESAPAL_CONFIG = {
-    'CONSUMER_KEY': os.getenv('PESAPAL_CONSUMER_KEY', ''),
-    'CONSUMER_SECRET': os.getenv('PESAPAL_CONSUMER_SECRET', ''),
+    'CONSUMER_KEY': os.getenv('PESAPAL_CONSUMER_KEY', PESAPAL_CONSUMER_KEY),
+    'CONSUMER_SECRET': os.getenv('PESAPAL_CONSUMER_SECRET', PESAPAL_CONSUMER_SECRET),
     'API_URL': os.getenv('PESAPAL_API_URL', 'https://cybqa.pesapal.com/pesapalv3'),  # Sandbox for testing
     # 'API_URL': 'https://pay.pesapal.com/v3',  # Live URL for production
-    'CALLBACK_URL': os.getenv('PESAPAL_CALLBACK_URL', f'{os.getenv("BACKEND_URL", "https://food-delivery-backend-2mcb.onrender.com")}/api/payments/pesapal-callback/'),
-    'IPN_URL': os.getenv('PESAPAL_IPN_URL', f'{os.getenv("BACKEND_URL", "https://food-delivery-backend-2mcb.onrender.com")}/api/payments/pesapal-ipn/'),
+    'CALLBACK_URL': os.getenv('PESAPAL_CALLBACK_URL', 'https://food-delivery-backend-2mcb.onrender.com/api/payments/pesapal-callback/'),
+    'IPN_URL': os.getenv('PESAPAL_IPN_URL', 'https://food-delivery-backend-2mcb.onrender.com/api/payments/pesapal-ipn/'),
     'IPN_ID': os.getenv('PESAPAL_IPN_ID', ''),
 }
