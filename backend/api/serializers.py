@@ -854,28 +854,32 @@ class PaymentInitiateSerializer(serializers.Serializer):
     
     def validate_phone_number(self, value):
         """Validate phone number for mobile money payments"""
+        import re
         payment_method = self.initial_data.get('payment_method')
         
-        if payment_method in ['mtn_mobile_money', 'airtel_money']:
-            if not value:
-                raise serializers.ValidationError("Phone number is required for mobile money payments")
+        if payment_method in ['mtn_mobile_money', 'airtel_money', 'pesapal_mtn', 'pesapal_airtel'] and value:
+            # Remove any spaces, dashes, or plus signs for validation
+            cleaned_number = re.sub(r'[\s\-\+]', '', value)
             
-            # Remove any non-digit characters and validate format
-            cleaned_number = ''.join(filter(str.isdigit, value))
+            # Check if it's a valid Ugandan number (starts with 256 or 0)
+            if not (cleaned_number.startswith('256') or cleaned_number.startswith('0')):
+                raise serializers.ValidationError("Invalid Uganda phone number. Use +256XXXXXXXXX or 0XXXXXXXXX format")
             
-            if not cleaned_number.startswith('256'):
-                raise serializers.ValidationError("Phone number must start with 256")
+            # Normalize to check prefixes (remove country code if present)
+            if cleaned_number.startswith('256'):
+                check_number = cleaned_number[3:]
+            elif cleaned_number.startswith('0'):
+                check_number = cleaned_number[1:]
+            else:
+                check_number = cleaned_number
             
-            if len(cleaned_number) != 12:
-                raise serializers.ValidationError("Phone number must be 12 digits including country code")
-            
-            # Validate network prefixes
-            if payment_method == 'mtn_mobile_money':
-                if not (cleaned_number[3:5] in ['77', '78']):
-                    raise serializers.ValidationError("Invalid MTN number. Must start with 77 or 78")
-            elif payment_method == 'airtel_money':
-                if not (cleaned_number[3:5] in ['70', '75']):
-                    raise serializers.ValidationError("Invalid Airtel number. Must start with 70 or 75")
+            # Validate specific prefixes for each provider
+            if payment_method in ['mtn_mobile_money', 'pesapal_mtn']:
+                if not (check_number[:2] in ['77', '78']):
+                    raise serializers.ValidationError("Invalid MTN number. Must start with 077 or 078 (e.g., +256 77X XXX XXX)")
+            elif payment_method in ['airtel_money', 'pesapal_airtel']:
+                if not (check_number[:2] in ['70', '75']):
+                    raise serializers.ValidationError("Invalid Airtel number. Must start with 070 or 075 (e.g., +256 70X XXX XXX)")
         
         return value
 

@@ -468,7 +468,9 @@ class Payment(models.Model):
         ('cash_on_delivery', 'Cash on Delivery'),
         ('mtn_mobile_money', 'MTN Mobile Money'),
         ('airtel_money', 'Airtel Money'),
-        ('pesapal', 'Pesapal Payment'),
+        ('pesapal', 'Pesapal'),
+        ('pesapal_mtn', 'PesaPal MTN Mobile Money'),
+        ('pesapal_airtel', 'PesaPal Airtel Money'),
     ]
     
     PAYMENT_STATUS = [

@@ -14,8 +14,13 @@ class PesaPalAPI:
         self.ipn_url = settings.PESAPAL_CONFIG['IPN_URL']
         
         # Check if credentials are provided
+        logger.info(f"PesaPal config loaded - Key: {'***' + self.consumer_key[-4:] if self.consumer_key else 'MISSING'}")
+        logger.info(f"PesaPal API URL: {self.base_url}")
+        
         if not self.consumer_key or not self.consumer_secret:
             logger.warning("PesaPal credentials not configured - API calls will fail")
+            logger.warning(f"Consumer Key: {self.consumer_key}")
+            logger.warning(f"Consumer Secret: {self.consumer_secret}")
             raise Exception("PesaPal credentials not configured")
     
     def get_access_token(self):
@@ -32,7 +37,10 @@ class PesaPalAPI:
             }
             
             logger.info(f"Requesting PesaPal token from: {url}")
+            logger.info(f"Payload: {payload}")
             response = requests.post(url, json=payload, headers=headers, timeout=30)
+            logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response text: {response.text}")
             response.raise_for_status()
             
             data = response.json()

@@ -1979,32 +1979,49 @@ def initiate_payment(request):
                 'message': f'Payment request sent to {phone_number}. Please check your phone to complete the payment.'
             }, status=status.HTTP_200_OK)
         
-        elif payment_method == 'pesapal':
-            # REAL PESAPAL INTEGRATION
+        elif payment_method in ['pesapal', 'pesapal_mtn', 'pesapal_airtel']:
+            # REAL PESAPAL INTEGRATION FOR UGANDA
             from payments.pesapal_utils import PesaPalAPI
             
             try:
                 pesapal_api = PesaPalAPI()
                 
-                # Prepare order data for PesaPal
+                # Format Uganda phone number
+                formatted_phone = phone_number
+                if phone_number and not phone_number.startswith('+256'):
+                    if phone_number.startswith('0'):
+                        formatted_phone = '+256' + phone_number[1:]
+                    elif phone_number.startswith('256'):
+                        formatted_phone = '+' + phone_number
+                    else:
+                        formatted_phone = '+256' + phone_number
+                
+                # Prepare order data for PesaPal Uganda
                 order_data = {
                     "id": payment.reference,
-                    "currency": "UGX",  # Using Ugandan Shillings
+                    "currency": "UGX",  # Ugandan Shillings
                     "amount": float(amount),
-                    "description": f"Payment for Order #{order.id}",
+                    "description": f"Payment for Order #{order.id} - Fort Portal Food Delivery",
                     "callback_url": settings.PESAPAL_CONFIG['CALLBACK_URL'],
-                    "notification_id": settings.PESAPAL_CONFIG.get('IPN_ID', ''),  # Optional for testing
+                    "notification_id": settings.PESAPAL_CONFIG.get('IPN_ID', ''),
                     "billing_address": {
                         "email_address": request.user.email,
-                        "phone_number": phone_number or "",
+                        "phone_number": formatted_phone or "",
                         "country_code": "UG",  # Uganda
                         "first_name": request.user.first_name or "Customer",
                         "last_name": request.user.last_name or "",
-                        "line_1": order.delivery_address or "N/A",
+                        "line_1": order.delivery_address or "Fort Portal",
                         "city": "Fort Portal",
+                        "state": "Western Region",
                         "postal_code": "00256"
                     }
                 }
+                
+                # Add payment method specific data for mobile money
+                if payment_method == 'pesapal_mtn':
+                    order_data["payment_method"] = "MTN_MOBILE_MONEY_UG"
+                elif payment_method == 'pesapal_airtel':
+                    order_data["payment_method"] = "AIRTEL_MONEY_UG"
                 
                 # Submit to PesaPal
                 pesapal_response = pesapal_api.submit_order(order_data)
