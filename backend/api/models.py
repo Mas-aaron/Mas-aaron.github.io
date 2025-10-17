@@ -488,6 +488,7 @@ class Payment(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     transaction_id = models.CharField(max_length=100, null=True, blank=True)
     reference = models.CharField(max_length=100, null=True, blank=True)
+    pesapal_tracking_id = models.CharField(max_length=255, blank=True, null=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

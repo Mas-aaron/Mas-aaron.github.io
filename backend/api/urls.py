@@ -95,6 +95,8 @@ custom_urlpatterns = [
     path('payments/<int:payment_id>/cancel/', api_views.cancel_payment, name='cancel_payment'),
     path('payments/<int:payment_id>/complete/', api_views.complete_payment, name='complete_payment'),
     path('payments/history/', api_views.payment_history, name='payment_history'),
+    path('payments/pesapal-callback/', api_views.pesapal_callback, name='pesapal_callback'),
+    path('payments/pesapal-ipn/', api_views.pesapal_ipn, name='pesapal_ipn'),
     
     # Test/Debug URLs
     path('health/', api_views.health_check, name='health-check'),

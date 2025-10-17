@@ -351,3 +351,14 @@ else:
             }
         }
     }
+
+# PesaPal Configuration
+PESAPAL_CONFIG = {
+    'CONSUMER_KEY': os.getenv('PESAPAL_CONSUMER_KEY', ''),
+    'CONSUMER_SECRET': os.getenv('PESAPAL_CONSUMER_SECRET', ''),
+    'API_URL': os.getenv('PESAPAL_API_URL', 'https://cybqa.pesapal.com/pesapalv3'),  # Sandbox for testing
+    # 'API_URL': 'https://pay.pesapal.com/v3',  # Live URL for production
+    'CALLBACK_URL': os.getenv('PESAPAL_CALLBACK_URL', f'{os.getenv("BACKEND_URL", "https://food-delivery-backend-2mcb.onrender.com")}/api/payments/pesapal-callback/'),
+    'IPN_URL': os.getenv('PESAPAL_IPN_URL', f'{os.getenv("BACKEND_URL", "https://food-delivery-backend-2mcb.onrender.com")}/api/payments/pesapal-ipn/'),
+    'IPN_ID': os.getenv('PESAPAL_IPN_ID', ''),
+}

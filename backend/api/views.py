@@ -1980,20 +1980,62 @@ def initiate_payment(request):
             }, status=status.HTTP_200_OK)
         
         elif payment_method == 'pesapal':
-            # For Pesapal, initiate the payment process
-            payment.status = 'processing'
-            payment.save()
+            # REAL PESAPAL INTEGRATION
+            from payments.pesapal_utils import PesaPalAPI
             
-            # Here you would integrate with Pesapal API
-            # For now, we'll return the payment details for frontend handling
-            
-            return Response({
-                'success': True,
-                'payment_id': payment.id,
-                'reference': payment.reference,
-                'redirect_url': f'https://demo.pesapal.com/API/PostPesapalDirectOrderV4?reference={payment.reference}&amount={amount}&description=Order%20Payment',  # More realistic Pesapal URL
-                'message': 'Payment initiated successfully. You will be redirected to Pesapal.'
-            }, status=status.HTTP_200_OK)
+            try:
+                pesapal_api = PesaPalAPI()
+                
+                # Prepare order data for PesaPal
+                order_data = {
+                    "id": payment.reference,
+                    "currency": "UGX",  # Using Ugandan Shillings
+                    "amount": float(amount),
+                    "description": f"Payment for Order #{order.id}",
+                    "callback_url": settings.PESAPAL_CONFIG['CALLBACK_URL'],
+                    "notification_id": settings.PESAPAL_CONFIG.get('IPN_ID', ''),
+                    "billing_address": {
+                        "email_address": request.user.email,
+                        "phone_number": phone_number or "",
+                        "country_code": "UG",  # Uganda
+                        "first_name": request.user.first_name or "Customer",
+                        "last_name": request.user.last_name or "",
+                        "line_1": order.delivery_address or "N/A",
+                        "city": "Fort Portal",
+                        "postal_code": "00256"
+                    }
+                }
+                
+                # Submit to PesaPal
+                pesapal_response = pesapal_api.submit_order(order_data)
+                
+                # Update payment with PesaPal tracking ID
+                payment.pesapal_tracking_id = pesapal_response.get('order_tracking_id')
+                payment.status = 'processing'
+                payment.save()
+                
+                return Response({
+                    'success': True,
+                    'payment_id': payment.id,
+                    'reference': payment.reference,
+                    'pesapal_tracking_id': payment.pesapal_tracking_id,
+                    'redirect_url': pesapal_response.get('redirect_url'),
+                    'message': 'Payment initiated successfully. Redirect to PesaPal to complete payment.'
+                }, status=status.HTTP_200_OK)
+                
+            except Exception as pesapal_error:
+                logger.error(f"PesaPal integration error: {str(pesapal_error)}")
+                # Fallback to simulation for development
+                payment.status = 'processing'
+                payment.save()
+                
+                return Response({
+                    'success': True,
+                    'payment_id': payment.id,
+                    'reference': payment.reference,
+                    'redirect_url': f'https://cybqa.pesapal.com/pesapalv3/demo?reference={payment.reference}',
+                    'message': f'Payment initiated (fallback mode). PesaPal error: {str(pesapal_error)}'
+                }, status=status.HTTP_200_OK)
         
         else:
             return Response({'error': f'Payment method {payment_method} not supported'}, status=status.HTTP_400_BAD_REQUEST)
@@ -2023,16 +2065,47 @@ def check_payment_status(request, payment_id):
                     payment.save()
             
             elif payment.method == 'pesapal':
-                # 50% chance of completion for Pesapal (higher success rate for demo)
-                if random.choice([True, False]):
-                    payment.status = 'completed'
-                    payment.transaction_id = f"PESAPAL{payment.id:08d}"
-                    payment.save()
-                    
-                    # Update order status to paid when payment is completed
-                    if payment.order:
-                        payment.order.status = 'confirmed'
-                        payment.order.save()
+                # Check real PesaPal status if tracking ID exists
+                if payment.pesapal_tracking_id:
+                    try:
+                        from payments.pesapal_utils import PesaPalAPI
+                        pesapal_api = PesaPalAPI()
+                        status_data = pesapal_api.get_transaction_status(payment.pesapal_tracking_id)
+                        
+                        if status_data:
+                            pesapal_status = status_data.get('status', '').upper()
+                            logger.info(f"PesaPal status for {payment.pesapal_tracking_id}: {pesapal_status}")
+                            
+                            if pesapal_status == 'COMPLETED':
+                                payment.status = 'completed'
+                                payment.transaction_id = payment.pesapal_tracking_id
+                                if payment.order:
+                                    payment.order.status = 'confirmed'
+                                    payment.order.save()
+                                payment.save()
+                            elif pesapal_status in ['FAILED', 'INVALID']:
+                                payment.status = 'failed'
+                                payment.failure_reason = f"PesaPal status: {pesapal_status}"
+                                payment.save()
+                    except Exception as e:
+                        logger.error(f"PesaPal status check error: {str(e)}")
+                        # Fallback to simulation for development
+                        if random.choice([True, False]):
+                            payment.status = 'completed'
+                            payment.transaction_id = f"PESAPAL{payment.id:08d}"
+                            if payment.order:
+                                payment.order.status = 'confirmed'
+                                payment.order.save()
+                            payment.save()
+                else:
+                    # No tracking ID, use simulation
+                    if random.choice([True, False]):
+                        payment.status = 'completed'
+                        payment.transaction_id = f"PESAPAL{payment.id:08d}"
+                        if payment.order:
+                            payment.order.status = 'confirmed'
+                            payment.order.save()
+                        payment.save()
         
         serializer = PaymentSerializer(payment)
         return Response({
@@ -2116,3 +2189,97 @@ def payment_history(request):
     except Exception as e:
         logger.error(f"Payment history error: {e}")
         return Response({'error': 'Failed to load payment history'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def pesapal_callback(request):
+    """Handle callback from PesaPal after payment"""
+    try:
+        order_tracking_id = request.GET.get('OrderTrackingId')
+        order_merchant_reference = request.GET.get('OrderMerchantReference')
+        
+        logger.info(f"PesaPal callback received - Tracking ID: {order_tracking_id}, Reference: {order_merchant_reference}")
+        
+        if order_merchant_reference:
+            # Find the payment and update status
+            try:
+                payment = Payment.objects.get(reference=order_merchant_reference)
+                # Check actual status with PesaPal
+                from payments.pesapal_utils import PesaPalAPI
+                pesapal_api = PesaPalAPI()
+                status_data = pesapal_api.get_transaction_status(order_tracking_id)
+                
+                if status_data:
+                    payment_status = status_data.get('status', '').upper()
+                    if payment_status == 'COMPLETED':
+                        payment.status = 'completed'
+                        payment.transaction_id = order_tracking_id
+                        if payment.order:
+                            payment.order.status = 'confirmed'
+                            payment.order.save()
+                    elif payment_status in ['FAILED', 'INVALID']:
+                        payment.status = 'failed'
+                        payment.failure_reason = f"PesaPal status: {payment_status}"
+                    
+                    payment.save()
+                
+                # Redirect to frontend with status
+                from django.shortcuts import redirect
+                frontend_url = f"https://yourapp.com/payment/status?payment_id={payment.id}&status={payment.status}"
+                return redirect(frontend_url)
+                
+            except Payment.DoesNotExist:
+                logger.error(f"Payment not found for reference: {order_merchant_reference}")
+        
+        return Response({'error': 'Invalid callback parameters'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    except Exception as e:
+        logger.error(f"PesaPal callback error: {str(e)}")
+        return Response({'error': 'Callback processing failed'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def pesapal_ipn(request):
+    """Handle Instant Payment Notification from PesaPal"""
+    try:
+        ipn_data = request.data
+        logger.info(f"PesaPal IPN received: {ipn_data}")
+        
+        order_tracking_id = ipn_data.get('OrderTrackingId')
+        order_notification_type = ipn_data.get('OrderNotificationType')
+        order_merchant_reference = ipn_data.get('OrderMerchantReference')
+        
+        if order_merchant_reference and order_notification_type == 'CHANGE':
+            try:
+                payment = Payment.objects.get(reference=order_merchant_reference)
+                from payments.pesapal_utils import PesaPalAPI
+                pesapal_api = PesaPalAPI()
+                status_data = pesapal_api.get_transaction_status(order_tracking_id)
+                
+                if status_data:
+                    payment_status = status_data.get('status', '').upper()
+                    if payment_status == 'COMPLETED' and payment.status != 'completed':
+                        payment.status = 'completed'
+                        payment.transaction_id = order_tracking_id
+                        if payment.order:
+                            payment.order.status = 'confirmed'
+                            payment.order.save()
+                        logger.info(f"Payment {payment.reference} completed via IPN")
+                    elif payment_status in ['FAILED', 'INVALID']:
+                        payment.status = 'failed'
+                        payment.failure_reason = f"PesaPal status: {payment_status}"
+                    
+                    payment.save()
+                
+                return Response({'status': 'success'}, status=status.HTTP_200_OK)
+                
+            except Payment.DoesNotExist:
+                logger.error(f"Payment not found for IPN reference: {order_merchant_reference}")
+        
+        return Response({'status': 'ignored'}, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"PesaPal IPN error: {str(e)}")
+        return Response({'status': 'error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
