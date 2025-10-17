@@ -1993,7 +1993,7 @@ def initiate_payment(request):
                     "amount": float(amount),
                     "description": f"Payment for Order #{order.id}",
                     "callback_url": settings.PESAPAL_CONFIG['CALLBACK_URL'],
-                    "notification_id": settings.PESAPAL_CONFIG.get('IPN_ID', ''),
+                    "notification_id": settings.PESAPAL_CONFIG.get('IPN_ID', ''),  # Optional for testing
                     "billing_address": {
                         "email_address": request.user.email,
                         "phone_number": phone_number or "",

@@ -12,6 +12,11 @@ class PesaPalAPI:
         self.base_url = settings.PESAPAL_CONFIG['API_URL']
         self.callback_url = settings.PESAPAL_CONFIG['CALLBACK_URL']
         self.ipn_url = settings.PESAPAL_CONFIG['IPN_URL']
+        
+        # Check if credentials are provided
+        if not self.consumer_key or not self.consumer_secret:
+            logger.warning("PesaPal credentials not configured - API calls will fail")
+            raise Exception("PesaPal credentials not configured")
     
     def get_access_token(self):
         """Get access token from PesaPal"""
