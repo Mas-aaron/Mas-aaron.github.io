@@ -2041,18 +2041,17 @@ def initiate_payment(request):
                 }, status=status.HTTP_200_OK)
                 
             except Exception as pesapal_error:
-                logger.error(f"PesaPal integration error: {str(pesapal_error)}")
-                # Fallback to simulation for development
-                payment.status = 'processing'
+                logger.error(f" PesaPal integration error: {str(pesapal_error)}")
+                payment.status = 'failed'
+                payment.failure_reason = f"PesaPal error: {str(pesapal_error)}"
                 payment.save()
                 
                 return Response({
-                    'success': True,
+                    'success': False,
+                    'error': f'PesaPal integration failed: {str(pesapal_error)}',
                     'payment_id': payment.id,
-                    'reference': payment.reference,
-                    'redirect_url': f'https://cybqa.pesapal.com/pesapalv3/demo?reference={payment.reference}',
-                    'message': f'Payment initiated (fallback mode). PesaPal error: {str(pesapal_error)}'
-                }, status=status.HTTP_200_OK)
+                    'reference': payment.reference
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         else:
             return Response({'error': f'Payment method {payment_method} not supported'}, status=status.HTTP_400_BAD_REQUEST)
@@ -2346,8 +2345,11 @@ def debug_pesapal_config(request):
                 debug_info['auth_test']['token_received'] = bool(data.get('token'))
                 debug_info['auth_test']['token_key_exists'] = 'token' in data
                 debug_info['auth_test']['all_keys'] = list(data.keys()) if isinstance(data, dict) else 'Not a dict'
-            except:
-                debug_info['auth_test']['json_parse_error'] = True
+                debug_info['auth_test']['pesapal_status'] = data.get('status')
+                debug_info['auth_test']['pesapal_error'] = data.get('error')
+                debug_info['auth_test']['pesapal_message'] = data.get('message')
+            except Exception as e:
+                debug_info['auth_test']['json_parse_error'] = str(e)
             
     except Exception as e:
         debug_info['auth_test'] = {'error': str(e)}

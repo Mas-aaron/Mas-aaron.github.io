@@ -46,14 +46,26 @@ class PesaPalAPI:
             data = response.json()
             logger.info(f"PesaPal auth response: {data}")
             
-            # Try different possible token field names
-            token = data.get('token') or data.get('access_token') or data.get('Token')
+            # Check for PesaPal API errors first
+            if data.get('error'):
+                logger.error(f"❌ PesaPal API error: {data.get('error')}")
+                return None
             
+            # Check status
+            status = data.get('status')
+            if status and status != '200':
+                logger.error(f"❌ PesaPal API status error: {status} - {data.get('message', 'Unknown error')}")
+                return None
+            
+            # Get token
+            token = data.get('token')
             if token:
                 logger.info("✅ Successfully obtained PesaPal access token")
+                logger.info(f"Token expires: {data.get('expiryDate', 'Unknown')}")
                 return token
             else:
                 logger.error(f"❌ No token found in response. Available keys: {list(data.keys())}")
+                logger.error(f"Full response: {data}")
                 return None
             
         except requests.exceptions.RequestException as e:
