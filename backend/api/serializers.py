@@ -667,15 +667,15 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
     dietary_preferences = DietaryPreferenceSerializer(many=True, read_only=True)
     dietary_preference_ids = serializers.PrimaryKeyRelatedField(
         many=True,
-        write_only=True,
         queryset=DietaryPreference.objects.all(),
         source='dietary_preferences',
+        write_only=True,
         required=False
     )
 
     class Meta:
         model = CustomerProfile
-        fields = ('user', 'dietary_preferences', 'dietary_preference_ids')
+        fields = ('id', 'user', 'dietary_preferences', 'dietary_preference_ids')
 
 
 class RestaurantDashboardReviewSerializer(serializers.ModelSerializer):
@@ -880,12 +880,7 @@ class PaymentInitiateSerializer(serializers.Serializer):
         return value
 
 
-# Missing serializers that are referenced in views
-class CustomerProfileSerializer(serializers.ModelSerializer):
-    """Serializer for customer profile"""
-    class Meta:
-        model = CustomerProfile
-        fields = '__all__'
+# Duplicate CustomerProfileSerializer removed - using the one above with proper fields
 
 
 class RestaurantReviewSerializer(serializers.ModelSerializer):
