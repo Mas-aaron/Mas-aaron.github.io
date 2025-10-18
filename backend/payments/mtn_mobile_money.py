@@ -17,7 +17,9 @@ class MTNMobileMoneyAPI:
         self.subscription_key = settings.MTN_MOMO_CONFIG.get('SUBSCRIPTION_KEY', '')
         self.user_id = settings.MTN_MOMO_CONFIG.get('USER_ID', '')
         self.api_key = settings.MTN_MOMO_CONFIG.get('API_KEY', '')
-        self.target_environment = "sandbox"  # or "production"
+        self.target_environment = "sandbox"
+        
+        logger.info(f"🔑 MTN Config - Key: {self.subscription_key[:8]}... User: {self.user_id[:8]}...")
         
     def get_access_token(self):
         """Get OAuth access token from MTN"""

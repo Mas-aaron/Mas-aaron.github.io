@@ -2006,14 +2006,70 @@ def initiate_payment(request):
                     
             except Exception as e:
                 logger.error(f"MTN Mobile Money error: {str(e)}")
+                
+                # FALLBACK: If MTN fails, offer PesaPal as alternative
                 payment.status = 'failed'
-                payment.failure_reason = str(e)
+                payment.failure_reason = f"MTN error: {str(e)}"
                 payment.save()
+                
+                # Try PesaPal as fallback for mobile money
+                try:
+                    from payments.pesapal_utils import PesaPalAPI
+                    pesapal_api = PesaPalAPI()
+                    
+                    # Format Uganda phone number for PesaPal
+                    formatted_phone = phone_number
+                    if phone_number and not phone_number.startswith('+256'):
+                        if phone_number.startswith('0'):
+                            formatted_phone = '+256' + phone_number[1:]
+                        elif phone_number.startswith('256'):
+                            formatted_phone = '+' + phone_number
+                        else:
+                            formatted_phone = '+256' + phone_number
+                    
+                    order_data = {
+                        "id": payment.reference,
+                        "currency": "UGX",
+                        "amount": float(amount),
+                        "description": f"FortExpress Order #{order.id}",
+                        "callback_url": settings.PESAPAL_CONFIG['CALLBACK_URL'],
+                        "notification_id": settings.PESAPAL_CONFIG.get('IPN_ID', ''),
+                        "billing_address": {
+                            "phone_number": formatted_phone,
+                            "email_address": order.user.email if order.user else "customer@fortexpress.com",
+                            "country_code": "UG",
+                            "first_name": order.user.first_name if order.user else "Customer",
+                            "last_name": order.user.last_name if order.user else "User",
+                        }
+                    }
+                    
+                    # Add mobile money preference for PesaPal
+                    order_data["payment_method"] = "MTN_MOBILE_MONEY_UG"
+                    
+                    result = pesapal_api.submit_order_request(order_data)
+                    
+                    if result and result.get('redirect_url'):
+                        payment.status = 'processing'
+                        payment.pesapal_tracking_id = result.get('order_tracking_id')
+                        payment.save()
+                        
+                        return Response({
+                            'success': True,
+                            'payment_id': payment.id,
+                            'reference': payment.reference,
+                            'redirect_url': result['redirect_url'],
+                            'message': 'MTN direct integration unavailable. Redirecting to PesaPal Mobile Money.',
+                            'fallback_used': 'pesapal_mtn'
+                        }, status=status.HTTP_200_OK)
+                    
+                except Exception as pesapal_error:
+                    logger.error(f"PesaPal fallback also failed: {str(pesapal_error)}")
                 
                 return Response({
                     'success': False,
-                    'error': f'MTN Mobile Money integration failed: {str(e)}'
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    'error': f'MTN Mobile Money temporarily unavailable. Please try PesaPal payment option.',
+                    'suggestion': 'Use "Pesapal Payment" option for mobile money'
+                }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         
         elif payment_method == 'airtel_money':
             # AIRTEL MONEY INTEGRATION (To be implemented)
