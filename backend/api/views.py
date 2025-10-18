@@ -1973,6 +1973,31 @@ def initiate_payment(request):
             if not phone_number:
                 return Response({'error': 'Phone number is required for MTN Mobile Money'}, status=status.HTTP_400_BAD_REQUEST)
             
+            # Validate phone number format for MTN Uganda
+            # Clean phone number (remove spaces, dashes, etc.)
+            clean_phone = ''.join(filter(str.isdigit, phone_number.replace('+', '+')))
+            
+            # Check if it's a valid Uganda MTN number
+            valid_mtn_prefixes = ['25677', '25678']  # MTN Uganda prefixes
+            is_valid_mtn = False
+            
+            if clean_phone.startswith('+256'):
+                clean_phone = clean_phone[1:]  # Remove +
+            
+            for prefix in valid_mtn_prefixes:
+                if clean_phone.startswith(prefix):
+                    is_valid_mtn = True
+                    break
+            
+            if not is_valid_mtn:
+                logger.warning(f"⚠️ Invalid MTN number format: {phone_number}")
+                return Response({
+                    'error': 'Invalid MTN Mobile Money number. Please use MTN Uganda number (077/078)',
+                    'suggestion': 'MTN numbers should start with 077 or 078'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            logger.info(f"✅ Valid MTN number: {clean_phone}")
+            
             try:
                 logger.info("📦 Importing MTN Mobile Money API...")
                 from payments.mtn_mobile_money import MTNMobileMoneyAPI

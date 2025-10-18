@@ -120,13 +120,28 @@ class MTNMobileMoneyAPI:
             # Generate unique reference ID
             reference_id = str(uuid.uuid4())
             
-            # Format phone number (remove +256, add 256)
+            # Format phone number for MTN API (Uganda format)
+            # MTN expects format: 256783876390 (country code + number without leading 0)
+            formatted_phone = phone_number
+            
             if phone_number.startswith('+256'):
-                formatted_phone = '256' + phone_number[4:]
+                # +256783876390 -> 256783876390
+                formatted_phone = phone_number[1:]
             elif phone_number.startswith('0'):
+                # 0783876390 -> 256783876390
                 formatted_phone = '256' + phone_number[1:]
-            else:
+            elif phone_number.startswith('256'):
+                # Already in correct format: 256783876390
                 formatted_phone = phone_number
+            else:
+                # Assume local format: 783876390 -> 256783876390
+                formatted_phone = '256' + phone_number
+            
+            # Validate MTN number (should start with 2567 for MTN Uganda)
+            if not (formatted_phone.startswith('25677') or formatted_phone.startswith('25678')):
+                logger.warning(f"⚠️ Phone number {formatted_phone} may not be MTN Uganda")
+            
+            logger.info(f"📱 Original: {phone_number} -> Formatted: {formatted_phone}")
             
             headers = {
                 'Authorization': f'Bearer {token}',
