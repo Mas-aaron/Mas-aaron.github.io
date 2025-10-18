@@ -2008,12 +2008,27 @@ def initiate_payment(request):
                 logger.info("✅ MTN API initialized successfully")
                 
                 # Request payment from MTN
-                result = mtn_api.request_to_pay(
-                    phone_number=phone_number,
-                    amount=amount,
-                    external_id=payment.reference,
-                    payer_message=f"FortExpress Order #{order.id}"
-                )
+                logger.info(f"🔧 Step 3: Calling MTN request_to_pay...")
+                logger.info(f"   Phone: {phone_number}")
+                logger.info(f"   Amount: {amount}")
+                logger.info(f"   External ID: {payment.reference}")
+                logger.info(f"   Payer Message: FortExpress Order #{order.id}")
+                
+                try:
+                    result = mtn_api.request_to_pay(
+                        phone_number=phone_number,
+                        amount=amount,
+                        external_id=payment.reference,
+                        payer_message=f"FortExpress Order #{order.id}"
+                    )
+                    
+                    logger.info(f"🔧 Step 4: MTN API call completed")
+                    logger.info(f"   Result: {result}")
+                except Exception as mtn_call_error:
+                    logger.error(f"💥 Error calling MTN request_to_pay: {str(mtn_call_error)}")
+                    import traceback
+                    logger.error(f"📄 MTN call traceback: {traceback.format_exc()}")
+                    raise mtn_call_error
                 
                 if result['success']:
                     payment.mtn_reference_id = result['reference_id']
