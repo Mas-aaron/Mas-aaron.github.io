@@ -106,6 +106,7 @@ custom_urlpatterns = [
     path('configure-gcs/', api_views.configure_gcs_bucket, name='configure-gcs'),
     path('test-gcs/', api_views.test_gcs_connection, name='test-gcs-connection'),
     path('debug-pesapal/', api_views.debug_pesapal_config, name='debug-pesapal'),
+    path('debug-mtn/', api_views.debug_mtn_config, name='debug-mtn'),
 ]
 
 # Combine all URL patterns

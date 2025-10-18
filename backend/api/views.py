@@ -2401,3 +2401,39 @@ def debug_pesapal_config(request):
         debug_info['auth_test'] = {'error': str(e)}
     
     return Response(debug_info)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def debug_mtn_config(request):
+    """Debug MTN Mobile Money configuration"""
+    from django.conf import settings
+    
+    config = settings.MTN_MOMO_CONFIG
+    
+    debug_info = {
+        'subscription_key_exists': bool(config.get('SUBSCRIPTION_KEY')) and config.get('SUBSCRIPTION_KEY') != 'your_subscription_key_here',
+        'subscription_key_preview': config.get('SUBSCRIPTION_KEY', '')[:8] + '...' if config.get('SUBSCRIPTION_KEY') else 'MISSING',
+        'user_id_exists': bool(config.get('USER_ID')) and config.get('USER_ID') != 'your_user_id_here',
+        'user_id_preview': config.get('USER_ID', '')[:8] + '...' if config.get('USER_ID') else 'MISSING',
+        'api_key_exists': bool(config.get('API_KEY')) and config.get('API_KEY') != 'your_api_key_here',
+        'base_url': config.get('BASE_URL'),
+        'target_environment': config.get('TARGET_ENVIRONMENT'),
+        'setup_complete': all([
+            config.get('SUBSCRIPTION_KEY') and config.get('SUBSCRIPTION_KEY') != 'your_subscription_key_here',
+            config.get('USER_ID') and config.get('USER_ID') != 'your_user_id_here',
+            config.get('API_KEY') and config.get('API_KEY') != 'your_api_key_here'
+        ]),
+        'next_steps': [
+            '1. Register at https://momodeveloper.mtn.com/',
+            '2. Subscribe to Collections API',
+            '3. Create API User in sandbox',
+            '4. Add credentials to environment variables'
+        ] if not all([
+            config.get('SUBSCRIPTION_KEY') and config.get('SUBSCRIPTION_KEY') != 'your_subscription_key_here',
+            config.get('USER_ID') and config.get('USER_ID') != 'your_user_id_here',
+            config.get('API_KEY') and config.get('API_KEY') != 'your_api_key_here'
+        ]) else ['MTN Mobile Money is configured and ready!']
+    }
+    
+    return Response(debug_info)

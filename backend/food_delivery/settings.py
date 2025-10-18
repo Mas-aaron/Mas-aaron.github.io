@@ -365,9 +365,9 @@ PESAPAL_CONFIG = {
 
 # MTN Mobile Money Configuration for Direct Integration
 MTN_MOMO_CONFIG = {
-    'SUBSCRIPTION_KEY': os.getenv('MTN_MOMO_SUBSCRIPTION_KEY', ''),
-    'USER_ID': os.getenv('MTN_MOMO_USER_ID', ''),
-    'API_KEY': os.getenv('MTN_MOMO_API_KEY', ''),
+    'SUBSCRIPTION_KEY': os.getenv('MTN_MOMO_SUBSCRIPTION_KEY', 'your_subscription_key_here'),
+    'USER_ID': os.getenv('MTN_MOMO_USER_ID', 'your_user_id_here'),
+    'API_KEY': os.getenv('MTN_MOMO_API_KEY', 'your_api_key_here'),
     'BASE_URL': os.getenv('MTN_MOMO_BASE_URL', 'https://sandbox.momodeveloper.mtn.com'),
     'TARGET_ENVIRONMENT': os.getenv('MTN_MOMO_ENVIRONMENT', 'sandbox'),
 }
