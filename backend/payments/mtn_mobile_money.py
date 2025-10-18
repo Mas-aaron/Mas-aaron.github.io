@@ -21,6 +21,57 @@ class MTNMobileMoneyAPI:
         
         logger.info(f"🔑 MTN Config - Key: {self.subscription_key[:8]}... User: {self.user_id[:8]}...")
         
+    def create_api_user(self):
+        """Create API user if it doesn't exist"""
+        try:
+            url = f"{self.base_url}/v1_0/apiuser"
+            
+            headers = {
+                'X-Reference-Id': self.user_id,
+                'Ocp-Apim-Subscription-Key': self.subscription_key,
+                'Content-Type': 'application/json'
+            }
+            
+            payload = {
+                "providerCallbackHost": "food-delivery-backend-2mcb.onrender.com"
+            }
+            
+            response = requests.post(url, json=payload, headers=headers, timeout=10)
+            logger.info(f"API User creation response: {response.status_code} - {response.text}")
+            
+            if response.status_code in [201, 409]:  # Created or Conflict (already exists)
+                return True
+            else:
+                logger.error(f"Failed to create API user: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"API user creation error: {str(e)}")
+            return False
+    
+    def create_api_key(self):
+        """Create API key for the user"""
+        try:
+            url = f"{self.base_url}/v1_0/apiuser/{self.user_id}/apikey"
+            
+            headers = {
+                'Ocp-Apim-Subscription-Key': self.subscription_key
+            }
+            
+            response = requests.post(url, headers=headers, timeout=10)
+            logger.info(f"API Key creation response: {response.status_code} - {response.text}")
+            
+            if response.status_code == 201:
+                data = response.json()
+                return data.get('apiKey')
+            else:
+                logger.error(f"Failed to create API key: {response.status_code}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"API key creation error: {str(e)}")
+            return None
+        
     def get_access_token(self):
         """Get OAuth access token from MTN"""
         try:
@@ -56,6 +107,10 @@ class MTNMobileMoneyAPI:
         This triggers the USSD prompt on user's phone
         """
         try:
+            # Ensure API user exists
+            if not self.create_api_user():
+                logger.warning("Could not create/verify API user, continuing anyway...")
+            
             token = self.get_access_token()
             if not token:
                 raise Exception("Failed to get MTN access token")
@@ -78,7 +133,8 @@ class MTNMobileMoneyAPI:
                 'X-Reference-Id': reference_id,
                 'X-Target-Environment': self.target_environment,
                 'Ocp-Apim-Subscription-Key': self.subscription_key,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
             
             payload = {
@@ -97,7 +153,7 @@ class MTNMobileMoneyAPI:
             logger.info(f"📋 Headers: {headers}")
             logger.info(f"📦 Payload: {payload}")
             
-            response = requests.post(url, json=payload, headers=headers)
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
             
             logger.info(f"📤 MTN API Response: {response.status_code}")
             logger.info(f"📄 MTN Response Body: {response.text}")
