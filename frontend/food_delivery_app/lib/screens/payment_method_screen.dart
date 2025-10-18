@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/payment.dart';
 import 'pesapal_payment_screen.dart';
+import 'mobile_money_payment_screen.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
   final double amount;
@@ -80,9 +81,31 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                // MTN Mobile Money
+                _buildPaymentMethodCard(
+                  method: PaymentMethod.mtnMobileMoney,
+                  title: 'MTN Mobile Money',
+                  subtitle: 'Pay with MTN Mobile Money PIN',
+                  icon: Icons.phone_android,
+                  color: Colors.yellow.shade700,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Airtel Money
+                _buildPaymentMethodCard(
+                  method: PaymentMethod.airtelMoney,
+                  title: 'Airtel Money',
+                  subtitle: 'Pay with Airtel Money PIN',
+                  icon: Icons.phone_android,
+                  color: Colors.red.shade600,
+                ),
+
+                const SizedBox(height: 12),
+
                 // Pesapal Payment (Mobile Money & Cards)
                 _buildPaymentMethodCard(
-                  method: PaymentMethod.mtnMobileMoney, // Using as Pesapal identifier
+                  method: PaymentMethod.pesapal,
                   title: 'Pesapal Payment',
                   subtitle: 'Pay with Mobile Money, Cards, or Bank Transfer',
                   icon: Icons.payment,
@@ -256,6 +279,21 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       // For cash on delivery, just confirm the order
       widget.onPaymentSuccess();
       Navigator.of(context).pop();
+    } else if (_selectedMethod == PaymentMethod.mtnMobileMoney || _selectedMethod == PaymentMethod.airtelMoney) {
+      // For direct mobile money, navigate to mobile money payment screen
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => MobileMoneyPaymentScreen(
+            amount: widget.amount,
+            orderId: widget.orderId,
+            paymentMethod: _selectedMethod!,
+            onPaymentSuccess: () {
+              widget.onPaymentSuccess();
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+          ),
+        ),
+      );
     } else {
       // For Pesapal payment, navigate to Pesapal payment screen
       Navigator.of(context).push(

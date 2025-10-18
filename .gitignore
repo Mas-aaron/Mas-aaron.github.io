@@ -11,7 +11,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ (commented out to allow Flutter lib access)
 lib64/
 parts/
 sdist/
@@ -45,9 +45,10 @@ ENV/
 serviceAccountKey.json
 firebase-service-account.json
 
-# Flutter/Dart (temporarily commented out to allow fixes)
-# *.dart
-# pubspec.lock
-# .dart_tool/
-# .packages
-# build/
+# Flutter/Dart - ALL RESTRICTIONS REMOVED FOR PAYMENT METHOD EDITING
+# pubspec.lock (keeping this commented)
+# .dart_tool/ (keeping this commented)  
+# .packages (keeping this commented)
+# build/ (keeping this commented)
+
+# DART FILES ARE NOW ACCESSIBLE FOR EDITING
