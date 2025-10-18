@@ -93,9 +93,14 @@ class MTNMobileMoneyAPI:
                 "payeeNote": f"Payment for order {external_id}"
             }
             
-            logger.info(f"🏦 Sending MTN MoMo request: {payload}")
+            logger.info(f"🏦 Sending MTN MoMo request to: {url}")
+            logger.info(f"📋 Headers: {headers}")
+            logger.info(f"📦 Payload: {payload}")
             
             response = requests.post(url, json=payload, headers=headers)
+            
+            logger.info(f"📤 MTN API Response: {response.status_code}")
+            logger.info(f"📄 MTN Response Body: {response.text}")
             
             if response.status_code == 202:  # Accepted
                 logger.info("✅ MTN payment request sent successfully")
@@ -105,10 +110,21 @@ class MTNMobileMoneyAPI:
                     'message': f'Payment request sent to {phone_number}. Please check your phone and enter your PIN.'
                 }
             else:
-                logger.error(f"MTN payment request failed: {response.status_code} - {response.text}")
+                logger.error(f"❌ MTN payment request failed: {response.status_code}")
+                logger.error(f"📄 MTN Error Response: {response.text}")
+                
+                # Try to parse error details
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get('message', f'MTN API error: {response.status_code}')
+                except:
+                    error_msg = f'MTN API error: {response.status_code} - {response.text}'
+                
                 return {
                     'success': False,
-                    'error': f'MTN API error: {response.status_code}'
+                    'error': error_msg,
+                    'status_code': response.status_code,
+                    'raw_response': response.text
                 }
                 
         except Exception as e:
