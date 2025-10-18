@@ -76,6 +76,7 @@ class MTNMobileMoneyAPI:
         """Get OAuth access token from MTN"""
         try:
             url = f"{self.base_url}/collection/token/"
+            logger.info(f"🔑 Step 2.1: Requesting token from: {url}")
             
             # Create basic auth header
             credentials = f"{self.user_id}:{self.api_key}"
@@ -84,21 +85,39 @@ class MTNMobileMoneyAPI:
             headers = {
                 'Authorization': f'Basic {encoded_credentials}',
                 'Ocp-Apim-Subscription-Key': self.subscription_key,
-                'X-Target-Environment': self.target_environment,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/x-www-form-urlencoded'
             }
             
-            response = requests.post(url, headers=headers)
+            logger.info(f"🔑 Token request details:")
+            logger.info(f"   User ID: {self.user_id}")
+            logger.info(f"   API Key: {self.api_key[:8]}...")
+            logger.info(f"   Subscription Key: {self.subscription_key[:8]}...")
+            
+            response = requests.post(url, headers=headers, timeout=10)
+            
+            logger.info(f"🔑 Token response:")
+            logger.info(f"   Status: {response.status_code}")
+            logger.info(f"   Headers: {dict(response.headers)}")
+            logger.info(f"   Body: {response.text}")
             
             if response.status_code == 200:
                 data = response.json()
-                return data.get('access_token')
+                token = data.get('access_token')
+                expires_in = data.get('expires_in')
+                logger.info(f"✅ Token obtained: {token[:20] if token else 'None'}... (expires in {expires_in}s)")
+                return token
             else:
-                logger.error(f"MTN token request failed: {response.status_code} - {response.text}")
+                logger.error(f"❌ Token request failed with status: {response.status_code}")
+                if response.status_code == 401:
+                    logger.error("🔐 401 Unauthorized - Check your API User ID and API Key")
+                elif response.status_code == 403:
+                    logger.error("🔐 403 Forbidden - Check your Subscription Key")
                 return None
                 
         except Exception as e:
-            logger.error(f"MTN token error: {str(e)}")
+            logger.error(f"💥 Token error: {str(e)}")
+            import traceback
+            logger.error(f"📄 Token traceback: {traceback.format_exc()}")
             return None
     
     def request_to_pay(self, phone_number, amount, external_id, payer_message="Food Delivery Payment"):
@@ -107,10 +126,11 @@ class MTNMobileMoneyAPI:
         This triggers the USSD prompt on user's phone
         """
         try:
-            # Ensure API user exists
+            logger.info(f"🔧 Step 1: Creating API user...")
             if not self.create_api_user():
-                logger.warning("Could not create/verify API user, continuing anyway...")
+                logger.warning("⚠️ Could not create/verify API user, continuing anyway...")
             
+            logger.info(f"🔧 Step 2: Getting access token...")
             token = self.get_access_token()
             if not token:
                 raise Exception("Failed to get MTN access token")
@@ -120,28 +140,25 @@ class MTNMobileMoneyAPI:
             # Generate unique reference ID
             reference_id = str(uuid.uuid4())
             
-            # Format phone number for MTN API (Uganda format)
-            # MTN expects format: 256783876390 (country code + number without leading 0)
+            # Format phone number (your existing logic is good)
             formatted_phone = phone_number
             
             if phone_number.startswith('+256'):
-                # +256783876390 -> 256783876390
                 formatted_phone = phone_number[1:]
             elif phone_number.startswith('0'):
-                # 0783876390 -> 256783876390
                 formatted_phone = '256' + phone_number[1:]
             elif phone_number.startswith('256'):
-                # Already in correct format: 256783876390
                 formatted_phone = phone_number
             else:
-                # Assume local format: 783876390 -> 256783876390
                 formatted_phone = '256' + phone_number
             
-            # Validate MTN number (should start with 2567 for MTN Uganda)
-            if not (formatted_phone.startswith('25677') or formatted_phone.startswith('25678')):
-                logger.warning(f"⚠️ Phone number {formatted_phone} may not be MTN Uganda")
+            logger.info(f"📱 Phone formatting: {phone_number} -> {formatted_phone}")
             
-            logger.info(f"📱 Original: {phone_number} -> Formatted: {formatted_phone}")
+            # **CRITICAL FIX: Amount must be in string format without decimals for UGX**
+            # MTN expects amount as string without decimal places for UGX
+            amount_str = str(int(float(amount)))  # Convert "25.0" to "25"
+            
+            logger.info(f"💰 Amount conversion: {amount} -> {amount_str}")
             
             headers = {
                 'Authorization': f'Bearer {token}',
@@ -149,60 +166,69 @@ class MTNMobileMoneyAPI:
                 'X-Target-Environment': self.target_environment,
                 'Ocp-Apim-Subscription-Key': self.subscription_key,
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
             }
             
             payload = {
-                "amount": str(amount),
+                "amount": amount_str,  # Use converted amount
                 "currency": "UGX",
                 "externalId": external_id,
                 "payer": {
                     "partyIdType": "MSISDN",
                     "partyId": formatted_phone
                 },
-                "payerMessage": payer_message,
-                "payeeNote": f"Payment for order {external_id}"
+                "payerMessage": payer_message[:20],  # MTN limits to 20 chars
+                "payeeNote": f"Order {external_id}"[:20]  # MTN limits to 20 chars
             }
             
-            logger.info(f"🏦 Sending MTN MoMo request to: {url}")
-            logger.info(f"📋 Headers: {headers}")
+            logger.info(f"🚀 Sending MTN Request:")
+            logger.info(f"📍 URL: {url}")
+            logger.info(f"📋 Headers: {dict((k, v[:100] + '...' if k == 'Authorization' else v) for k, v in headers.items())}")
             logger.info(f"📦 Payload: {payload}")
             
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             
-            logger.info(f"📤 MTN API Response: {response.status_code}")
-            logger.info(f"📄 MTN Response Body: {response.text}")
+            logger.info(f"📥 Response Status: {response.status_code}")
+            logger.info(f"📄 Response Headers: {dict(response.headers)}")
+            logger.info(f"📝 Response Body: {response.text}")
             
-            if response.status_code == 202:  # Accepted
-                logger.info("✅ MTN payment request sent successfully")
+            if response.status_code == 202:
+                logger.info("✅ MTN payment request accepted - user should receive USSD prompt")
                 return {
                     'success': True,
                     'reference_id': reference_id,
                     'message': f'Payment request sent to {phone_number}. Please check your phone and enter your PIN.'
                 }
             else:
-                logger.error(f"❌ MTN payment request failed: {response.status_code}")
-                logger.error(f"📄 MTN Error Response: {response.text}")
+                logger.error(f"❌ MTN API Error: {response.status_code}")
                 
-                # Try to parse error details
+                # Enhanced error parsing
+                error_details = f"Status: {response.status_code}"
                 try:
-                    error_data = response.json()
-                    error_msg = error_data.get('message', f'MTN API error: {response.status_code}')
+                    error_json = response.json()
+                    error_details += f" - JSON: {error_json}"
                 except:
-                    error_msg = f'MTN API error: {response.status_code} - {response.text}'
+                    error_details += f" - Text: {response.text}"
                 
                 return {
                     'success': False,
-                    'error': error_msg,
+                    'error': f'MTN API Error: {error_details}',
                     'status_code': response.status_code,
                     'raw_response': response.text
                 }
                 
-        except Exception as e:
-            logger.error(f"MTN payment error: {str(e)}")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"🌐 Network error: {str(e)}")
             return {
                 'success': False,
-                'error': str(e)
+                'error': f'Network error: {str(e)}'
+            }
+        except Exception as e:
+            logger.error(f"💥 Unexpected error: {str(e)}")
+            import traceback
+            logger.error(f"📄 Stack trace: {traceback.format_exc()}")
+            return {
+                'success': False,
+                'error': f'Unexpected error: {str(e)}'
             }
     
     def check_payment_status(self, reference_id):
