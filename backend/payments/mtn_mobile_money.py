@@ -93,8 +93,7 @@ class MTNMobileMoneyAPI:
             
             headers = {
                 'Authorization': f'Basic {encoded_credentials}',
-                'Ocp-Apim-Subscription-Key': self.subscription_key,
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Ocp-Apim-Subscription-Key': self.subscription_key
             }
             
             logger.info(f"🔑 Token request details:")
@@ -199,14 +198,16 @@ class MTNMobileMoneyAPI:
                 "payeeNote": f"Order {external_id}"[:20]  # MTN limits to 20 chars
             }
             
-            logger.info(f"🚀 Sending MTN Request:")
-            logger.info(f"📍 URL: {url}")
-            logger.info(f"📋 Headers: {dict((k, v[:100] + '...' if k == 'Authorization' else v) for k, v in headers.items())}")
-            logger.info(f"📦 Payload: {payload}")
+            logger.info("Sending MTN Request:")
+            logger.info(f"URL: {url}")
+            logger.info(f"Headers: {dict((k, v[:100] + '...' if k == 'Authorization' else v) for k, v in headers.items())}")
+            logger.info(f"Payload: {payload}")
             
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             
-            logger.info(f"📥 Response Status: {response.status_code}")
+            logger.info(f"Response Status: {response.status_code}")
+            logger.info(f"Response Headers: {dict(response.headers)}")
+            logger.info(f"Response Body: {response.text}")
             logger.info(f"📄 Response Headers: {dict(response.headers)}")
             logger.info(f"📝 Response Body: {response.text}")
             
