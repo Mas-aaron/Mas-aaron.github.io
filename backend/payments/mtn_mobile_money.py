@@ -21,6 +21,7 @@ class MTNMobileMoneyAPI:
         self.callback_host = settings.MTN_MOMO_CONFIG.get('CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com')
         
         logger.info(f"🔑 MTN Config - Key: {self.subscription_key[:8]}... User: {self.user_id}")
+        logger.info("🚀 DEPLOYMENT TEST: MTN API v2.0 - Enhanced Debugging Active")
         
         # Validate credentials
         if not all([self.subscription_key, self.user_id, self.api_key]):
@@ -216,6 +217,7 @@ class MTNMobileMoneyAPI:
         """
         Request payment from MTN Mobile Money user - CORRECTED VERSION
         """
+        logger.info("🚀 DEPLOYMENT TEST: request_to_pay v2.0 called")
         try:
             logger.info("🚀 Starting MTN Mobile Money payment process...")
             
