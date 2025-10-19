@@ -30,6 +30,15 @@ class MTNMobileMoneyAPI:
         
         logger.info(f"🔑 MTN Config - Key: {self.subscription_key[:8]}... User: {self.user_id[:8]}...")
         
+        # Validate credentials are not empty
+        if not self.subscription_key or not self.user_id or not self.api_key:
+            logger.error(f"❌ Missing MTN credentials!")
+            logger.error(f"   Subscription Key: {'✅' if self.subscription_key else '❌'}")
+            logger.error(f"   User ID: {'✅' if self.user_id else '❌'}")
+            logger.error(f"   API Key: {'✅' if self.api_key else '❌'}")
+        else:
+            logger.info(f"✅ All MTN credentials present")
+        
     def create_api_user(self):
         """Create API user if it doesn't exist"""
         try:
@@ -134,7 +143,9 @@ class MTNMobileMoneyAPI:
         This triggers the USSD prompt on user's phone
         """
         try:
-            logger.info(f"🔧 Step 1: Creating API user...")
+            logger.info(f"🔧 Step 1: Starting MTN payment process...")
+            logger.info(f"🔧 Base URL: {self.base_url}")
+            logger.info(f"🔧 Target Environment: {self.target_environment}")
             
             # Test basic connectivity first
             try:
@@ -143,15 +154,27 @@ class MTNMobileMoneyAPI:
             except Exception as conn_error:
                 logger.warning(f"⚠️ MTN API connectivity issue: {conn_error}")
             
-            if not self.create_api_user():
-                logger.warning("⚠️ Could not create/verify API user, continuing anyway...")
+            logger.info(f"🔧 Step 1.1: Creating API user...")
+            try:
+                user_created = self.create_api_user()
+                logger.info(f"🔧 API User creation result: {user_created}")
+                if not user_created:
+                    logger.warning("⚠️ Could not create/verify API user, continuing anyway...")
+            except Exception as user_error:
+                logger.error(f"❌ API User creation failed: {user_error}")
+                logger.warning("⚠️ Continuing without API user creation...")
             
             logger.info(f"🔧 Step 2: Getting access token...")
-            token = self.get_access_token()
-            if not token:
-                raise Exception("Failed to get MTN access token")
+            try:
+                token = self.get_access_token()
+                if not token:
+                    raise Exception("Failed to get MTN access token")
+                logger.info(f"✅ Token obtained successfully: {token[:20]}...")
+            except Exception as token_error:
+                logger.error(f"❌ Token generation failed: {token_error}")
+                raise Exception(f"Token generation failed: {token_error}")
             
-            logger.info(f"✅ Token obtained, proceeding with payment request...")
+            logger.info(f"🔧 Step 3: Proceeding with payment request...")
             
             url = f"{self.base_url}/collection/v1_0/requesttopay"
             
