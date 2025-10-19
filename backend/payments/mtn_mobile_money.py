@@ -1,5 +1,6 @@
 """
-Direct MTN Mobile Money Uganda Integration - CORRECTED VERSION
+Direct MTN Mobile Money Uganda Integration - CORRECTED VERSION v2.1
+Force deployment update - Oct 19, 2025
 """
 import requests
 import uuid

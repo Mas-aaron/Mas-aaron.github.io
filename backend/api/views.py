@@ -2003,6 +2003,13 @@ def initiate_payment(request):
                 from payments.mtn_mobile_money import MTNMobileMoneyAPI
                 logger.info("✅ MTN API imported successfully")
                 
+                # Check if we're using the corrected version
+                import payments.mtn_mobile_money as mtn_module
+                if hasattr(mtn_module, '__doc__') and 'v2.1' in str(mtn_module.__doc__):
+                    logger.info("✅ Using CORRECTED MTN API v2.1")
+                else:
+                    logger.warning("⚠️ Using OLD MTN API version - deployment issue!")
+                
                 logger.info("🔧 Initializing MTN API...")
                 mtn_api = MTNMobileMoneyAPI()
                 logger.info("✅ MTN API initialized successfully")
