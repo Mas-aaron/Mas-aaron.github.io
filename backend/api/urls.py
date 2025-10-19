@@ -107,6 +107,7 @@ custom_urlpatterns = [
     path('test-gcs/', api_views.test_gcs_connection, name='test-gcs-connection'),
     path('debug-pesapal/', api_views.debug_pesapal_config, name='debug-pesapal'),
     path('debug-mtn/', api_views.debug_mtn_config, name='debug-mtn'),
+    path('test-mtn-payment/', api_views.test_mtn_payment, name='test-mtn-payment'),
 ]
 
 # Combine all URL patterns

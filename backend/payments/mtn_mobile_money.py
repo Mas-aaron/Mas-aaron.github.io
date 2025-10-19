@@ -22,12 +22,26 @@ class MTNMobileMoneyAPI:
         self.callback_host = settings.MTN_MOMO_CONFIG.get('CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com')
         
         logger.info(f"🔑 MTN Config - Key: {self.subscription_key[:8]}... User: {self.user_id}")
-        logger.info("🚀 DEPLOYMENT TEST: MTN API v2.0 - Enhanced Debugging Active")
+        logger.info("🚀 DEPLOYMENT TEST: MTN API v2.1 - Enhanced Debugging Active")
+        
+        # Enhanced credential validation
+        logger.info("🔍 MTN Credential Validation:")
+        logger.info(f"   Subscription Key: {'✅ Present' if self.subscription_key and len(self.subscription_key) > 10 else '❌ Missing/Invalid'}")
+        logger.info(f"   User ID: {'✅ Present' if self.user_id and len(self.user_id) > 10 else '❌ Missing/Invalid'}")
+        logger.info(f"   API Key: {'✅ Present' if self.api_key and len(self.api_key) > 10 else '❌ Missing/Invalid'}")
+        logger.info(f"   Callback Host: {self.callback_host}")
         
         # Validate credentials
         if not all([self.subscription_key, self.user_id, self.api_key]):
             logger.error("❌ Missing MTN credentials!")
             raise Exception("Missing MTN API credentials")
+            
+        # Check for default placeholder values
+        if (self.subscription_key == 'your_subscription_key_here' or 
+            self.user_id == 'your_user_id_here' or 
+            self.api_key == 'your_api_key_here'):
+            logger.error("❌ MTN credentials still contain placeholder values!")
+            raise Exception("MTN API credentials not properly configured")
     
     def _create_api_user(self):
         """
@@ -309,7 +323,16 @@ class MTNMobileMoneyAPI:
             logger.info(f"Reference ID: {reference_id}")
             logger.info(f"Phone: {formatted_phone}")
             logger.info(f"Amount: {formatted_amount} UGX")
+            logger.info(f"Headers: {headers}")
             logger.info(f"Payload: {payload}")
+            
+            # Additional validation before sending
+            logger.info("🔍 Pre-flight validation:")
+            logger.info(f"   Token length: {len(token) if token else 0}")
+            logger.info(f"   Reference ID format: {reference_id}")
+            logger.info(f"   Phone format check: {formatted_phone}")
+            logger.info(f"   Amount type: {type(formatted_amount)} = {formatted_amount}")
+            logger.info(f"   External ID: {external_id}")
             
             # Step 4: Make API call
             response = requests.post(url, json=payload, headers=headers, timeout=30)
@@ -335,20 +358,43 @@ class MTNMobileMoneyAPI:
                 }
                 
             elif response.status_code == 400:
-                # Parse 400 error details
-                error_info = response.text
-                try:
-                    error_json = response.json()
-                    error_info = str(error_json)
-                except:
-                    pass
+                # Enhanced 400 error analysis
+                logger.error("❌ MTN API 400 Bad Request - Detailed Analysis:")
+                logger.error(f"   Response Headers: {dict(response.headers)}")
+                logger.error(f"   Response Body: '{response.text}'")
+                logger.error(f"   Response Length: {len(response.text)}")
+                logger.error(f"   Content-Type: {response.headers.get('content-type', 'Not specified')}")
                 
-                logger.error(f"❌ MTN API Bad Request: {error_info}")
+                # Try to parse error details
+                error_info = response.text
+                error_details = {}
+                
+                try:
+                    if response.text.strip():
+                        error_json = response.json()
+                        error_details = error_json
+                        error_info = str(error_json)
+                        logger.error(f"   Parsed JSON Error: {error_json}")
+                    else:
+                        logger.error("   Empty response body - no error details provided by MTN")
+                        error_info = "Empty response body"
+                except Exception as parse_error:
+                    logger.error(f"   Failed to parse error response: {parse_error}")
+                    error_info = f"Unparseable response: {response.text}"
+                
+                # Log the exact request that failed for debugging
+                logger.error("🔍 Failed Request Details:")
+                logger.error(f"   URL: {url}")
+                logger.error(f"   Method: POST")
+                logger.error(f"   Headers sent: {headers}")
+                logger.error(f"   Payload sent: {payload}")
+                
                 return {
                     'success': False,
                     'error': f'Invalid request parameters: {error_info}',
                     'status_code': 400,
-                    'raw_response': response.text
+                    'raw_response': response.text,
+                    'error_details': error_details
                 }
                 
             else:

@@ -2010,9 +2010,23 @@ def initiate_payment(request):
                 else:
                     logger.warning("⚠️ Using OLD MTN API version - deployment issue!")
                 
+                # Check MTN credentials before initialization
+                from django.conf import settings
+                mtn_config = settings.MTN_MOMO_CONFIG
+                logger.info(f"🔑 MTN Credentials Check:")
+                logger.info(f"   Subscription Key: {'✅' if mtn_config.get('SUBSCRIPTION_KEY') and mtn_config.get('SUBSCRIPTION_KEY') != 'your_subscription_key_here' else '❌'}")
+                logger.info(f"   User ID: {'✅' if mtn_config.get('USER_ID') and mtn_config.get('USER_ID') != 'your_user_id_here' else '❌'}")
+                logger.info(f"   API Key: {'✅' if mtn_config.get('API_KEY') and mtn_config.get('API_KEY') != 'your_api_key_here' else '❌'}")
+                
                 logger.info("🔧 Initializing MTN API...")
-                mtn_api = MTNMobileMoneyAPI()
-                logger.info("✅ MTN API initialized successfully")
+                try:
+                    mtn_api = MTNMobileMoneyAPI()
+                    logger.info("✅ MTN API initialized successfully")
+                except Exception as init_error:
+                    logger.error(f"❌ MTN API initialization failed: {init_error}")
+                    import traceback
+                    logger.error(f"📄 MTN init traceback: {traceback.format_exc()}")
+                    raise init_error
                 
                 # Request payment from MTN
                 logger.info(f"🔧 Step 3: Calling MTN request_to_pay...")
@@ -2463,7 +2477,7 @@ def debug_pesapal_config(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def debug_mtn_config(request):
     """Debug MTN Mobile Money configuration"""
     from django.conf import settings
@@ -2496,3 +2510,52 @@ def debug_mtn_config(request):
     }
     
     return Response(debug_info)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def test_mtn_payment(request):
+    """Test MTN Mobile Money payment with enhanced debugging"""
+    import time
+    try:
+        # Get test parameters
+        phone = request.data.get('phone', '256783876390')
+        amount = request.data.get('amount', 1000)
+        
+        logger.info(f"🧪 MTN Payment Test Started")
+        logger.info(f"📱 Test Phone: {phone}")
+        logger.info(f"💰 Test Amount: {amount}")
+        
+        # Import and initialize MTN API
+        from payments.mtn_mobile_money import MTNMobileMoneyAPI
+        
+        logger.info("🔧 Initializing MTN API for test...")
+        mtn_api = MTNMobileMoneyAPI()
+        logger.info("✅ MTN API initialized for test")
+        
+        # Test the payment request
+        result = mtn_api.request_to_pay(
+            phone_number=phone,
+            amount=amount,
+            external_id=f"TEST{int(time.time())}",
+            payer_message="Test Payment"
+        )
+        
+        logger.info(f"🧪 Test Result: {result}")
+        
+        return Response({
+            'test_completed': True,
+            'result': result,
+            'message': 'Check server logs for detailed debugging information'
+        })
+        
+    except Exception as e:
+        logger.error(f"🧪 MTN Test Error: {str(e)}")
+        import traceback
+        logger.error(f"📄 Test Traceback: {traceback.format_exc()}")
+        
+        return Response({
+            'test_completed': False,
+            'error': str(e),
+            'message': 'Check server logs for detailed error information'
+        }, status=500)
