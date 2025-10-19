@@ -124,8 +124,12 @@ class MTNMobileMoneyAPI:
     def get_access_token(self):
         """Get OAuth access token from MTN"""
         try:
+            logger.info("🔧 Starting API user provisioning...")
             # Ensure API user is provisioned first
-            if not self._provision_api_user():
+            provisioning_result = self._provision_api_user()
+            logger.info(f"🔧 Provisioning result: {provisioning_result}")
+            
+            if not provisioning_result:
                 logger.error("❌ Cannot get token: API user not provisioned")
                 return None
             
@@ -195,7 +199,8 @@ class MTNMobileMoneyAPI:
             
             # Validate minimum amount
             if amount_float < 100:  # MTN minimum is usually 100 UGX
-                logger.warning(f"⚠️ Amount {amount_float} is below typical MTN minimum")
+                logger.error(f"❌ Amount {amount_float} is below MTN minimum of 100 UGX")
+                return None
             
             # Convert to integer string (remove decimals)
             amount_str = str(int(amount_float))
@@ -215,26 +220,55 @@ class MTNMobileMoneyAPI:
             logger.info("🚀 Starting MTN Mobile Money payment process...")
             
             # Step 1: Validate and format inputs
-            formatted_phone = self._validate_and_format_phone_number(phone_number)
-            if not formatted_phone:
+            logger.info("🔧 Step 1: Validating phone number...")
+            try:
+                formatted_phone = self._validate_and_format_phone_number(phone_number)
+                if not formatted_phone:
+                    return {
+                        'success': False,
+                        'error': 'Invalid phone number format'
+                    }
+                logger.info(f"✅ Phone validation successful: {formatted_phone}")
+            except Exception as phone_error:
+                logger.error(f"❌ Phone validation failed: {phone_error}")
                 return {
                     'success': False,
-                    'error': 'Invalid phone number format'
+                    'error': f'Phone validation error: {phone_error}'
                 }
             
-            formatted_amount = self._validate_and_format_amount(amount)
-            if not formatted_amount:
+            logger.info("🔧 Step 2: Validating amount...")
+            try:
+                formatted_amount = self._validate_and_format_amount(amount)
+                if not formatted_amount:
+                    return {
+                        'success': False,
+                        'error': 'Invalid amount format'
+                    }
+                logger.info(f"✅ Amount validation successful: {formatted_amount}")
+            except Exception as amount_error:
+                logger.error(f"❌ Amount validation failed: {amount_error}")
                 return {
                     'success': False,
-                    'error': 'Invalid amount format'
+                    'error': f'Amount validation error: {amount_error}'
                 }
             
-            # Step 2: Get access token
-            token = self.get_access_token()
-            if not token:
+            # Step 3: Get access token
+            logger.info("🔧 Step 3: Getting access token...")
+            try:
+                token = self.get_access_token()
+                if not token:
+                    return {
+                        'success': False,
+                        'error': 'Failed to obtain access token'
+                    }
+                logger.info(f"✅ Token obtained successfully: {token[:20]}...")
+            except Exception as token_error:
+                logger.error(f"❌ Token generation failed: {token_error}")
+                import traceback
+                logger.error(f"📄 Token error traceback: {traceback.format_exc()}")
                 return {
                     'success': False,
-                    'error': 'Failed to obtain access token'
+                    'error': f'Token generation error: {token_error}'
                 }
             
             # Step 3: Prepare payment request
