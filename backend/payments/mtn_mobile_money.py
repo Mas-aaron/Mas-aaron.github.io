@@ -8,6 +8,15 @@ import base64
 import logging
 from django.conf import settings
 
+# Ensure all required modules are available
+try:
+    import json
+    logger = logging.getLogger(__name__)
+    logger.info("✅ All MTN API dependencies loaded successfully")
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.error(f"❌ Missing dependency: {e}")
+
 logger = logging.getLogger(__name__)
 
 class MTNMobileMoneyAPI:
@@ -127,6 +136,14 @@ class MTNMobileMoneyAPI:
         """
         try:
             logger.info(f"🔧 Step 1: Creating API user...")
+            
+            # Test basic connectivity first
+            try:
+                test_response = requests.get(f"{self.base_url}/", timeout=5)
+                logger.info(f"🌐 MTN API connectivity test: {test_response.status_code}")
+            except Exception as conn_error:
+                logger.warning(f"⚠️ MTN API connectivity issue: {conn_error}")
+            
             if not self.create_api_user():
                 logger.warning("⚠️ Could not create/verify API user, continuing anyway...")
             
@@ -134,6 +151,8 @@ class MTNMobileMoneyAPI:
             token = self.get_access_token()
             if not token:
                 raise Exception("Failed to get MTN access token")
+            
+            logger.info(f"✅ Token obtained, proceeding with payment request...")
             
             url = f"{self.base_url}/collection/v1_0/requesttopay"
             
