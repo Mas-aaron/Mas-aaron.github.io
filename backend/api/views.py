@@ -2477,7 +2477,7 @@ def debug_pesapal_config(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def debug_mtn_config(request):
     """Debug MTN Mobile Money configuration"""
     from django.conf import settings
@@ -2513,7 +2513,7 @@ def debug_mtn_config(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def test_mtn_payment(request):
     """Test MTN Mobile Money payment with enhanced debugging"""
     import time
