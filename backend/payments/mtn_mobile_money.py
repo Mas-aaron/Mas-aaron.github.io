@@ -26,6 +26,7 @@ class MTNMobileMoneyAPI:
         self.user_id = settings.MTN_MOMO_CONFIG.get('USER_ID', '')
         self.api_key = settings.MTN_MOMO_CONFIG.get('API_KEY', '')
         self.target_environment = settings.MTN_MOMO_CONFIG.get('TARGET_ENVIRONMENT', 'sandbox')
+        self.currency = settings.MTN_MOMO_CONFIG.get('CURRENCY', 'EUR')
         self.callback_host = settings.MTN_MOMO_CONFIG.get('CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com')
         self.callback_url = settings.MTN_MOMO_CONFIG.get('CALLBACK_URL', f"https://{self.callback_host}/api/payments/mtn/callback/")
         self.send_callback_header = settings.MTN_MOMO_CONFIG.get('SEND_CALLBACK_HEADER', False)
@@ -38,6 +39,7 @@ class MTNMobileMoneyAPI:
         logger.info(f"   Subscription Key: {'✅ Present' if self.subscription_key and len(self.subscription_key) > 10 else '❌ Missing/Invalid'}")
         logger.info(f"   User ID: {'✅ Present' if self.user_id and len(self.user_id) > 10 else '❌ Missing/Invalid'}")
         logger.info(f"   API Key: {'✅ Present' if self.api_key and len(self.api_key) > 10 else '❌ Missing/Invalid'}")
+        logger.info(f"   Currency: {self.currency}")
         logger.info(f"   Callback Host: {self.callback_host}")
         
         # Validate credentials
@@ -329,7 +331,7 @@ class MTNMobileMoneyAPI:
             
             payload = {
                 "amount": formatted_amount,
-                "currency": "UGX",
+                "currency": self.currency,
                 "externalId": external_id,
                 "payer": {
                     "partyIdType": "MSISDN",

@@ -373,4 +373,6 @@ MTN_MOMO_CONFIG = {
     'CALLBACK_HOST': os.getenv('MTN_MOMO_CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com'),
     # Controls whether to send X-Callback-Url header on requesttopay (often unnecessary in sandbox)
     'SEND_CALLBACK_HEADER': os.getenv('MTN_MOMO_SEND_CALLBACK_HEADER', 'false').lower() == 'true',
+    # Currency for Uganda (256). Override via MTN_MOMO_CURRENCY if needed.
+    'CURRENCY': os.getenv('MTN_MOMO_CURRENCY', 'UGX'),
 }
