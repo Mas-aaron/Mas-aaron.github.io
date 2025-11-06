@@ -188,12 +188,16 @@ class DeviceViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            # Use update_or_create for idempotent device registration.
-            # Match the model fields: 'token' and 'device_type'.
+            # Use token as the unique identifier since it has a unique constraint
+            # If the token exists (even for a different user), update it to the current user
+            # This handles cases where a device was previously registered to a different account
             device, created = Device.objects.update_or_create(
-                user=request.user, 
                 token=registration_id,
-                defaults={'device_type': device_type, 'is_active': True}
+                defaults={
+                    'user': request.user,
+                    'device_type': device_type, 
+                    'is_active': True
+                }
             )
         except Exception as e:
             # Log the error and return a graceful response
@@ -251,10 +255,11 @@ def register_restaurant_device(request):
             )
         
         # Register or update device for restaurant notifications
+        # Use token as unique identifier to match database constraint
         device, created = Device.objects.update_or_create(
-            user=request.user,
             token=fcm_token,
             defaults={
+                'user': request.user,
                 'device_type': device_type,
                 'is_active': True
             }

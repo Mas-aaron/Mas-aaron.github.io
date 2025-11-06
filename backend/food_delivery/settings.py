@@ -370,4 +370,5 @@ MTN_MOMO_CONFIG = {
     'API_KEY': os.getenv('MTN_MOMO_API_KEY', 'your_api_key_here'),
     'BASE_URL': os.getenv('MTN_MOMO_BASE_URL', 'https://sandbox.momodeveloper.mtn.com'),
     'TARGET_ENVIRONMENT': os.getenv('MTN_MOMO_ENVIRONMENT', 'sandbox'),
+    'CALLBACK_HOST': os.getenv('MTN_MOMO_CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com'),
 }

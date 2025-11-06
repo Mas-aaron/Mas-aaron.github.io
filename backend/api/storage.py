@@ -19,27 +19,66 @@ from urllib.parse import urljoin
 class SupabaseStorage(Storage):
     """
     Custom Supabase Storage backend for Django
+    Uses lazy initialization with class-level caching to prevent worker timeouts
     """
     
+    # Class-level client cache (singleton pattern)
+    _client_cache = None
+    _client_initialized = False
+    _initialization_failed = False
+    
     def __init__(self, *args, **kwargs):
-        print(f"🔧 Initializing SupabaseStorage (supabase available: {SUPABASE_AVAILABLE})")
         super().__init__(*args, **kwargs)
         
         # Get Supabase configuration from settings
         self.supabase_url = getattr(settings, 'SUPABASE_URL', None)
         self.supabase_key = getattr(settings, 'SUPABASE_ANON_KEY', None)
         self.bucket_name = getattr(settings, 'SUPABASE_STORAGE_BUCKET', 'images')
+    
+    @property
+    def client(self):
+        """
+        Lazy initialization of Supabase client with class-level caching
+        This prevents blocking worker threads on every storage instantiation
+        """
+        # If initialization already failed, don't try again
+        if SupabaseStorage._initialization_failed:
+            return None
         
-        if SUPABASE_AVAILABLE and self.supabase_url and self.supabase_key:
-            try:
-                self.client: Client = create_client(self.supabase_url, self.supabase_key)
-                print(f"✅ Supabase client initialized with bucket: {self.bucket_name}")
-            except Exception as e:
-                print(f"❌ Failed to initialize Supabase client: {e}")
-                self.client = None
-        else:
-            print("⚠️ Supabase not available or not configured, using local storage fallback")
-            self.client = None
+        # Return cached client if available
+        if SupabaseStorage._client_initialized and SupabaseStorage._client_cache is not None:
+            return SupabaseStorage._client_cache
+        
+        # Only initialize once
+        if not SupabaseStorage._client_initialized:
+            if SUPABASE_AVAILABLE and self.supabase_url and self.supabase_key:
+                try:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.debug(f"🔧 Initializing Supabase client (first time only)")
+                    
+                    SupabaseStorage._client_cache = create_client(self.supabase_url, self.supabase_key)
+                    SupabaseStorage._client_initialized = True
+                    
+                    logger.info(f"✅ Supabase client initialized with bucket: {self.bucket_name}")
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"❌ Failed to initialize Supabase client: {e}")
+                    
+                    SupabaseStorage._initialization_failed = True
+                    SupabaseStorage._client_cache = None
+            else:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning("⚠️ Supabase not available or not configured, using local storage fallback")
+                
+                SupabaseStorage._initialization_failed = True
+                SupabaseStorage._client_cache = None
+            
+            SupabaseStorage._client_initialized = True
+        
+        return SupabaseStorage._client_cache
     
     def _save(self, name, content):
         """

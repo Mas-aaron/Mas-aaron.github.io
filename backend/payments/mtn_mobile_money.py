@@ -1,6 +1,11 @@
 """
-Direct MTN Mobile Money Uganda Integration - CORRECTED VERSION v2.1
-Force deployment update - Oct 19, 2025
+Direct MTN Mobile Money Uganda Integration - CORRECTED VERSION v2.2
+Fixed API user provisioning - Nov 6, 2025
+
+IMPORTANT: Before using this integration:
+1. Create API user once using: python manage.py setup_mtn_api_user
+2. Configure MTN_MOMO_CONFIG in settings with the credentials
+3. Then use request_to_pay() for payments
 """
 import requests
 import uuid
@@ -138,20 +143,12 @@ class MTNMobileMoneyAPI:
             return False
     
     def get_access_token(self):
-        """Get OAuth access token from MTN"""
+        """Get OAuth access token from MTN using pre-configured credentials"""
         try:
-            logger.info("🔧 Starting API user provisioning...")
-            # Ensure API user is provisioned first
-            provisioning_result = self._provision_api_user()
-            logger.info(f"🔧 Provisioning result: {provisioning_result}")
-            
-            if not provisioning_result:
-                logger.error("❌ Cannot get token: API user not provisioned")
-                return None
-            
             url = f"{self.base_url}/collection/token/"
             
-            # Create basic auth header using USER_ID and DYNAMIC API_KEY
+            # Create basic auth header using USER_ID and API_KEY from settings
+            # These should be configured once during setup, not regenerated
             credentials = f"{self.user_id}:{self.api_key}"
             encoded_credentials = base64.b64encode(credentials.encode()).decode()
             
@@ -160,7 +157,10 @@ class MTNMobileMoneyAPI:
                 'Ocp-Apim-Subscription-Key': self.subscription_key
             }
             
-            logger.info("🔑 Requesting access token...")
+            logger.info("🔑 Requesting access token with configured credentials...")
+            logger.info(f"   Using User ID: {self.user_id}")
+            logger.info(f"   Using API Key: {self.api_key[:8]}...{self.api_key[-4:]}")
+            
             response = requests.post(url, headers=headers, timeout=30)
             
             logger.info(f"Token Response Status: {response.status_code}")
@@ -174,13 +174,19 @@ class MTNMobileMoneyAPI:
             else:
                 logger.error(f"❌ Token request failed: {response.status_code} - {response.text}")
                 if response.status_code == 401:
-                    logger.error("🔐 401 - Check API User ID and API Key")
+                    logger.error("🔐 401 Unauthorized - Invalid API User ID or API Key")
+                    logger.error("   Please verify MTN_MOMO_CONFIG credentials in settings")
                 elif response.status_code == 403:
-                    logger.error("🔐 403 - Check Subscription Key")
+                    logger.error("🔐 403 Forbidden - Invalid Subscription Key")
+                elif response.status_code == 404:
+                    logger.error("🔐 404 Not Found - API User may not exist")
+                    logger.error("   You may need to provision API user first")
                 return None
                 
         except Exception as e:
             logger.error(f"💥 Token error: {str(e)}")
+            import traceback
+            logger.error(f"📄 Token error traceback: {traceback.format_exc()}")
             return None
     
     def _validate_and_format_phone_number(self, phone_number):
