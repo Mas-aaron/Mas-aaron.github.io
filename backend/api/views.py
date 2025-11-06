@@ -45,6 +45,19 @@ def health_check(request):
         'timestamp': timezone.now().isoformat()
     })
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def mtn_payment_callback(request):
+    """Minimal MTN MoMo callback endpoint (sandbox). Returns 204."""
+    try:
+        ref_id = request.headers.get('X-Reference-Id') or request.META.get('HTTP_X_REFERENCE_ID')
+        logger.info("📥 MTN Callback received")
+        logger.info(f"   X-Reference-Id: {ref_id}")
+        logger.info(f"   Body: {request.body.decode('utf-8', errors='ignore')}")
+    except Exception as e:
+        logger.error(f"Error in MTN callback: {e}")
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
 @api_view(['GET'])
 def test_gcs_connection(request):
     """Test GCS connection and credentials"""

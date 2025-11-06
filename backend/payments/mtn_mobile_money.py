@@ -18,13 +18,14 @@ logger = logging.getLogger(__name__)
 
 class MTNMobileMoneyAPI:
     def __init__(self):
-        # MTN Mobile Money Sandbox credentials
-        self.base_url = "https://sandbox.momodeveloper.mtn.com"
+        # MTN Mobile Money configuration
+        self.base_url = settings.MTN_MOMO_CONFIG.get('BASE_URL', 'https://sandbox.momodeveloper.mtn.com')
         self.subscription_key = settings.MTN_MOMO_CONFIG.get('SUBSCRIPTION_KEY', '')
         self.user_id = settings.MTN_MOMO_CONFIG.get('USER_ID', '')
         self.api_key = settings.MTN_MOMO_CONFIG.get('API_KEY', '')
-        self.target_environment = "sandbox"
+        self.target_environment = settings.MTN_MOMO_CONFIG.get('TARGET_ENVIRONMENT', 'sandbox')
         self.callback_host = settings.MTN_MOMO_CONFIG.get('CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com')
+        self.callback_url = settings.MTN_MOMO_CONFIG.get('CALLBACK_URL', f"https://{self.callback_host}/api/payments/mtn/callback/")
         
         logger.info(f"🔑 MTN Config - Key: {self.subscription_key[:8]}... User: {self.user_id}")
         logger.info("🚀 DEPLOYMENT TEST: MTN API v2.1 - Enhanced Debugging Active")
@@ -311,6 +312,10 @@ class MTNMobileMoneyAPI:
                 'Ocp-Apim-Subscription-Key': self.subscription_key,
                 'Content-Type': 'application/json',
             }
+
+            # Some environments require explicit callback URL header; add if available
+            if self.callback_url:
+                headers['X-Callback-Url'] = self.callback_url
             
             payload = {
                 "amount": formatted_amount,
