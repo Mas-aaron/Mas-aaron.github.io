@@ -49,6 +49,9 @@ custom_urlpatterns = [
     path('orders/', api_views.OrderListCreateView.as_view(), name='order-list-create'),
     path('orders/<int:pk>/', api_views.OrderDetailView.as_view(), name='order-detail'),
     path('orders/<int:pk>/update-status/', api_views.OrderUpdateStatusView.as_view(), name='order-update-status'),
+
+    # Payments - MTN callback (sandbox)
+    path('payments/mtn/callback/', api_views.mtn_payment_callback, name='mtn-payment-callback'),
     path('orders/<int:order_id>/notify-arrival/', api_views.NotifyArrivalView.as_view(), name='order-notify-arrival'),
 
     # Restaurant URLs
