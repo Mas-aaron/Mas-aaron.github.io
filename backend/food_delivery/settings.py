@@ -371,4 +371,6 @@ MTN_MOMO_CONFIG = {
     'BASE_URL': os.getenv('MTN_MOMO_BASE_URL', 'https://sandbox.momodeveloper.mtn.com'),
     'TARGET_ENVIRONMENT': os.getenv('MTN_MOMO_ENVIRONMENT', 'sandbox'),
     'CALLBACK_HOST': os.getenv('MTN_MOMO_CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com'),
+    # Controls whether to send X-Callback-Url header on requesttopay (often unnecessary in sandbox)
+    'SEND_CALLBACK_HEADER': os.getenv('MTN_MOMO_SEND_CALLBACK_HEADER', 'false').lower() == 'true',
 }

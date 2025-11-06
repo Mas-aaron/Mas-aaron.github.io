@@ -26,6 +26,7 @@ class MTNMobileMoneyAPI:
         self.target_environment = settings.MTN_MOMO_CONFIG.get('TARGET_ENVIRONMENT', 'sandbox')
         self.callback_host = settings.MTN_MOMO_CONFIG.get('CALLBACK_HOST', 'food-delivery-backend-2mcb.onrender.com')
         self.callback_url = settings.MTN_MOMO_CONFIG.get('CALLBACK_URL', f"https://{self.callback_host}/api/payments/mtn/callback/")
+        self.send_callback_header = settings.MTN_MOMO_CONFIG.get('SEND_CALLBACK_HEADER', False)
         
         logger.info(f"🔑 MTN Config - Key: {self.subscription_key[:8]}... User: {self.user_id}")
         logger.info("🚀 DEPLOYMENT TEST: MTN API v2.1 - Enhanced Debugging Active")
@@ -313,8 +314,8 @@ class MTNMobileMoneyAPI:
                 'Content-Type': 'application/json',
             }
 
-            # Some environments require explicit callback URL header; add if available
-            if self.callback_url:
+            # Some environments require explicit callback URL header; add only if enabled
+            if self.send_callback_header and self.callback_url:
                 headers['X-Callback-Url'] = self.callback_url
             
             payload = {
