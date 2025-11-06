@@ -8,7 +8,8 @@ IMPORTANT: Before using this integration:
 3. Then use request_to_pay() for payments
 """
 import requests
-import uuid
+import json
+import re
 import base64
 import logging
 import time
@@ -305,6 +306,13 @@ class MTNMobileMoneyAPI:
             # Truncate messages to MTN limits
             truncated_payer_message = payer_message[:20]
             truncated_payee_note = f"Order {external_id}"[:20]
+
+            # MTN sandbox can reject certain special characters (e.g., '#')
+            def _sanitize_message(msg: str) -> str:
+                return re.sub(r'[^A-Za-z0-9 ]+', '', msg or '').strip()
+
+            safe_payer_message = _sanitize_message(truncated_payer_message)
+            safe_payee_note = _sanitize_message(truncated_payee_note)
             
             headers = {
                 'Authorization': f'Bearer {token}',
@@ -326,8 +334,8 @@ class MTNMobileMoneyAPI:
                     "partyIdType": "MSISDN",
                     "partyId": formatted_phone
                 },
-                "payerMessage": truncated_payer_message,
-                "payeeNote": truncated_payee_note
+                "payerMessage": safe_payer_message,
+                "payeeNote": safe_payee_note
             }
             
             logger.info("📤 Sending MTN Payment Request:")
@@ -337,6 +345,7 @@ class MTNMobileMoneyAPI:
             logger.info(f"Amount: {formatted_amount} UGX")
             logger.info(f"Headers: {headers}")
             logger.info(f"Payload: {payload}")
+            logger.info(f"Sanitized Messages -> payerMessage: '{safe_payer_message}', payeeNote: '{safe_payee_note}'")
             
             # Additional validation before sending
             logger.info("🔍 Pre-flight validation:")
