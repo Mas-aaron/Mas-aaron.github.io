@@ -10,6 +10,7 @@ IMPORTANT: Before using this integration:
 import requests
 import json
 import re
+import uuid
 import base64
 import logging
 import time
