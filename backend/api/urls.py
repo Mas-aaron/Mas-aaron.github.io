@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
 
 from . import views as api_views
+from . import views_mtn_setup
 
 
 # Router for custom viewsets that require specific URL structures
@@ -97,6 +98,11 @@ custom_urlpatterns = [
     path('payments/history/', api_views.payment_history, name='payment_history'),
     path('payments/pesapal-callback/', api_views.pesapal_callback, name='pesapal_callback'),
     path('payments/pesapal-ipn/', api_views.pesapal_ipn, name='pesapal_ipn'),
+    
+    # MTN Setup URLs (One-time use for Render free tier)
+    path('mtn-setup/create-user/', views_mtn_setup.mtn_setup_create_user, name='mtn-setup-create-user'),
+    path('mtn-setup/get-api-key/', views_mtn_setup.mtn_setup_get_api_key, name='mtn-setup-get-api-key'),
+    path('mtn-setup/test-credentials/', views_mtn_setup.mtn_setup_test_credentials, name='mtn-setup-test-credentials'),
     
     # Test/Debug URLs
     path('health/', api_views.health_check, name='health-check'),
