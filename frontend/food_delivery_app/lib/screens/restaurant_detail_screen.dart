@@ -8,6 +8,7 @@ import 'package:food_delivery_app/screens/cart_screen.dart';
 import 'package:food_delivery_app/providers/cart_provider.dart';
 import 'package:food_delivery_app/services/distance_service.dart';
 import 'package:food_delivery_app/widgets/error_state_widget.dart';
+import 'package:food_delivery_app/widgets/optimized_image.dart';
 import 'package:provider/provider.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
@@ -257,32 +258,9 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with Si
                   Row(
                     children: [
                       // Restaurant Logo
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: widget.restaurant.imageUrl != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  widget.restaurant.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.restaurant, size: 30),
-                                ),
-                              )
-                            : const Icon(Icons.restaurant, size: 30),
+                      RestaurantLogoImage(
+                        imageUrl: widget.restaurant.imageUrl,
+                        size: 60,
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -511,22 +489,19 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with Si
           // Image
           Stack(
             children: [
-              ClipRRect(
+              OptimizedImage(
+                imageUrl: item.imageUrl,
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
                 ),
-                child: Image.network(
-                  item.imageUrl ?? 'https://via.placeholder.com/150',
+                errorWidget: Container(
                   height: 120,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      Container(
-                        height: 120,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.fastfood, size: 40),
-                      ),
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.fastfood, size: 40),
                 ),
               ),
               Positioned(

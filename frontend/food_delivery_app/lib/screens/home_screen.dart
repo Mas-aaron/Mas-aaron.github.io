@@ -4,6 +4,7 @@ import 'package:food_delivery_app/providers/location_provider.dart';
 import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/widgets/error_state_widget.dart';
+import 'package:food_delivery_app/widgets/optimized_image.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'restaurant_detail_screen.dart';
@@ -1044,25 +1045,12 @@ class _AnimatedRestaurantCardState extends State<_AnimatedRestaurantCard>
             // Image with overlay badges
             Stack(
               children: [
-                ClipRRect(
+                RestaurantCardImage(
+                  imageUrl: widget.restaurant.imageUrl,
+                  height: 140,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
-                  ),
-                  child: Image.network(
-                    widget.restaurant.imageUrl ?? 'https://via.placeholder.com/400x140',
-                    height: 140,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 140,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.orange.shade300, Colors.orange.shade600],
-                        ),
-                      ),
-                      child: const Icon(Icons.restaurant, size: 50, color: Colors.white),
-                    ),
                   ),
                 ),
                 // Time badge
