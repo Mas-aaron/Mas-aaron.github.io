@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import '../models/payment.dart';
 import '../services/payment_service.dart';
+import 'order_success_screen.dart';
 
 class MobileMoneyPaymentScreen extends StatefulWidget {
   final PaymentMethod paymentMethod;
@@ -359,6 +360,33 @@ class _MobileMoneyPaymentScreenState extends State<MobileMoneyPaymentScreen> {
     );
 
     if (result['success']) {
+      // If backend already returns a status (sandbox often SUCCESSFUL), finish immediately
+      final statusResponse = result['status_response'];
+      final status = result['status'] ?? (statusResponse != null ? statusResponse['status'] : null);
+
+      if (status != null && (status == 'SUCCESSFUL' || status == 'PENDING')) {
+        _statusCheckTimer?.cancel();
+        setState(() {
+          _isProcessing = false;
+        });
+        
+        // Extract transaction details
+        final transactionId = statusResponse?['financialTransactionId']?.toString();
+        
+        // Navigate to success screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => OrderSuccessScreen(
+              orderId: int.tryParse(widget.orderId) ?? 0,
+              totalAmount: widget.amount,
+              transactionId: transactionId,
+            ),
+          ),
+        );
+        return;
+      }
+
+      // Otherwise, fall back to polling with payment_id
       _paymentId = result['payment_id'];
       _startStatusChecking();
       
@@ -400,12 +428,14 @@ class _MobileMoneyPaymentScreenState extends State<MobileMoneyPaymentScreen> {
       
       if (status == 'completed') {
         _statusCheckTimer?.cancel();
-        widget.onPaymentSuccess();
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment completed successfully!'),
-            backgroundColor: Colors.green,
+        // Navigate to success screen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => OrderSuccessScreen(
+              orderId: int.tryParse(widget.orderId) ?? 0,
+              totalAmount: widget.amount,
+            ),
           ),
         );
       } else if (status == 'failed' || status == 'cancelled') {

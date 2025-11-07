@@ -100,8 +100,17 @@ class CartProvider with ChangeNotifier {
 
   Future<void> updateItemQuantity(int cartItemId, int quantity) async {
     try {
+      // Update backend and get new cart item
       await _apiService.updateCartItemQuantity(cartItemId, quantity);
-      await fetchCart();
+      
+      // Update locally for instant UI response
+      if (_cart != null) {
+        final itemIndex = _cart!.items.indexWhere((item) => item.id == cartItemId);
+        if (itemIndex != -1) {
+          // Fetch just updated cart to get correct data
+          await fetchCart();
+        }
+      }
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -119,14 +128,12 @@ class CartProvider with ChangeNotifier {
   }
 
   Future<bool> addToCart(int menuItemId) async {
-    _isLoading = true;
-    notifyListeners();
-
+    // Don't show global loading - update optimistically
     bool success = false;
     try {
       final newCartItem = await _apiService.addToCart(menuItemId, 1);
       
-      // Update cart locally instead of refetching everything
+      // Update cart locally IMMEDIATELY for instant UI response
       if (_cart != null) {
         // Check if item already exists in cart
         final existingItemIndex = _cart!.items.indexWhere(
@@ -134,17 +141,22 @@ class CartProvider with ChangeNotifier {
         );
         
         if (existingItemIndex != -1) {
-          // Update existing item
+          // Update existing item quantity
           _cart!.items[existingItemIndex] = newCartItem;
         } else {
           // Add new item
           _cart!.items.add(newCartItem);
         }
         
-        // No need to recalculate total - Cart model has a getter that calculates it automatically
+        // Recalculate is handled by Cart model getter
+        // Notify immediately for instant UI update
+        notifyListeners();
       } else {
         // If cart is null, fetch it once
+        _isLoading = true;
+        notifyListeners();
         await fetchCart();
+        _isLoading = false;
       }
       
       _error = null;
@@ -152,10 +164,9 @@ class CartProvider with ChangeNotifier {
     } catch (e) {
       _error = 'Failed to add item to cart: $e';
       success = false;
+      notifyListeners();
     }
 
-    _isLoading = false;
-    notifyListeners();
     return success;
   }
 

@@ -58,9 +58,12 @@ class PaymentService {
         return {
           'success': data['success'] ?? true,
           'payment_id': data['payment_id'],
-          'reference': data['reference'],
+          'reference': data['reference'] ?? data['reference_id'],
           'redirect_url': data['redirect_url'],
           'message': data['message'] ?? 'Payment initiated successfully',
+          // Pass through optional fields for mobile money flows
+          'status': data['status'],
+          'status_response': data['status_response'],
         };
       } else {
         return {

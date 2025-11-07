@@ -4,7 +4,7 @@ import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/services/websocket_service.dart';
 import 'package:food_delivery_app/screens/order_tracking_screen.dart';
-import 'package:food_delivery_app/widgets/error_display.dart';
+import 'package:food_delivery_app/widgets/error_state_widget.dart';
 import 'package:intl/intl.dart';
 
 class OrdersScreen extends StatefulWidget {
@@ -53,7 +53,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       print('Error loading orders: $e');
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to load orders: $e';
+          _errorMessage = e.toString();
           _isLoading = false;
         });
       }
@@ -164,14 +164,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
 
     if (_errorMessage != null) {
-      return ErrorDisplayWidget(
-        errorMessage: _errorMessage!,
+      return ErrorStateWidget(
+        message: _errorMessage,
         onRetry: _loadOrdersAndInitWebSocket,
+        icon: Icons.receipt_long_outlined,
+        title: 'Cannot Load Orders',
       );
     }
 
     if (_orders.isEmpty) {
-      return const Center(child: Text('You have no active orders.'));
+      return const EmptyStateWidget(
+        message: 'You have no orders yet.\nStart by ordering some delicious food!',
+        icon: Icons.shopping_bag_outlined,
+      );
     }
 
     return ListView.builder(

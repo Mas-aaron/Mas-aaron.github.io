@@ -224,7 +224,31 @@ class ApiService {
     }
   }
 
-  Future<List<MenuItem>> fetchMenuItems(int restaurantId, {List<int>? dietaryPreferenceIds}) async {
+  Future<List<String>> fetchRestaurantCategories(int restaurantId) async {
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+    var queryParameters = <String, dynamic>{'_': cacheBuster.toString()};
+    
+    var uri = Uri.parse('$_baseUrl/restaurants/$restaurantId/menu-items/').replace(queryParameters: queryParameters);
+    final response = await _makeRequest('GET', uri.toString());
+    if (response.statusCode == 200) {
+      List<dynamic> body = jsonDecode(response.body);
+      // Extract unique categories from menu items
+      Set<String> categories = {};
+      for (var item in body) {
+        if (item['category'] != null) {
+          String category = item['category'].toString();
+          if (category.isNotEmpty) {
+            categories.add(category);
+          }
+        }
+      }
+      return categories.toList()..sort(); // Return sorted list
+    } else {
+      throw Exception('Failed to load categories');
+    }
+  }
+
+  Future<List<MenuItem>> fetchMenuItems(int restaurantId, {List<int>? dietaryPreferenceIds, String? category}) async {
     final cacheBuster = DateTime.now().millisecondsSinceEpoch;
     var queryParameters = <String, dynamic>{'_': cacheBuster.toString()};
     
@@ -236,7 +260,14 @@ class ApiService {
     final response = await _makeRequest('GET', uri.toString());
     if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
-      return body.map((dynamic item) => MenuItem.fromJson(item)).toList();
+      List<MenuItem> items = body.map((dynamic item) => MenuItem.fromJson(item)).toList();
+      
+      // Filter by category if provided
+      if (category != null && category.isNotEmpty) {
+        items = items.where((item) => item.category.toString() == category).toList();
+      }
+      
+      return items;
     } else {
       throw Exception('Failed to load menu items');
     }
