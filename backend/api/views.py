@@ -245,7 +245,7 @@ from .models import (
     Bill,
     Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, 
     Order, OrderItem, Message, Notification, DietaryPreference, CustomerProfile, 
-    UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview, PaymentPeriod, BankAccount, PaymentDispute, Payment
+    UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview, PaymentPeriod, BankAccount, PaymentDispute, Payment,
     PromoCode, PromoCodeRedemption,
     PasswordResetOTP,
 )
