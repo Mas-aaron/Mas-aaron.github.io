@@ -52,6 +52,8 @@ custom_urlpatterns = [
 
     # Payments - MTN callback (sandbox)
     path('payments/mtn/callback/', api_views.mtn_payment_callback, name='mtn-payment-callback'),
+    # Payments - Airtel Money callback
+    path('payments/airtel/callback/', api_views.airtel_payment_callback, name='airtel-payment-callback'),
     path('orders/<int:order_id>/notify-arrival/', api_views.NotifyArrivalView.as_view(), name='order-notify-arrival'),
 
     # Restaurant URLs
@@ -62,6 +64,8 @@ custom_urlpatterns = [
     path('register/restaurant/', api_views.RestaurantSignUpView.as_view(), name='restaurant-signup'),
     path('login/', obtain_auth_token, name='login'),
     path('me/', api_views.CurrentUserView.as_view(), name='current-user'),
+    path('promo-codes/', api_views.PromoCodeListView.as_view(), name='promo-code-list'),
+    path('promo-codes/apply/', api_views.ApplyPromoCodeView.as_view(), name='promo-code-apply'),
     path('profile/restaurant/', api_views.RestaurantProfileView.as_view(), name='restaurant-profile'),
     path('restaurant/reviews/', api_views.RestaurantReviewsView.as_view(), name='restaurant-reviews'),
     path('profile/customer/', api_views.CustomerProfileView.as_view(), name='customer-profile'),

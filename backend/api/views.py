@@ -58,6 +58,98 @@ def mtn_payment_callback(request):
         logger.error(f"Error in MTN callback: {e}")
     return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def airtel_payment_callback(request):
+    """
+    Airtel Money callback endpoint for payment notifications.
+    Verifies signature and updates payment status.
+    """
+    try:
+        logger.info("🟥 Airtel Money Callback received")
+        logger.info(f"   Headers: {dict(request.headers)}")
+        logger.info(f"   Body: {request.body.decode('utf-8', errors='ignore')}")
+        
+        # Parse callback data
+        try:
+            callback_data = json.loads(request.body)
+        except json.JSONDecodeError:
+            logger.error("❌ Invalid JSON in Airtel callback")
+            return Response({'error': 'Invalid JSON'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verify signature if secret key is configured
+        signature = request.headers.get('X-Signature') or request.headers.get('signature')
+        secret_key = getattr(settings, 'AIRTEL_CALLBACK_SECRET', None)
+        
+        if secret_key and signature:
+            import hmac
+            import hashlib
+            
+            # Generate expected signature
+            message = request.body.decode('utf-8')
+            expected_signature = hmac.new(
+                secret_key.encode(),
+                message.encode(),
+                hashlib.sha256
+            ).hexdigest()
+            
+            if signature != expected_signature:
+                logger.error("❌ Invalid Airtel callback signature")
+                return Response({'error': 'Invalid signature'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            logger.info("✅ Airtel callback signature verified")
+        
+        # Extract transaction details
+        transaction_id = callback_data.get('transaction', {}).get('id')
+        status_code = callback_data.get('transaction', {}).get('status')
+        reference = callback_data.get('reference')
+        
+        logger.info(f"   Transaction ID: {transaction_id}")
+        logger.info(f"   Status: {status_code}")
+        logger.info(f"   Reference: {reference}")
+        
+        # Update payment status in database
+        if reference:
+            try:
+                payment = Payment.objects.get(reference=reference)
+                
+                # Map Airtel status to our status
+                status_mapping = {
+                    'TS': 'completed',      # Successful
+                    'TF': 'failed',         # Failed
+                    'TA': 'pending',        # Ambiguous
+                    'TIP': 'processing'     # In Progress
+                }
+                
+                new_status = status_mapping.get(status_code, 'pending')
+                payment.status = new_status
+                payment.transaction_id = transaction_id or payment.transaction_id
+                payment.save()
+                
+                logger.info(f"✅ Updated payment {payment.id} to status: {new_status}")
+                
+                # Update order status if payment completed
+                if new_status == 'completed':
+                    order = payment.order
+                    order.status = 'Confirmed'
+                    order.save()
+                    logger.info(f"✅ Order {order.id} confirmed")
+                    
+                    # Send notification to customer
+                    from api.utils import send_order_status_notification
+                    send_order_status_notification(order)
+                
+            except Payment.DoesNotExist:
+                logger.error(f"❌ Payment not found for reference: {reference}")
+        
+        return Response({'success': True}, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"💥 Error in Airtel callback: {str(e)}")
+        import traceback
+        logger.error(f"📄 Traceback: {traceback.format_exc()}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['GET'])
 def test_gcs_connection(request):
     """Test GCS connection and credentials"""
@@ -154,6 +246,7 @@ from .models import (
     Restaurant, MenuCategory, MenuItem, ModifierGroup, Modifier, Cart, CartItem, 
     Order, OrderItem, Message, Notification, DietaryPreference, CustomerProfile, 
     UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview, PaymentPeriod, BankAccount, PaymentDispute, Payment
+    PromoCode, PromoCodeRedemption,
 )
 from .dispatch_service import find_and_assign_rider
 from loyalty.services import LoyaltyService
@@ -174,6 +267,8 @@ from .serializers import (
     RestaurantOrderReviewSerializer, RiderReviewSerializer, PaymentPeriodSerializer,
     OrderPaymentSerializer, BankAccountSerializer, PaymentDisputeSerializer,
     ReviewSerializer,  # Add the missing ReviewSerializer
+    CurrentUserUpdateSerializer,
+    PromoCodeSerializer, PromoCodeApplySerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -944,6 +1039,22 @@ class CurrentUserView(APIView):
     def get(self, request):
         return Response(UserSerializer(request.user).data)
 
+    def patch(self, request):
+        serializer = CurrentUserUpdateSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserSerializer(request.user).data)
+
+    def delete(self, request):
+        user = request.user
+        logout(request)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 # --- Other Views ---
 
 
@@ -1199,14 +1310,66 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer.save(sender=self.request.user)
 
 
-class CurrentUserView(APIView):
-    """View to get the current authenticated user's data."""
+class CurrentUserViewLegacy(APIView):
+    """Legacy view (kept to avoid breaking imports)."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """Return the data for the currently authenticated user."""
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+
+class PromoCodeListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        now = timezone.now()
+        qs = PromoCode.objects.filter(is_active=True).filter(
+            Q(starts_at__isnull=True) | Q(starts_at__lte=now)
+        ).filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gte=now)
+        ).order_by('code')
+        serializer = PromoCodeSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class ApplyPromoCodeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = PromoCodeApplySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data['code']
+
+        try:
+            promo = PromoCode.objects.get(code__iexact=code)
+        except PromoCode.DoesNotExist:
+            return Response({'error': 'Invalid promo code'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not promo.is_active:
+            return Response({'error': 'Promo code is not active'}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = timezone.now()
+        if promo.starts_at and promo.starts_at > now:
+            return Response({'error': 'Promo code is not yet active'}, status=status.HTTP_400_BAD_REQUEST)
+        if promo.expires_at and promo.expires_at < now:
+            return Response({'error': 'Promo code has expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+        total_uses = PromoCodeRedemption.objects.filter(promo_code=promo).count()
+        if promo.max_uses is not None and total_uses >= promo.max_uses:
+            return Response({'error': 'Promo code usage limit reached'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_uses = PromoCodeRedemption.objects.filter(promo_code=promo, user=request.user).count()
+        if promo.per_user_limit is not None and user_uses >= promo.per_user_limit:
+            return Response({'error': 'You have already used this promo code'}, status=status.HTTP_400_BAD_REQUEST)
+
+        PromoCodeRedemption.objects.create(promo_code=promo, user=request.user)
+
+        return Response({
+            'code': promo.code,
+            'discount_type': promo.discount_type,
+            'discount_value': str(promo.discount_value),
+        })
 
 
 class MenuItemViewSet(viewsets.ModelViewSet):
@@ -1503,17 +1666,23 @@ class RiderOrderViewSet(viewsets.ReadOnlyModelViewSet):
         # Notify customer
         send_order_status_notification(order)
 
-        # Notify restaurant
-        channel_layer = get_channel_layer()
-        restaurant_group_name = f'restaurant_{order.restaurant.id}'
-        order_data = RestaurantOrderSerializer(order).data
-        async_to_sync(channel_layer.group_send)(
-            restaurant_group_name,
-            {
-                'type': 'order_update',
-                'order': order_data
-            }
-        )
+        # Notify restaurant via WebSocket (with error handling)
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                restaurant_group_name = f'restaurant_{order.restaurant.id}'
+                order_data = RestaurantOrderSerializer(order).data
+                async_to_sync(channel_layer.group_send)(
+                    restaurant_group_name,
+                    {
+                        'type': 'order_update',
+                        'order': order_data
+                    }
+                )
+        except ConnectionError as e:
+            logger.debug(f"Redis unavailable for WebSocket notification (order {order.id}): {e}")
+        except Exception as e:
+            logger.warning(f"Failed to send WebSocket notification for order {order.id}: {e}")
 
         # Award loyalty points
         points, _ = LoyaltyService.calculate_points(order)
@@ -2107,14 +2276,108 @@ def initiate_payment(request):
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         elif payment_method == 'airtel_money':
-            # AIRTEL MONEY INTEGRATION (To be implemented)
-            if not phone_number:
-                return Response({'error': 'Phone number is required for Airtel Money'}, status=status.HTTP_400_BAD_REQUEST)
+            # DIRECT AIRTEL MONEY INTEGRATION
+            logger.info(f"🟥 Starting Airtel Money payment for order {order.id}")
+            logger.info(f"📱 Phone: {phone_number}, Amount: {amount}")
             
-            # TODO: Implement Airtel Money API integration
-            return Response({
-                'error': 'Airtel Money integration coming soon'
-            }, status=status.HTTP_501_NOT_IMPLEMENTED)
+            if not phone_number:
+                logger.error("❌ Phone number is required for Airtel Money")
+                return Response({
+                    'error': 'Phone number is required for Airtel Money'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Import Airtel Money API
+            try:
+                logger.info("📦 Importing Airtel Money API...")
+                from payments.airtel_money import AirtelMoneyAPI
+                logger.info("✅ Airtel API imported successfully")
+            except ImportError as import_error:
+                logger.error(f"❌ Failed to import Airtel API: {import_error}")
+                return Response({
+                    'error': 'Airtel Money integration not available'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Validate Airtel phone number (070 or 075)
+            import re
+            cleaned_phone = re.sub(r'[\s\-\+]', '', str(phone_number))
+            if cleaned_phone.startswith('256'):
+                check_prefix = cleaned_phone[3:5]
+            elif cleaned_phone.startswith('0'):
+                check_prefix = cleaned_phone[1:3]
+            else:
+                check_prefix = cleaned_phone[:2]
+            
+            logger.info(f"✅ Valid Airtel number: {phone_number}")
+            
+            # Initialize and call Airtel API
+            try:
+                logger.info("🔧 Initializing Airtel API...")
+                airtel_api = AirtelMoneyAPI()
+                logger.info("✅ Airtel API initialized successfully")
+                
+                # Prepare payment request
+                logger.info("🔧 Step 3: Calling Airtel request_to_pay...")
+                logger.info(f"   Phone: {phone_number}")
+                logger.info(f"   Amount: {amount}")
+                logger.info(f"   External ID: {payment.reference}")
+                logger.info(f"   Payer Message: FortExpress Order #{order.id}")
+                
+                result = airtel_api.request_to_pay(
+                    phone_number=phone_number,
+                    amount=float(amount),
+                    external_id=payment.reference,
+                    reference=f"FortExpress Order #{order.id}"
+                )
+                
+                logger.info("🔧 Step 4: Airtel API call completed")
+                logger.info(f"   Result: {result}")
+                
+                if result.get('success'):
+                    # Payment request successful
+                    payment.transaction_id = result.get('reference_id')
+                    payment.provider_reference = result.get('transaction_id')
+                    payment.status = 'processing'
+                    payment.save()
+                    
+                    logger.info(f"✅ Airtel payment initiated: {payment.transaction_id}")
+                    
+                    # Update order status
+                    order.status = 'Payment Processing'
+                    order.save()
+                    
+                    return Response({
+                        'success': True,
+                        'transaction_id': payment.transaction_id,
+                        'message': result.get('message', 'Payment request sent'),
+                        'payment_id': payment.id
+                    }, status=status.HTTP_200_OK)
+                else:
+                    # Payment failed
+                    error_message = result.get('error', 'Payment failed')
+                    logger.error(f"❌ Airtel payment failed: {error_message}")
+                    
+                    payment.status = 'failed'
+                    payment.error_message = error_message
+                    payment.save()
+                    
+                    return Response({
+                        'success': False,
+                        'error': error_message
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                    
+            except Exception as e:
+                logger.error(f"💥 Airtel Money integration error: {str(e)}")
+                import traceback
+                logger.error(f"📄 Traceback: {traceback.format_exc()}")
+                
+                payment.status = 'failed'
+                payment.error_message = str(e)
+                payment.save()
+                
+                return Response({
+                    'success': False,
+                    'error': f'Airtel Money integration failed: {str(e)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         elif payment_method in ['pesapal', 'pesapal_mtn', 'pesapal_airtel']:
             # REAL PESAPAL INTEGRATION FOR UGANDA

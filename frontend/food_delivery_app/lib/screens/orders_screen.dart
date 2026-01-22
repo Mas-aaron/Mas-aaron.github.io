@@ -160,26 +160,45 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 120),
+          Center(child: CircularProgressIndicator()),
+        ],
+      );
     }
 
     if (_errorMessage != null) {
-      return ErrorStateWidget(
-        message: _errorMessage,
-        onRetry: _loadOrdersAndInitWebSocket,
-        icon: Icons.receipt_long_outlined,
-        title: 'Cannot Load Orders',
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 80),
+          ErrorStateWidget(
+            message: _errorMessage,
+            onRetry: _loadOrdersAndInitWebSocket,
+            icon: Icons.receipt_long_outlined,
+            title: 'Cannot Load Orders',
+          ),
+        ],
       );
     }
 
     if (_orders.isEmpty) {
-      return const EmptyStateWidget(
-        message: 'You have no orders yet.\nStart by ordering some delicious food!',
-        icon: Icons.shopping_bag_outlined,
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 80),
+          EmptyStateWidget(
+            message: 'You have no orders yet.\nStart by ordering some delicious food!',
+            icon: Icons.shopping_bag_outlined,
+          ),
+        ],
       );
     }
 
     return ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: _orders.length,
       itemBuilder: (context, index) {
         final order = _orders[index];
@@ -244,6 +263,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadOrders,
+        color: Colors.orange,
+        backgroundColor: Colors.white,
         child: _buildBody(),
       ),
     );

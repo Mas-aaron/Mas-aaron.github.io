@@ -128,6 +128,41 @@ class PaymentDispute(models.Model):
         return f'Dispute for Order #{self.order_payment.order_number} - {self.dispute_type}'
 
 
+class PromoCode(models.Model):
+    class DiscountType(models.TextChoices):
+        PERCENT = 'PERCENT', 'Percent'
+        FIXED = 'FIXED', 'Fixed'
+
+    code = models.CharField(max_length=50, unique=True)
+    discount_type = models.CharField(
+        max_length=10,
+        choices=DiscountType.choices,
+        default=DiscountType.PERCENT,
+    )
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    is_active = models.BooleanField(default=True)
+    starts_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    max_uses = models.PositiveIntegerField(null=True, blank=True)
+    per_user_limit = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.code
+
+
+class PromoCodeRedemption(models.Model):
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='redemptions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='promo_code_redemptions')
+    redeemed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-redeemed_at']
+
+    def __str__(self):
+        return f'{self.user_id} redeemed {self.promo_code.code}'
+
+
 class NotificationTemplate(models.Model):
     CATEGORY_CHOICES = [
         ('INFORMATIONAL', 'Informational'),

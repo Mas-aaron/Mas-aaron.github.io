@@ -376,3 +376,17 @@ MTN_MOMO_CONFIG = {
     # Currency for Uganda (256). Override via MTN_MOMO_CURRENCY if needed.
     'CURRENCY': os.getenv('MTN_MOMO_CURRENCY', 'UGX'),
 }
+
+# Airtel Money Configuration for Direct Integration
+AIRTEL_MONEY_CONFIG = {
+    'CLIENT_ID': os.getenv('AIRTEL_MONEY_CLIENT_ID', 'your_client_id_here'),
+    'CLIENT_SECRET': os.getenv('AIRTEL_MONEY_CLIENT_SECRET', 'your_client_secret_here'),
+    'BASE_URL': os.getenv('AIRTEL_MONEY_BASE_URL', 'https://openapiuat.airtel.africa'),  # UAT/Staging
+    'GRANT_TYPE': 'client_credentials',
+    'ENV': os.getenv('AIRTEL_MONEY_ENV', 'staging'),  # staging or production
+    'COUNTRY': os.getenv('AIRTEL_MONEY_COUNTRY', 'UG'),  # Uganda
+    'CURRENCY': os.getenv('AIRTEL_MONEY_CURRENCY', 'UGX'),  # Uganda Shillings
+}
+
+# Airtel Money Callback Secret for signature verification
+AIRTEL_CALLBACK_SECRET = os.getenv('AIRTEL_CALLBACK_SECRET', 'your_callback_secret_here')

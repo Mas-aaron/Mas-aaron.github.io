@@ -12,6 +12,13 @@ downloads/
 eggs/
 .eggs/
 lib/
+# Allow Flutter/Dart source
+!frontend/food_delivery_app/lib/
+!frontend/food_delivery_app/lib/**
+!frontend/restaurant_dashboard_new/lib/
+!frontend/restaurant_dashboard_new/lib/**
+!rider_app/lib/
+!rider_app/lib/**
 lib64/
 parts/
 sdist/

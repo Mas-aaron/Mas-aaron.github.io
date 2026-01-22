@@ -32,6 +32,41 @@ class ProfileService {
     }
   }
 
+  Future<void> deleteCurrentUser() async {
+    final headers = await _getAuthHeaders();
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/me/'),
+      headers: headers,
+    );
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to delete account');
+    }
+  }
+
+  Future<ProfileUser> updateCurrentUser({String? username, String? email}) async {
+    final headers = await _getAuthHeaders();
+    final body = <String, dynamic>{};
+    if (username != null) {
+      body['username'] = username;
+    }
+    if (email != null) {
+      body['email'] = email;
+    }
+
+    final response = await http.patch(
+      Uri.parse('$_baseUrl/me/'),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      return ProfileUser.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to update user');
+    }
+  }
+
   Future<CustomerProfile> updateCustomerProfile(List<int> dietaryPreferenceIds) async {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({'dietary_preference_ids': dietaryPreferenceIds});

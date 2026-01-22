@@ -315,14 +315,6 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with Si
                     ],
                   ),
                   
-                  const SizedBox(height: 16),
-                  
-                  // Categories - Show first 3 categories (excluding 'All')
-                  if (_tabs.length > 1)
-                    Wrap(
-                      spacing: 8,
-                      children: _tabs.skip(1).take(3).map((category) => _buildCategoryChip(category)).toList(),
-                    ),
                 ],
               ),
             ),
@@ -354,25 +346,6 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with Si
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildCategoryChip(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: Colors.grey.shade700,
-        ),
-      ),
     );
   }
 

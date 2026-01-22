@@ -500,6 +500,40 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email')
 
 
+class CurrentUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+    def validate_username(self, value):
+        user = self.instance
+        if User.objects.filter(username__iexact=value).exclude(id=user.id).exists():
+            raise serializers.ValidationError("A user with that username already exists.")
+        return value
+
+    def validate_email(self, value):
+        user = self.instance
+        if User.objects.filter(email__iexact=value).exclude(id=user.id).exists():
+            raise serializers.ValidationError("A user with that email address already exists.")
+        return value
+
+
+class PromoCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCode
+        fields = (
+            'code',
+            'discount_type',
+            'discount_value',
+            'starts_at',
+            'expires_at',
+        )
+
+
+class PromoCodeApplySerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=50)
+
+
 class RestaurantOrderSerializer(OrderSerializer):
     """An order serializer specifically for the restaurant view, including customer details."""
     user = CustomerSerializer(read_only=True)

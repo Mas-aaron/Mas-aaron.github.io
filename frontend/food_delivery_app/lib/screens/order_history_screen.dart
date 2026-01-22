@@ -67,6 +67,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         color: Colors.grey[100],
         child: RefreshIndicator(
           onRefresh: _loadOrders,
+          color: Colors.orange,
+          backgroundColor: Colors.white,
           child: _buildBody(),
         ),
       ),
@@ -75,38 +77,57 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFfe5722)),
-        ),
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 120),
+          Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFfe5722)),
+            ),
+          ),
+        ],
       );
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: ErrorDisplayWidget(
-          errorMessage: _errorMessage!,
-          onRetry: _loadOrders,
-        ),
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 80),
+          Center(
+            child: ErrorDisplayWidget(
+              errorMessage: _errorMessage!,
+              onRetry: _loadOrders,
+            ),
+          ),
+        ],
       );
     }
 
     if (_orders.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
-            SizedBox(height: 16),
-            Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
-            SizedBox(height: 8),
-            Text('Your orders will appear here', style: TextStyle(color: Colors.grey[500])),
-          ],
-        ),
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          const SizedBox(height: 80),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey[400]),
+                SizedBox(height: 16),
+                Text('No past orders found', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                SizedBox(height: 8),
+                Text('Your orders will appear here', style: TextStyle(color: Colors.grey[500])),
+              ],
+            ),
+          ),
+        ],
       );
     }
 
     return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(16.0),
       itemCount: _orders.length,
       separatorBuilder: (context, index) => SizedBox(height: 16),

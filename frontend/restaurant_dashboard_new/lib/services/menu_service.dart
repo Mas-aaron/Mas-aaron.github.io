@@ -63,7 +63,7 @@ class MenuService {
     request.fields['name'] = name;
     request.fields['description'] = description;
     request.fields['price'] = price.toString();
-    request.fields['category'] = categoryId.toString();
+    request.fields['category_id'] = categoryId.toString();
 
     if (imageFile != null) {
       final bytes = await imageFile.readAsBytes();
@@ -94,7 +94,7 @@ class MenuService {
     request.fields['name'] = name;
     request.fields['description'] = description;
     request.fields['price'] = price.toString();
-    request.fields['category'] = categoryId.toString();
+    request.fields['category_id'] = categoryId.toString();
     request.fields['is_available'] = isAvailable.toString();
 
     if (imageFile != null) {

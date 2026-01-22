@@ -53,49 +53,60 @@ class _CartScreenState extends State<CartScreen> {
       ),
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
-          if (cartProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (cartProvider.error != null) {
-            return Center(
-              child: ErrorDisplayWidget(
-                errorMessage: cartProvider.error!,
-                onRetry: _refreshCart,
-              ),
-            );
-          }
-
-          if (cartProvider.cart == null || cartProvider.cart!.items.isEmpty) {
-            return const Center(
-              child: Text(
-                'Your cart is empty.',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-            );
-          }
-
-          final cart = cartProvider.cart!;
-
           return RefreshIndicator(
             onRefresh: _refreshCart,
+            color: Colors.orange,
+            backgroundColor: Colors.white,
             child: Column(
               children: [
-                Expanded(
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(), // Ensure the list is always scrollable
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: cart.items.length,
-                    itemBuilder: (context, index) {
-                      final item = cart.items[index];
-                      return _CartItemCard(item: item);
-                    },
+                if (cartProvider.isLoading)
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (cartProvider.error != null)
+                  Expanded(
+                    child: Center(
+                      child: ErrorDisplayWidget(
+                        errorMessage: cartProvider.error!,
+                        onRetry: _refreshCart,
+                      ),
+                    ),
+                  )
+                else if (cartProvider.cart == null || cartProvider.cart!.items.isEmpty)
+                  const Expanded(
+                    child: SingleChildScrollView(
+                      physics: AlwaysScrollableScrollPhysics(),
+                      child: SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: Text(
+                            'Your cart is empty.',
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(), // Ensure the list is always scrollable
+                      padding: const EdgeInsets.all(16.0),
+                      itemCount: cartProvider.cart!.items.length,
+                      itemBuilder: (context, index) {
+                        final item = cartProvider.cart!.items[index];
+                        return _CartItemCard(item: item);
+                      },
+                    ),
                   ),
-                ),
-                _OrderSummaryCard(
-                  cart: cart,
-                  onPlaceOrder: () => _placeOrder(cart),
-                ),
+                if (!cartProvider.isLoading &&
+                    cartProvider.error == null &&
+                    cartProvider.cart != null &&
+                    cartProvider.cart!.items.isNotEmpty)
+                  _OrderSummaryCard(
+                    cart: cartProvider.cart!,
+                    onPlaceOrder: () => _placeOrder(cartProvider.cart!),
+                  ),
               ],
             ),
           );

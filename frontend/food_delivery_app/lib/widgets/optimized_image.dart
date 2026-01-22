@@ -41,8 +41,8 @@ class OptimizedImage extends StatelessWidget {
         errorWidget: (context, url, error) => _buildErrorWidget(),
         fadeInDuration: const Duration(milliseconds: 300),
         fadeOutDuration: const Duration(milliseconds: 100),
-        memCacheWidth: width != null ? (width! * 2).toInt() : null,
-        memCacheHeight: height != null ? (height! * 2).toInt() : null,
+        memCacheWidth: width != null && width!.isFinite ? (width! * 2).toInt() : null,
+        memCacheHeight: height != null && height!.isFinite ? (height! * 2).toInt() : null,
       ),
     );
   }

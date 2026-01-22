@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:food_delivery_app/app_keys.dart';
+import 'package:food_delivery_app/services/notification_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -13,6 +16,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late final Future<void> _initFuture;
 
   @override
   void initState() {
@@ -42,16 +46,28 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     
     // Start animation
     _controller.forward();
-    
-    // Navigate after short delay (1.5 seconds total)
-    Timer(
-      const Duration(milliseconds: 1500),
-      () {
-        if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/auth');
-        }
-      },
-    );
+
+    _initFuture = _initializeServices();
+    _navigateWhenReady();
+  }
+
+  Future<void> _initializeServices() async {
+    try {
+      await Firebase.initializeApp();
+      await NotificationService(navigatorKey: navigatorKey).initialize();
+    } catch (e) {
+      // Keep splash responsive even if init fails; app can still be used.
+      // Navigation continues regardless.
+    }
+  }
+
+  Future<void> _navigateWhenReady() async {
+    await Future.wait([
+      _initFuture,
+      Future<void>.delayed(const Duration(milliseconds: 1500)),
+    ]);
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/auth');
   }
 
   @override

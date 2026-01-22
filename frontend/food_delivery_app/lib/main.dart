@@ -8,15 +8,11 @@ import 'package:food_delivery_app/screens/login_screen.dart';
 import 'package:food_delivery_app/screens/register_screen.dart';
 import 'package:food_delivery_app/screens/order_tracking_loader_screen.dart';
 import 'package:food_delivery_app/screens/splash_screen.dart';
+import 'package:food_delivery_app/app_keys.dart';
 
 import 'package:provider/provider.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:food_delivery_app/services/notification_service.dart';
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 
 
 void main() async {
@@ -28,8 +24,6 @@ void main() async {
   if (mapsImplementation is GoogleMapsFlutterAndroid) {
     mapsImplementation.useAndroidViewSurface = true;
   }
-  await Firebase.initializeApp();
-  await NotificationService(navigatorKey: navigatorKey).initialize();
   runApp(const MyApp());
 }
 
