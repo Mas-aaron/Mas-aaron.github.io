@@ -66,6 +66,11 @@ custom_urlpatterns = [
     path('me/', api_views.CurrentUserView.as_view(), name='current-user'),
     path('promo-codes/', api_views.PromoCodeListView.as_view(), name='promo-code-list'),
     path('promo-codes/apply/', api_views.ApplyPromoCodeView.as_view(), name='promo-code-apply'),
+    path('restaurant/promo-codes/', api_views.RestaurantPromoCodeListCreateView.as_view(), name='restaurant-promo-code-list-create'),
+    path('restaurant/promo-codes/<int:promo_id>/', api_views.RestaurantPromoCodeDetailView.as_view(), name='restaurant-promo-code-detail'),
+    path('admin/promo-codes/', api_views.AdminPromoCodeListCreateView.as_view(), name='admin-promo-code-list-create'),
+    path('admin/promo-codes/<int:promo_id>/', api_views.AdminPromoCodeDetailView.as_view(), name='admin-promo-code-detail'),
+    path('admin/promo-codes/<int:promo_id>/redemptions/', api_views.AdminPromoCodeRedemptionsView.as_view(), name='admin-promo-code-redemptions'),
     path('profile/restaurant/', api_views.RestaurantProfileView.as_view(), name='restaurant-profile'),
     path('restaurant/reviews/', api_views.RestaurantReviewsView.as_view(), name='restaurant-reviews'),
     path('profile/customer/', api_views.CustomerProfileView.as_view(), name='customer-profile'),
@@ -94,6 +99,8 @@ custom_urlpatterns = [
     # Password Recovery URLs
     path('password-reset-request/', api_views.password_reset_request, name='password-reset-request'),
     path('password-reset-confirm/', api_views.password_reset_confirm, name='password-reset-confirm'),
+    path('password-otp-request/', api_views.password_otp_request, name='password-otp-request'),
+    path('password-otp-confirm/', api_views.password_otp_confirm, name='password-otp-confirm'),
     path('change-password/', api_views.change_password, name='change_password'),
     
     # Payment endpoints

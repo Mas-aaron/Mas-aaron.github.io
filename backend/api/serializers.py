@@ -530,6 +530,37 @@ class PromoCodeSerializer(serializers.ModelSerializer):
         )
 
 
+class PromoCodeManagementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCode
+        fields = (
+            'id',
+            'code',
+            'discount_type',
+            'discount_value',
+            'is_active',
+            'starts_at',
+            'expires_at',
+            'max_uses',
+            'per_user_limit',
+            'created_at',
+        )
+        read_only_fields = ('id', 'created_at')
+
+
+class PromoCodeRedemptionSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+
+    class Meta:
+        model = PromoCodeRedemption
+        fields = (
+            'id',
+            'user',
+            'user_email',
+            'redeemed_at',
+        )
+
+
 class PromoCodeApplySerializer(serializers.Serializer):
     code = serializers.CharField(max_length=50)
 

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:restaurant_dashboard_new/models/restaurant.dart';
+import 'package:restaurant_dashboard_new/providers/auth_provider.dart';
 import 'package:restaurant_dashboard_new/providers/theme_provider.dart';
+import 'package:restaurant_dashboard_new/services/auth_service.dart';
 import 'package:restaurant_dashboard_new/services/restaurant_service.dart';
 import 'package:restaurant_dashboard_new/screens/edit_restaurant_profile_screen.dart';
+import 'package:restaurant_dashboard_new/screens/login_screen.dart';
+import 'package:restaurant_dashboard_new/screens/promo_codes_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const routeName = '/settings';
@@ -16,6 +20,55 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late Future<Restaurant> _restaurantFuture;
   final RestaurantService _restaurantService = RestaurantService();
+  final AuthService _authService = AuthService();
+
+  Future<void> _confirmDeleteAccount() async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Account'),
+          content: const Text(
+            'Are you sure you want to delete your account? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true) return;
+
+    try {
+      await _authService.deleteCurrentUser();
+      if (!mounted) return;
+      await Provider.of<AuthProvider>(context, listen: false).logout();
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        LoginScreen.routeName,
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -79,6 +132,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ],
                     ),
                     _buildSettingsSection(
+                      title: 'Promotions',
+                      children: [
+                        _buildSettingsTile(
+                          icon: Icons.local_offer,
+                          title: 'Promo Codes',
+                          subtitle: 'View and apply discount codes',
+                          onTap: () {
+                            Navigator.of(context).pushNamed(PromoCodesScreen.routeName);
+                          },
+                        ),
+                      ],
+                    ),
+                    _buildSettingsSection(
                       title: 'Notification Settings',
                       children: [
                         _buildSwitchTile(icon: Icons.notifications, title: 'Push Notifications', subtitle: 'Receive alerts for new orders', value: true),
@@ -103,6 +169,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           },
                         ),
                         _buildSettingsTile(icon: Icons.language, title: 'Language', subtitle: 'English'),
+                      ],
+                    ),
+                    _buildSettingsSection(
+                      title: 'Account',
+                      children: [
+                        _buildSettingsTile(
+                          icon: Icons.delete_outline,
+                          title: 'Delete Account',
+                          subtitle: 'Permanently remove your account',
+                          onTap: _confirmDeleteAccount,
+                        ),
                       ],
                     ),
                   ],

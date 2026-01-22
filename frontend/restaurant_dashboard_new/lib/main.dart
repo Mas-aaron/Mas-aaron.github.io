@@ -12,6 +12,7 @@ import 'screens/manage_categories_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/order_protocol_screen.dart';
 import 'screens/menu_management_screen.dart';
+import 'screens/promo_codes_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -96,6 +97,7 @@ class MyApp extends StatelessWidget {
               MenuManagementScreen.routeName: (context) => const MenuManagementScreen(),
               HomeScreen.routeName: (context) => const HomeScreen(),
               OrderProtocolScreen.routeName: (context) => OrderProtocolScreen(),
+              PromoCodesScreen.routeName: (context) => const PromoCodesScreen(),
             },
           ),
         );

@@ -68,6 +68,54 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> requestPasswordOtp(String email) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/password-otp-request/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    }
+    return {
+      'success': false,
+      'message': responseData['error'] ?? 'Failed to send OTP',
+    };
+  }
+
+  Future<Map<String, dynamic>> confirmPasswordOtp({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/password-otp-confirm/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'otp': otp,
+        'new_password': newPassword,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    }
+    return {
+      'success': false,
+      'message': responseData['error'] ?? 'Failed to reset password',
+    };
+  }
+
   Future<void> registerDevice(String? fcmToken, String deviceType) async {
     if (fcmToken == null || fcmToken.isEmpty) {
       print("FCM token is null or empty, skipping device registration.");

@@ -179,6 +179,58 @@ class _RiderHomeScreenState extends State<RiderHomeScreen> {
                 ),
                 const SizedBox(height: 30),
                 ListTile(
+                  leading: const Icon(Icons.delete_outline, color: Colors.red),
+                  title: const Text(
+                    'Delete Account',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final shouldDelete = await showDialog<bool>(
+                      context: this.context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Delete Account'),
+                          content: const Text(
+                            'Are you sure you want to delete your account? This action cannot be undone.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text(
+                                'Delete',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (shouldDelete != true) return;
+
+                    try {
+                      await _apiService.deleteCurrentUser();
+                      await _logout();
+                    } catch (e) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(this.context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.logout, color: Colors.red),
                   title: const Text(
                     'Logout',

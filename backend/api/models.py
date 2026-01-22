@@ -134,6 +134,13 @@ class PromoCode(models.Model):
         FIXED = 'FIXED', 'Fixed'
 
     code = models.CharField(max_length=50, unique=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='created_promo_codes',
+    )
     discount_type = models.CharField(
         max_length=10,
         choices=DiscountType.choices,
@@ -161,6 +168,21 @@ class PromoCodeRedemption(models.Model):
 
     def __str__(self):
         return f'{self.user_id} redeemed {self.promo_code.code}'
+
+
+class PasswordResetOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_otps')
+    otp_code = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    attempts = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'PasswordResetOTP(user={self.user_id}, created_at={self.created_at})'
 
 
 class NotificationTemplate(models.Model):

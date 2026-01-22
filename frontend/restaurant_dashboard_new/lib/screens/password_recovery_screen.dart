@@ -11,15 +11,18 @@ class PasswordRecoveryScreen extends StatefulWidget {
 class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _otpController = TextEditingController();
+  final _newPasswordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  bool _otpSent = false;
 
   Future<void> _requestPasswordReset() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
     try {
-      final result = await _authService.requestPasswordReset(_emailController.text.trim());
+      final result = await _authService.requestPasswordOtp(_emailController.text.trim());
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -27,7 +30,11 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
             backgroundColor: result['success'] ? Colors.green : Colors.red,
           ),
         );
-        if (result['success']) Navigator.pop(context);
+        if (result['success']) {
+          setState(() {
+            _otpSent = true;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -38,6 +45,46 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _confirmOtpAndReset() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await _authService.confirmPasswordOtp(
+        email: _emailController.text.trim(),
+        otp: _otpController.text.trim(),
+        newPassword: _newPasswordController.text,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: result['success'] ? Colors.green : Colors.red,
+        ),
+      );
+
+      if (result['success']) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _otpController.dispose();
+    _newPasswordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,11 +106,16 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
               const SizedBox(height: 32),
               const Text('Forgot Password?', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              const Text('Enter your email address and we\'ll send you a reset link.'),
+              Text(
+                _otpSent
+                    ? 'Enter the OTP sent to your email and choose a new password.'
+                    : 'Enter your email address and we\'ll send you an OTP code.',
+              ),
               const SizedBox(height: 32),
               
               TextFormField(
                 controller: _emailController,
+                enabled: !_otpSent,
                 decoration: const InputDecoration(
                   labelText: 'Email Address',
                   prefixIcon: Icon(Icons.email),
@@ -75,20 +127,59 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                   return null;
                 },
               ),
+
+              if (_otpSent) ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _otpController,
+                  decoration: const InputDecoration(
+                    labelText: 'OTP Code',
+                    prefixIcon: Icon(Icons.password),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (!_otpSent) return null;
+                    if (value?.isEmpty ?? true) return 'Please enter the OTP';
+                    if (value!.length < 4) return 'OTP is too short';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _newPasswordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'New Password',
+                    prefixIcon: Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (!_otpSent) return null;
+                    if (value?.isEmpty ?? true) return 'Please enter a new password';
+                    if (value!.length < 8) return 'Password must be at least 8 characters';
+                    return null;
+                  },
+                ),
+              ],
               
               const SizedBox(height: 24),
               
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _requestPasswordReset,
+                  onPressed: _isLoading
+                      ? null
+                      : (_otpSent ? _confirmOtpAndReset : _requestPasswordReset),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Send Reset Link', style: TextStyle(color: Colors.white)),
+                      : Text(
+                          _otpSent ? 'Reset Password' : 'Send OTP',
+                          style: const TextStyle(color: Colors.white),
+                        ),
                 ),
               ),
             ],

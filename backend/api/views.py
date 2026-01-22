@@ -247,6 +247,7 @@ from .models import (
     Order, OrderItem, Message, Notification, DietaryPreference, CustomerProfile, 
     UserAddress, Review, Device, RiderProfile, NotificationTemplate, OrderReview, RiderReview, PaymentPeriod, BankAccount, PaymentDispute, Payment
     PromoCode, PromoCodeRedemption,
+    PasswordResetOTP,
 )
 from .dispatch_service import find_and_assign_rider
 from loyalty.services import LoyaltyService
@@ -269,6 +270,7 @@ from .serializers import (
     ReviewSerializer,  # Add the missing ReviewSerializer
     CurrentUserUpdateSerializer,
     PromoCodeSerializer, PromoCodeApplySerializer,
+    PromoCodeManagementSerializer, PromoCodeRedemptionSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -1372,6 +1374,73 @@ class ApplyPromoCodeView(APIView):
         })
 
 
+class RestaurantPromoCodeListCreateView(APIView):
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+
+    def get(self, request):
+        qs = PromoCode.objects.filter(created_by=request.user).order_by('-created_at')
+        serializer = PromoCodeManagementSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = PromoCodeManagementSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        promo = serializer.save(created_by=request.user)
+        return Response(PromoCodeManagementSerializer(promo).data, status=status.HTTP_201_CREATED)
+
+
+class RestaurantPromoCodeDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsRestaurantOwner]
+
+    def patch(self, request, promo_id):
+        promo = get_object_or_404(PromoCode, id=promo_id, created_by=request.user)
+        serializer = PromoCodeManagementSerializer(promo, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class AdminPromoCodeListCreateView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        qs = PromoCode.objects.all().order_by('-created_at')
+        serializer = PromoCodeManagementSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = PromoCodeManagementSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        promo = serializer.save(created_by=request.user)
+        return Response(PromoCodeManagementSerializer(promo).data, status=status.HTTP_201_CREATED)
+
+
+class AdminPromoCodeDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def patch(self, request, promo_id):
+        promo = get_object_or_404(PromoCode, id=promo_id)
+        serializer = PromoCodeManagementSerializer(promo, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, promo_id):
+        promo = get_object_or_404(PromoCode, id=promo_id)
+        promo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AdminPromoCodeRedemptionsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request, promo_id):
+        promo = get_object_or_404(PromoCode, id=promo_id)
+        qs = PromoCodeRedemption.objects.filter(promo_code=promo).order_by('-redeemed_at')
+        serializer = PromoCodeRedemptionSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
 class MenuItemViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows menu items to be viewed or edited.
@@ -1911,6 +1980,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth import get_user_model
+import random
 
 User = get_user_model()
 
@@ -2033,6 +2103,119 @@ def password_reset_confirm(request):
         return Response({
             'error': 'An error occurred while resetting your password'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_otp_request(request):
+    """Send an email OTP to reset password."""
+    try:
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Do not reveal if email exists
+            return Response({
+                'message': 'If an account with this email exists, you will receive an OTP code.'
+            }, status=status.HTTP_200_OK)
+
+        otp = f"{random.randint(0, 999999):06d}"
+        expires_at = timezone.now() + timedelta(minutes=10)
+        PasswordResetOTP.objects.create(
+            user=user,
+            otp_code=otp,
+            expires_at=expires_at,
+        )
+
+        subject = 'FortXpress - Password Reset OTP'
+        message = f"""
+        Hello {user.get_full_name() or user.username},
+
+        Your FortXpress password reset code is:
+        {otp}
+
+        This code will expire in 10 minutes.
+
+        If you didn't request this, please ignore this email.
+
+        Best regards,
+        FortXpress Team
+        """
+
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            logger.info(f"Password OTP sent to {email}")
+        except Exception as e:
+            logger.error(f"Failed to send password OTP email to {email}: {e}")
+
+        return Response({
+            'message': 'If an account with this email exists, you will receive an OTP code.'
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Password OTP request error: {e}")
+        return Response({'error': 'An error occurred while processing your request'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_otp_confirm(request):
+    """Confirm OTP and reset password."""
+    try:
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+
+        if not all([email, otp, new_password]):
+            return Response({'error': 'Email, otp, and new_password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if len(new_password) < 8:
+            return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        reset = PasswordResetOTP.objects.filter(
+            user=user,
+            used_at__isnull=True,
+        ).order_by('-created_at').first()
+
+        if reset is None:
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if reset.expires_at < timezone.now():
+            return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if reset.attempts >= 5:
+            return Response({'error': 'Too many attempts. Please request a new OTP.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if str(reset.otp_code) != str(otp).strip():
+            reset.attempts = reset.attempts + 1
+            reset.save(update_fields=['attempts'])
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        reset.used_at = timezone.now()
+        reset.save(update_fields=['used_at'])
+
+        logger.info(f"Password reset via OTP successful for user {user.email}")
+        return Response({'message': 'Password has been reset successfully'}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        logger.error(f"Password OTP confirm error: {e}")
+        return Response({'error': 'An error occurred while resetting your password'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

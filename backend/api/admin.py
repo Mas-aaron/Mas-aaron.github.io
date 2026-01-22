@@ -9,7 +9,8 @@ from .models import (
     Restaurant, MenuCategory, MenuItem, RiderProfile, Order, Cart, CartItem, 
     NotificationTemplate, OrderItem, DietaryPreference, OrderReview, 
     RiderReview, Device, Bill, PaymentPeriod, OrderPayment, BankAccount, 
-    PaymentDispute, Payment
+    PaymentDispute, Payment,
+    PromoCode, PromoCodeRedemption, PasswordResetOTP,
 )
 from .notifications import send_push_notification
 
@@ -185,6 +186,9 @@ admin.site.register(PaymentPeriod)
 admin.site.register(OrderPayment)
 admin.site.register(BankAccount)
 admin.site.register(PaymentDispute)
+admin.site.register(PromoCode)
+admin.site.register(PromoCodeRedemption)
+admin.site.register(PasswordResetOTP)
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):

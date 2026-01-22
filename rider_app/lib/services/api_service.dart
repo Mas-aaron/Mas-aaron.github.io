@@ -36,6 +36,72 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> requestPasswordOtp(String email) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/password-otp-request/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    }
+    return {
+      'success': false,
+      'message': responseData['error'] ?? 'Failed to send OTP',
+    };
+  }
+
+  Future<Map<String, dynamic>> confirmPasswordOtp({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/password-otp-confirm/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'otp': otp,
+        'new_password': newPassword,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return {'success': true, 'message': responseData['message']};
+    }
+    return {
+      'success': false,
+      'message': responseData['error'] ?? 'Failed to reset password',
+    };
+  }
+
+  Future<void> deleteCurrentUser() async {
+    final token = await ApiService.getToken();
+    if (token == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/me/'),
+      headers: {
+        'Authorization': 'Token $token',
+      },
+    );
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to delete account');
+    }
+  }
+
   Future<Map<String, dynamic>> signUp({required String email, required String password, required String firstName, required String lastName}) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/rider/signup/'),
