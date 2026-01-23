@@ -25,11 +25,14 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       try {
-        await Provider.of<AuthProvider>(context, listen: false).login(
+        final success = await Provider.of<AuthProvider>(context, listen: false).login(
           _usernameController.text,
           _passwordController.text,
         );
-        // AuthProvider will notify listeners and handle navigation
+        if (success && mounted) {
+          // Navigate to the authenticated flow; AuthWrapper will redirect to MainNavigationScreen
+          Navigator.pushReplacementNamed(context, '/auth');
+        }
       } catch (e) {
         setState(() {
           _errorMessage = e.toString().replaceAll('Exception: ', '');

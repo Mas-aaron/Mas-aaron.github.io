@@ -174,6 +174,42 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
     );
   }
 
+  Widget _buildCategorySelector(MenuCategory? selected, Function(MenuCategory?) onChanged) {
+    if (_categories.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Text('No categories available. Please add categories first.', style: TextStyle(color: Colors.grey)),
+      );
+    }
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _categories.map((category) {
+        final isSelected = selected?.id == category.id;
+        return GestureDetector(
+          onTap: () => onChanged(category),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,
+              ),
+            ),
+            child: Text(
+              category.name,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildImagePicker(XFile? selectedImage, Function(XFile?) onImageSelected) {
     return Container(
       width: double.infinity,
@@ -280,24 +316,13 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<MenuCategory>(
-                    value: selectedCategory,
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _categories.map((category) {
-                      return DropdownMenuItem(
-                        value: category,
-                        child: Text(category.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setDialogState(() {
-                        selectedCategory = value;
-                      });
-                    },
-                  ),
+                  Text('Category', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  _buildCategorySelector(selectedCategory, (MenuCategory? value) {
+                    setDialogState(() {
+                      selectedCategory = value;
+                    });
+                  }),
                   const SizedBox(height: 16),
                   _buildImagePicker(selectedImage, (XFile? image) {
                     setDialogState(() {
@@ -411,24 +436,13 @@ class _MenuManagementScreenState extends State<MenuManagementScreen> {
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<MenuCategory>(
-                    value: selectedCategory,
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _categories.map((category) {
-                      return DropdownMenuItem(
-                        value: category,
-                        child: Text(category.name),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setDialogState(() {
-                        selectedCategory = value;
-                      });
-                    },
-                  ),
+                  Text('Category', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  _buildCategorySelector(selectedCategory, (MenuCategory? value) {
+                    setDialogState(() {
+                      selectedCategory = value;
+                    });
+                  }),
                   const SizedBox(height: 16),
                   _buildImagePicker(selectedImage, (XFile? image) {
                     setDialogState(() {
