@@ -15,6 +15,9 @@ import logging
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
+from django.db import transaction
+from django.db.models.deletion import ProtectedError
+
 from rest_framework import viewsets, generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -1053,9 +1056,28 @@ class CurrentUserView(APIView):
 
     def delete(self, request):
         user = request.user
-        logout(request)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        try:
+            with transaction.atomic():
+                # If the user owns a restaurant, deleting the user will cascade-delete the restaurant,
+                # which cascades to menu items. Menu items are PROTECTed by OrderItem to preserve
+                # order history, which causes ProtectedError. Detach ownership first.
+                from .models import Restaurant
+
+                Restaurant.objects.filter(owner=user).update(owner=None)
+
+                user.delete()
+
+            logout(request)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProtectedError as e:
+            return Response(
+                {
+                    'error': 'Account deletion is blocked because related records must be preserved.',
+                    'details': str(e),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 # --- Other Views ---
 
