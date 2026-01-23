@@ -38,6 +38,35 @@ from django.utils import timezone
 from django.http import JsonResponse
 import os
 
+
+def _send_email_via_resend(*, to_email: str, subject: str, text: str) -> None:
+    api_key = getattr(settings, 'RESEND_API_KEY', '')
+    if not api_key:
+        raise ValueError('RESEND_API_KEY is not configured')
+
+    from_email = getattr(settings, 'RESEND_FROM_EMAIL', getattr(settings, 'DEFAULT_FROM_EMAIL', ''))
+    if not from_email:
+        raise ValueError('RESEND_FROM_EMAIL/DEFAULT_FROM_EMAIL is not configured')
+
+    timeout = int(getattr(settings, 'RESEND_TIMEOUT', 10) or 10)
+
+    resp = requests.post(
+        'https://api.resend.com/emails',
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+        },
+        json={
+            'from': from_email,
+            'to': [to_email],
+            'subject': subject,
+            'text': text,
+        },
+        timeout=timeout,
+    )
+    if resp.status_code >= 400:
+        raise RuntimeError(f'Resend error {resp.status_code}: {resp.text}')
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def health_check(request):
@@ -2051,13 +2080,16 @@ def password_reset_request(request):
         """
         
         try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-                fail_silently=False,
-            )
+            if getattr(settings, 'RESEND_API_KEY', ''):
+                _send_email_via_resend(to_email=email, subject=subject, text=message)
+            else:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
             logger.info(f"Password reset email sent to {email}")
         except Exception as e:
             logger.error(f"Failed to send password reset email to {email}: {e}")
@@ -2168,20 +2200,23 @@ def password_otp_request(request):
         """
 
         try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-                fail_silently=False,
-            )
+            if getattr(settings, 'RESEND_API_KEY', ''):
+                _send_email_via_resend(to_email=email, subject=subject, text=message)
+            else:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
             logger.info(f"Password OTP sent to {email}")
         except Exception as e:
             logger.exception(f"Failed to send password OTP email to {email}: {e}")
 
             # In development, help debugging by returning the OTP if email isn't configured.
             if getattr(settings, 'DEBUG', False):
-                logger.warning('DEBUG=True: returning OTP in response for testing. Configure EMAIL_* settings for real delivery.')
+                logger.warning('DEBUG=True: returning OTP in response for testing. Configure RESEND_* or EMAIL_* settings for real delivery.')
                 return Response({
                     'message': 'OTP generated (email delivery failed in DEBUG).',
                     'otp': otp,

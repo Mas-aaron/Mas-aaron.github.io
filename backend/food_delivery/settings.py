@@ -204,6 +204,10 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-repl
 # Fail fast in production so SMTP connection issues don't hang requests until Gunicorn kills the worker.
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '10'))
 
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+RESEND_FROM_EMAIL = os.getenv('RESEND_FROM_EMAIL', DEFAULT_FROM_EMAIL)
+RESEND_TIMEOUT = int(os.getenv('RESEND_TIMEOUT', '10'))
+
 
 # Configure WhiteNoise for production
 if not DEBUG:
