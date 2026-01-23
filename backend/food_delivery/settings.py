@@ -201,6 +201,9 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'true').lower() == 'true'
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-reply@fortxpress.local')
 
+# Fail fast in production so SMTP connection issues don't hang requests until Gunicorn kills the worker.
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT', '10'))
+
 
 # Configure WhiteNoise for production
 if not DEBUG:
