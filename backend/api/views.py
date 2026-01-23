@@ -2155,7 +2155,15 @@ def password_otp_request(request):
             )
             logger.info(f"Password OTP sent to {email}")
         except Exception as e:
-            logger.error(f"Failed to send password OTP email to {email}: {e}")
+            logger.exception(f"Failed to send password OTP email to {email}: {e}")
+
+            # In development, help debugging by returning the OTP if email isn't configured.
+            if getattr(settings, 'DEBUG', False):
+                logger.warning('DEBUG=True: returning OTP in response for testing. Configure EMAIL_* settings for real delivery.')
+                return Response({
+                    'message': 'OTP generated (email delivery failed in DEBUG).',
+                    'otp': otp,
+                }, status=status.HTTP_200_OK)
 
         return Response({
             'message': 'If an account with this email exists, you will receive an OTP code.'

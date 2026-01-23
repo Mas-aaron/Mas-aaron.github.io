@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -8,7 +9,6 @@ import 'package:food_delivery_app/constants.dart';
 import 'package:food_delivery_app/services/auth_service.dart';
 import 'package:food_delivery_app/widgets/order_type_selector.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/io_client.dart';
 import '../models/restaurant.dart';
 import '../models/menu_category.dart';
 import '../models/menu_item.dart';
@@ -17,16 +17,10 @@ import '../models/review.dart';
 
 class ApiService {
   final String _baseUrl = baseUrl;
-  
-  // HTTP client with extended timeout and SSL bypass for Railway connection
-  static final http.Client _client = _createHttpClient();
-  
-  static http.Client _createHttpClient() {
-    final httpClient = HttpClient();
-    // Bypass SSL certificate validation for development
-    httpClient.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-    return IOClient(httpClient);
-  }
+
+  // Use the default HTTP client. SSL bypass is unsafe and can cause unreliable
+  // behavior against production hosts.
+  static final http.Client _client = http.Client();
   
   Future<Map<String, String>> _getAuthHeaders() async {
     final token = await AuthService.getToken();
@@ -48,22 +42,43 @@ class ApiService {
     Duration timeout = const Duration(seconds: 30),
   }) async {
     final uri = Uri.parse(url);
-    
-    try {
+
+    Future<http.Response> doRequest() async {
       switch (method.toUpperCase()) {
         case 'GET':
-          return await _client.get(uri, headers: headers).timeout(timeout);
+          return _client.get(uri, headers: headers).timeout(timeout);
         case 'POST':
-          return await _client.post(uri, headers: headers, body: body).timeout(timeout);
+          return _client.post(uri, headers: headers, body: body).timeout(timeout);
         case 'PUT':
-          return await _client.put(uri, headers: headers, body: body).timeout(timeout);
+          return _client.put(uri, headers: headers, body: body).timeout(timeout);
         case 'DELETE':
-          return await _client.delete(uri, headers: headers).timeout(timeout);
+          return _client.delete(uri, headers: headers).timeout(timeout);
         default:
           throw Exception('Unsupported HTTP method: $method');
       }
+    }
+
+    try {
+      return await doRequest();
+    } on TimeoutException catch (e) {
+      print('HTTP Timeout: $method $url -> $e');
+      throw Exception('Network timeout. Please try again.');
+    } on HandshakeException catch (e) {
+      // Common on some Android devices when TLS/cert chain/time is wrong.
+      print('TLS Handshake Error: $method $url -> $e');
+      // Retry once (some intermittent TLS issues resolve on a second try).
+      try {
+        return await doRequest();
+      } catch (_) {
+        throw Exception(
+          'Secure connection failed. Check your internet and device date/time, then try again.',
+        );
+      }
+    } on SocketException catch (e) {
+      print('Socket Error: $method $url -> $e');
+      throw Exception('No internet connection. Please check your network.');
     } catch (e) {
-      print('HTTP Request Error: $e');
+      print('HTTP Request Error: $method $url -> $e');
       rethrow;
     }
   }
@@ -335,12 +350,33 @@ class ApiService {
   Future<CartItem> addToCart(int menuItemId, int quantity) async {
     final headers = await _getAuthHeaders();
     final body = jsonEncode({'menu_item_id': menuItemId, 'quantity': quantity});
-    final response = await _makeRequest('POST', '$_baseUrl/cart/add/', headers: headers, body: body);
+    final url = '$_baseUrl/cart/add/';
+
+    final hasAuthHeader = headers.keys.any(
+      (k) => k.toLowerCase() == 'authorization',
+    );
+    print('--- Add To Cart ---');
+    print('URL: $url');
+    print('MenuItemId: $menuItemId, Quantity: $quantity');
+    print('Has Authorization header: $hasAuthHeader');
+    print('Request Body: $body');
+
+    final response = await _makeRequest('POST', url, headers: headers, body: body);
+
+    print('AddToCart Status: ${response.statusCode}');
+    print('AddToCart Body: ${response.body}');
+
     if (response.statusCode == 201 || response.statusCode == 200) {
-      return CartItem.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to add item to cart');
+      try {
+        return CartItem.fromJson(jsonDecode(response.body));
+      } catch (e) {
+        throw Exception('Add to cart response parse failed: $e');
+      }
     }
+
+    throw Exception(
+      'Failed to add item to cart (HTTP ${response.statusCode}): ${response.body}',
+    );
   }
 
   Future<CartItem> updateCartItem(int cartItemId, int quantity) async {

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
 import 'package:food_delivery_app/utils/currency_formatter.dart';
-import 'package:food_delivery_app/models/menu_item.dart';
+import 'package:food_delivery_app/providers/cart_provider.dart';
+import 'package:food_delivery_app/widgets/optimized_image.dart';
 import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/screens/filter_dialog.dart';
 import 'package:food_delivery_app/screens/cart_screen.dart';
-import 'package:food_delivery_app/providers/cart_provider.dart';
 import 'package:food_delivery_app/services/distance_service.dart';
 import 'package:food_delivery_app/widgets/error_state_widget.dart';
-import 'package:food_delivery_app/widgets/optimized_image.dart';
+import 'package:food_delivery_app/models/menu_item.dart';
 import 'package:provider/provider.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
@@ -23,6 +23,7 @@ class RestaurantDetailScreen extends StatefulWidget {
 class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   late Future<List<MenuItem>> _futureMenuItems;
+  List<MenuItem> _menuItems = [];
   List<int> _selectedPreferenceIds = [];
   String _distance = 'Calculating...';
   int _selectedTabIndex = 0;
@@ -86,17 +87,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with Si
   }
 
   void _loadMenuItems() {
-    // Get the selected category (null for 'All')
-    String? category = _selectedTabIndex > 0 ? _tabs[_selectedTabIndex] : null;
-    
-    _futureMenuItems = _apiService.fetchMenuItems(
-      widget.restaurant.id, 
-      dietaryPreferenceIds: _selectedPreferenceIds,
-      category: category,
-    );
-    if (mounted) {
-      setState(() {});
-    }
+    _futureMenuItems = _apiService.fetchMenuItems(widget.restaurant.id).then((items) {
+      _menuItems = items;
+      return items;
+    });
   }
 
   Future<void> _refreshData() async {
@@ -209,12 +203,13 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with Si
           Container(
             height: 280,
             decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(
-                  widget.restaurant.imageUrl ?? 'https://via.placeholder.com/400x280',
-                ),
-                fit: BoxFit.cover,
-              ),
+              image: null,
+            ),
+            child: OptimizedImage(
+              imageUrl: widget.restaurant.imageUrl,
+              width: double.infinity,
+              height: 280,
+              fit: BoxFit.cover,
             ),
           ),
           
@@ -584,19 +579,27 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> with Si
 
   Future<void> _addToCart(int menuItemId) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    final success = await cartProvider.addToCart(menuItemId);
+    final MenuItem? menuItem = _menuItems.cast<MenuItem?>().firstWhere(
+          (mi) => mi?.id == menuItemId,
+          orElse: () => null,
+        );
 
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Added to cart!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(milliseconds: 1500),
-        ),
-      );
+    if (menuItem != null) {
+      cartProvider.addMenuItemToCartOptimistic(menuItem);
+    } else {
+      cartProvider.addToCart(menuItemId);
     }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Added to cart!'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
   }
 }
 

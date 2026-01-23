@@ -7,6 +7,7 @@ import 'package:food_delivery_app/services/api_service.dart';
 import 'package:food_delivery_app/models/menu_category.dart';
 import 'package:food_delivery_app/widgets/error_display.dart';
 import 'package:food_delivery_app/providers/cart_provider.dart';
+import 'package:food_delivery_app/widgets/optimized_image.dart';
 import 'package:provider/provider.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -126,14 +127,16 @@ class _MenuScreenState extends State<MenuScreen> {
       ],
       flexibleSpace: FlexibleSpaceBar(
         title: Text(widget.restaurant.name, style: const TextStyle(fontSize: 16.0)),
-        background: (widget.restaurant.imageUrl != null && widget.restaurant.imageUrl!.isNotEmpty)
-            ? Image.network(
-                widget.restaurant.imageUrl!,
-                fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.4),
-                colorBlendMode: BlendMode.darken,
-              )
-            : Container(color: Colors.grey),
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            OptimizedImage(
+              imageUrl: widget.restaurant.imageUrl,
+              fit: BoxFit.cover,
+            ),
+            Container(color: Colors.black.withOpacity(0.4)),
+          ],
+        ),
       ),
     );
   }
@@ -147,30 +150,19 @@ class _MenuItemCard extends StatelessWidget {
 
   void _addToCart(BuildContext context) async {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    
-    final success = await cartProvider.addToCart(item.id);
-    
+
+    cartProvider.addMenuItemToCartOptimistic(item);
+
     if (!context.mounted) return;
-    
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${item.name} added to cart'),
-          duration: const Duration(seconds: 1),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to add ${item.name} to cart'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${item.name} added to cart'),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
   }
 
   @override

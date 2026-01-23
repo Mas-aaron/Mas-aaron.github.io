@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_delivery_app/models/restaurant.dart';
 import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/screens/restaurant_detail_screen.dart';
+import 'package:food_delivery_app/widgets/optimized_image.dart';
 
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
@@ -28,10 +29,12 @@ class RestaurantCard extends StatelessWidget {
               height: 150,
               width: double.infinity,
               child: (restaurant.imageUrl != null && restaurant.imageUrl!.isNotEmpty)
-                  ? Image.network(
-                      restaurant.imageUrl!,
+                  ? OptimizedImage(
+                      imageUrl: restaurant.imageUrl,
+                      width: double.infinity,
+                      height: 150,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Center(
+                      errorWidget: const Center(
                         child: Icon(Icons.restaurant, color: Colors.grey, size: 50),
                       ),
                     )

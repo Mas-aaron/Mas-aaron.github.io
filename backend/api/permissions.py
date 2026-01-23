@@ -5,6 +5,8 @@ class IsCustomer(BasePermission):
     """
     Custom permission to only allow customers (non-restaurant owners) to access an endpoint.
     """
+    message = 'Only customer accounts can access this endpoint.'
+
     def has_permission(self, request, view):
         # Check if the user is authenticated first
         if not request.user or not request.user.is_authenticated:

@@ -7,6 +7,7 @@ import 'menu_screen.dart';
 import 'order_history_screen.dart';
 import '../services/api_service.dart';
 import '../services/distance_service.dart';
+import '../widgets/optimized_image.dart';
 
 class RestaurantListScreen extends StatefulWidget {
   const RestaurantListScreen({super.key});
@@ -200,12 +201,12 @@ class _RestaurantCard extends StatelessWidget {
                 child: (restaurant.imageUrl != null && restaurant.imageUrl!.isNotEmpty)
                     ? ClipRRect(
                         borderRadius: BorderRadius.vertical(top: Radius.circular(12.0)),
-                        child: Image.network(
-                          restaurant.imageUrl!,
+                        child: OptimizedImage(
+                          imageUrl: restaurant.imageUrl,
+                          width: double.infinity,
+                          height: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.restaurant_menu, size: 50, color: Colors.grey);
-                          },
+                          errorWidget: Icon(Icons.restaurant_menu, size: 50, color: Colors.grey),
                         ),
                       )
                     : Container(

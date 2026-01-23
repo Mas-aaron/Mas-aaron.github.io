@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cart.dart';
+import '../models/cart_item.dart';
+import '../models/menu_item.dart';
 import '../widgets/order_type_selector.dart';
 
 import '../constants.dart';
@@ -14,6 +16,8 @@ class CartProvider with ChangeNotifier {
   Cart? _cart;
   bool _isLoading = false;
   String? _error;
+
+  final Set<int> _pendingOptimisticMenuItemIds = <int>{};
   
   // Order type and scheduling for dine-in
   OrderType _orderType = OrderType.delivery;
@@ -82,7 +86,31 @@ class CartProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        _cart = Cart.fromJson(data);
+        final fetched = Cart.fromJson(data);
+
+        // If we have optimistic adds still pending, merge them into the fetched cart
+        // to avoid a "snackbar says added but cart is empty" experience.
+        if (_pendingOptimisticMenuItemIds.isNotEmpty && _cart != null) {
+          final mergedItems = List<CartItem>.from(fetched.items);
+          for (final localItem in _cart!.items) {
+            final localMenuItemId = localItem.menuItem?.id;
+            if (localMenuItemId == null) continue;
+            if (!_pendingOptimisticMenuItemIds.contains(localMenuItemId)) continue;
+
+            final serverIndex = mergedItems.indexWhere(
+              (ci) => ci.menuItem?.id == localMenuItemId,
+            );
+            if (serverIndex != -1) {
+              // Prefer server item if present
+              continue;
+            }
+            mergedItems.add(localItem);
+          }
+
+          _cart = Cart(id: fetched.id, items: mergedItems);
+        } else {
+          _cart = fetched;
+        }
         _error = null;
         notifyListeners(); // Notify listeners immediately with new cart data
       } else {
@@ -168,6 +196,68 @@ class CartProvider with ChangeNotifier {
     }
 
     return success;
+  }
+
+  void addMenuItemToCartOptimistic(MenuItem item, {int quantity = 1}) {
+    if (quantity <= 0) return;
+
+    _error = null;
+
+    _pendingOptimisticMenuItemIds.add(item.id);
+
+    _cart ??= Cart(id: -1, items: []);
+
+    final existingIndex = _cart!.items.indexWhere(
+      (ci) => ci.menuItem?.id == item.id,
+    );
+
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    final List<CartItem> previousItems = List<CartItem>.from(_cart!.items);
+
+    if (existingIndex != -1) {
+      final existing = _cart!.items[existingIndex];
+      _cart!.items[existingIndex] = CartItem(
+        id: existing.id,
+        quantity: existing.quantity + quantity,
+        menuItem: existing.menuItem ?? item,
+      );
+    } else {
+      _cart!.items.add(
+        CartItem(
+          id: tempId,
+          quantity: quantity,
+          menuItem: item,
+        ),
+      );
+    }
+
+    notifyListeners();
+
+    _apiService.addToCart(item.id, quantity).then((serverItem) {
+      if (_cart == null) return;
+
+      _cart!.items.removeWhere(
+        (ci) => ci.id == tempId || (ci.menuItem?.id == item.id && ci.id < 0),
+      );
+
+      final serverIndex = _cart!.items.indexWhere(
+        (ci) => ci.menuItem?.id == item.id,
+      );
+      if (serverIndex != -1) {
+        _cart!.items[serverIndex] = serverItem;
+      } else {
+        _cart!.items.add(serverItem);
+      }
+
+      notifyListeners();
+
+      _pendingOptimisticMenuItemIds.remove(item.id);
+    }).catchError((e) {
+      _cart = _cart == null ? null : Cart(id: _cart!.id, items: previousItems);
+      _error = 'Failed to add item to cart: $e';
+      _pendingOptimisticMenuItemIds.remove(item.id);
+      notifyListeners();
+    });
   }
 
   Future<void> removeFromCart(int cartItemId) async {

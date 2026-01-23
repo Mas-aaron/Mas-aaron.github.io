@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:food_delivery_app/widgets/error_display.dart';
+import 'package:food_delivery_app/widgets/optimized_image.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/location_provider.dart';
@@ -135,13 +136,12 @@ class _CartItemCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
-              child: Image.network(
-                item.menuItem?.imageUrl ?? 'https://via.placeholder.com/150',
+              child: OptimizedImage(
+                imageUrl: item.menuItem?.imageUrl,
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => 
-                  const Icon(Icons.image_not_supported, size: 60),
+                errorWidget: const Icon(Icons.image_not_supported, size: 60),
               ),
             ),
             const SizedBox(width: 12),
