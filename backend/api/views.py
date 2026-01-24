@@ -15,6 +15,9 @@ import logging
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_auth_requests
+
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 
@@ -66,6 +69,49 @@ def _send_email_via_resend(*, to_email: str, subject: str, text: str) -> None:
     )
     if resp.status_code >= 400:
         raise RuntimeError(f'Resend error {resp.status_code}: {resp.text}')
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def google_login(request):
+    token_value = request.data.get('id_token')
+    if not token_value:
+        return Response({'error': 'id_token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    client_id = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+    if not client_id:
+        return Response({'error': 'GOOGLE_OAUTH_CLIENT_ID is not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    try:
+        id_info = google_id_token.verify_oauth2_token(
+            token_value,
+            google_auth_requests.Request(),
+            client_id,
+        )
+    except Exception:
+        return Response({'error': 'Invalid Google token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    email = id_info.get('email')
+    if not email:
+        return Response({'error': 'Email not found in Google token'}, status=status.HTTP_400_BAD_REQUEST)
+
+    base_username = (email.split('@')[0] or 'user').lower()
+    username = base_username
+    suffix = 1
+    while User.objects.filter(username=username).exclude(email=email).exists():
+        suffix += 1
+        username = f"{base_username}{suffix}"
+
+    user, created = User.objects.get_or_create(
+        email=email,
+        defaults={'username': username},
+    )
+    if created:
+        user.set_unusable_password()
+        user.save()
+
+    token_obj, _ = Token.objects.get_or_create(user=user)
+    return Response({'token': token_obj.key}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

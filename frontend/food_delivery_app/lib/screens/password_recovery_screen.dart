@@ -20,6 +20,8 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   bool _obscureNewPassword = true;
   bool _obscureConfirmNewPassword = true;
 
+  static const Color _brandColor = Color(0xFFFE5722);
+
   Future<void> _requestPasswordReset() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -94,135 +96,172 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Password Recovery'),
-        backgroundColor: const Color(0xFFFE5722),
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              const Icon(Icons.lock_reset, size: 60, color: Color(0xFFFE5722)),
-              const SizedBox(height: 32),
-              const Text('Forgot Password?', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              Text(
-                _otpSent
-                    ? 'Enter the OTP sent to your email and choose a new password.'
-                    : 'Enter your email address and we\'ll send you an OTP code.',
-              ),
-              const SizedBox(height: 32),
-
-              TextFormField(
-                controller: _emailController,
-                enabled: !_otpSent,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Please enter your email';
-                  if (!value!.contains('@')) return 'Please enter a valid email';
-                  return null;
-                },
-              ),
-
-              if (_otpSent) ...[
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _otpController,
-                  decoration: const InputDecoration(
-                    labelText: 'OTP Code',
-                    prefixIcon: Icon(Icons.password),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (!_otpSent) return null;
-                    if (value?.isEmpty ?? true) return 'Please enter the OTP';
-                    if (value!.length < 4) return 'OTP is too short';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _newPasswordController,
-                  obscureText: _obscureNewPassword,
-                  decoration: InputDecoration(
-                    labelText: 'New Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _obscureNewPassword = !_obscureNewPassword;
-                        });
-                      },
-                      icon: Icon(
-                        _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _brandColor,
+                          _brandColor.withOpacity(0.85),
+                        ],
                       ),
                     ),
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (!_otpSent) return null;
-                    if (value?.isEmpty ?? true) return 'Please enter a new password';
-                    if (value!.length < 8) return 'Password must be at least 8 characters';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _confirmNewPasswordController,
-                  obscureText: _obscureConfirmNewPassword,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm New Password',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmNewPassword = !_obscureConfirmNewPassword;
-                        });
-                      },
-                      icon: Icon(
-                        _obscureConfirmNewPassword ? Icons.visibility : Icons.visibility_off,
-                      ),
-                    ),
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (!_otpSent) return null;
-                    if (value?.isEmpty ?? true) return 'Please confirm your new password';
-                    if (value != _newPasswordController.text) return 'Passwords do not match';
-                    return null;
-                  },
-                ),
-              ],
-
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : (_otpSent ? _confirmOtpAndReset : _requestPasswordReset),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFE5722),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          _otpSent ? 'Reset Password' : 'Send OTP',
-                          style: const TextStyle(color: Colors.white),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.lock_reset, size: 44, color: Colors.white.withOpacity(0.95)),
+                        const SizedBox(height: 18),
+                        Text(
+                          _otpSent ? 'Reset Password' : 'Forgot Password?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _otpSent
+                              ? 'Enter the OTP sent to your email and choose a new password.'
+                              : 'Enter your email address and we\'ll send you an OTP code.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Card(
+                    elevation: 8,
+                    shadowColor: Colors.black.withOpacity(0.08),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _emailController,
+                              enabled: !_otpSent,
+                              decoration: const InputDecoration(
+                                labelText: 'Email Address',
+                                prefixIcon: Icon(Icons.email),
+                              ),
+                              validator: (value) {
+                                if (value?.isEmpty ?? true) return 'Please enter your email';
+                                if (!value!.contains('@')) return 'Please enter a valid email';
+                                return null;
+                              },
+                            ),
+                            if (_otpSent) ...[
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _otpController,
+                                decoration: const InputDecoration(
+                                  labelText: 'OTP Code',
+                                  prefixIcon: Icon(Icons.password),
+                                ),
+                                validator: (value) {
+                                  if (!_otpSent) return null;
+                                  if (value?.isEmpty ?? true) return 'Please enter the OTP';
+                                  if (value!.length < 4) return 'OTP is too short';
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _newPasswordController,
+                                obscureText: _obscureNewPassword,
+                                decoration: InputDecoration(
+                                  labelText: 'New Password',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscureNewPassword = !_obscureNewPassword;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
+                                    ),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (!_otpSent) return null;
+                                  if (value?.isEmpty ?? true) return 'Please enter a new password';
+                                  if (value!.length < 8) return 'Password must be at least 8 characters';
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              TextFormField(
+                                controller: _confirmNewPasswordController,
+                                obscureText: _obscureConfirmNewPassword,
+                                decoration: InputDecoration(
+                                  labelText: 'Confirm New Password',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscureConfirmNewPassword = !_obscureConfirmNewPassword;
+                                      });
+                                    },
+                                    icon: Icon(
+                                      _obscureConfirmNewPassword ? Icons.visibility : Icons.visibility_off,
+                                    ),
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (!_otpSent) return null;
+                                  if (value?.isEmpty ?? true) return 'Please confirm your new password';
+                                  if (value != _newPasswordController.text) return 'Passwords do not match';
+                                  return null;
+                                },
+                              ),
+                            ],
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isLoading
+                                    ? null
+                                    : (_otpSent ? _confirmOtpAndReset : _requestPasswordReset),
+                                child: _isLoading
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : Text(_otpSent ? 'Reset Password' : 'Send OTP'),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextButton(
+                              onPressed: _isLoading ? null : () => Navigator.pop(context),
+                              child: const Text('Back to Login', style: TextStyle(color: _brandColor)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

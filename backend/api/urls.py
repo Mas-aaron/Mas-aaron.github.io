@@ -63,6 +63,7 @@ custom_urlpatterns = [
     path('register/', api_views.CreateUserView.as_view(), name='register'),
     path('register/restaurant/', api_views.RestaurantSignUpView.as_view(), name='restaurant-signup'),
     path('login/', obtain_auth_token, name='login'),
+    path('auth/google/', api_views.google_login, name='google-login'),
     path('me/', api_views.CurrentUserView.as_view(), name='current-user'),
     path('promo-codes/', api_views.PromoCodeListView.as_view(), name='promo-code-list'),
     path('promo-codes/apply/', api_views.ApplyPromoCodeView.as_view(), name='promo-code-apply'),

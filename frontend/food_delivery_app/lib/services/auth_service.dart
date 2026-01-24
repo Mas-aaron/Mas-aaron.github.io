@@ -31,9 +31,32 @@ class AuthService {
       print('Failed to login: ${response.body}');
       return null;
     }
+
   }
 
-      Future<bool> register(String username, String email, String password, String passwordConfirm) async {
+  Future<String?> loginWithGoogleIdToken(String idToken) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/auth/google/'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'id_token': idToken,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final token = jsonDecode(response.body)['token'];
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', token);
+      return token;
+    } else {
+      print('Failed to login with Google: ${response.body}');
+      return null;
+    }
+  }
+
+  Future<bool> register(String username, String email, String password, String passwordConfirm) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/register/'),
       headers: <String, String>{
