@@ -3,6 +3,8 @@ import 'package:food_delivery_app/utils/currency_formatter.dart';
 import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:food_delivery_app/widgets/error_display.dart';
 import 'package:food_delivery_app/widgets/optimized_image.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/location_provider.dart';
@@ -276,10 +278,25 @@ class _OrderSummaryCard extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.push<LatLng>(
                   context,
                   MaterialPageRoute(builder: (context) => const SetLocationScreen()),
-                );
+                ).then((selected) {
+                  if (selected == null) return;
+                  final newPosition = Position(
+                    latitude: selected.latitude,
+                    longitude: selected.longitude,
+                    timestamp: DateTime.now(),
+                    accuracy: 100.0,
+                    altitude: 0.0,
+                    heading: 0.0,
+                    speed: 0.0,
+                    speedAccuracy: 0.0,
+                    altitudeAccuracy: 0.0,
+                    headingAccuracy: 0.0,
+                  );
+                  context.read<LocationProvider>().updateLocation(newPosition);
+                });
               },
               child: const Text('Change'),
             ),

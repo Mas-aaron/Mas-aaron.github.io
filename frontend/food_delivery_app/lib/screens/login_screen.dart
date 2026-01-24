@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   String _errorMessage = '';
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
@@ -92,7 +93,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   _buildTextFormField(
                     controller: _passwordController,
                     labelText: 'Password',
-                    obscureText: true,
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                    ),
                     validator: (value) =>
                         value!.isEmpty ? 'Please enter your password' : null,
                   ),
@@ -154,6 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
     required TextEditingController controller,
     required String labelText,
     bool obscureText = false,
+    Widget? suffixIcon,
     required String? Function(String?) validator,
   }) {
     return TextFormField(
@@ -162,6 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
       validator: validator,
       decoration: InputDecoration(
         labelText: labelText,
+        suffixIcon: suffixIcon,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),

@@ -279,7 +279,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       initialLatLng = LatLng(currentPosition.latitude, currentPosition.longitude);
     }
 
-    Navigator.of(context).push(
+    Navigator.of(context)
+        .push<LatLng>(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => SetLocationScreen(initialPosition: initialLatLng),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -293,7 +294,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           );
         },
       ),
-    );
+    )
+        .then((selected) {
+      if (!mounted || selected == null) return;
+      final newPosition = Position(
+        latitude: selected.latitude,
+        longitude: selected.longitude,
+        timestamp: DateTime.now(),
+        accuracy: 100.0,
+        altitude: 0.0,
+        heading: 0.0,
+        speed: 0.0,
+        speedAccuracy: 0.0,
+        altitudeAccuracy: 0.0,
+        headingAccuracy: 0.0,
+      );
+      context.read<LocationProvider>().updateLocation(newPosition);
+    });
   }
 
   @override

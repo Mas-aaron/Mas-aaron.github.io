@@ -13,9 +13,12 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   final _emailController = TextEditingController();
   final _otpController = TextEditingController();
   final _newPasswordController = TextEditingController();
+  final _confirmNewPasswordController = TextEditingController();
   final _apiService = ApiService();
   bool _isLoading = false;
   bool _otpSent = false;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmNewPassword = true;
 
   Future<void> _requestPasswordReset() async {
     if (!_formKey.currentState!.validate()) return;
@@ -84,6 +87,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
     _emailController.dispose();
     _otpController.dispose();
     _newPasswordController.dispose();
+    _confirmNewPasswordController.dispose();
     super.dispose();
   }
 
@@ -95,7 +99,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
         backgroundColor: const Color(0xFFFE5722),
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
           key: _formKey,
@@ -112,7 +116,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                     : 'Enter your email address and we\'ll send you an OTP code.',
               ),
               const SizedBox(height: 32),
-              
+
               TextFormField(
                 controller: _emailController,
                 enabled: !_otpSent,
@@ -147,11 +151,21 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _newPasswordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: _obscureNewPassword,
+                  decoration: InputDecoration(
                     labelText: 'New Password',
-                    prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _obscureNewPassword = !_obscureNewPassword;
+                        });
+                      },
+                      icon: Icon(
+                        _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                    ),
+                    border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
                     if (!_otpSent) return null;
@@ -160,10 +174,36 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmNewPasswordController,
+                  obscureText: _obscureConfirmNewPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm New Password',
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmNewPassword = !_obscureConfirmNewPassword;
+                        });
+                      },
+                      icon: Icon(
+                        _obscureConfirmNewPassword ? Icons.visibility : Icons.visibility_off,
+                      ),
+                    ),
+                    border: const OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (!_otpSent) return null;
+                    if (value?.isEmpty ?? true) return 'Please confirm your new password';
+                    if (value != _newPasswordController.text) return 'Passwords do not match';
+                    return null;
+                  },
+                ),
               ],
-              
+
               const SizedBox(height: 24),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

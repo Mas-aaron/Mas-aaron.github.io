@@ -94,8 +94,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
     // Update the provider, which will notify listeners (like HomeScreen and CartScreen)
     context.read<LocationProvider>().updateLocation(newPosition);
 
-    // Just pop the screen, no need to return a value
-    Navigator.of(context).pop();
+    Navigator.of(context).pop(_currentPosition);
   }
 
   @override

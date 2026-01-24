@@ -4,6 +4,8 @@ import 'package:food_delivery_app/screens/set_location_screen.dart';
 import 'package:food_delivery_app/screens/order_success_screen.dart';
 import 'package:food_delivery_app/widgets/order_type_selector.dart';
 import 'package:food_delivery_app/widgets/tip_selector.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import '../models/cart.dart';
 import '../models/payment.dart';
@@ -588,11 +590,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               const SizedBox(width: 12),
               InkWell(
                 onTap: () {
-                  Navigator.push(
+                  Navigator.push<LatLng>(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const SetLocationScreen()),
-                  );
+                  ).then((selected) {
+                    if (!mounted || selected == null) return;
+                    final newPosition = Position(
+                      latitude: selected.latitude,
+                      longitude: selected.longitude,
+                      timestamp: DateTime.now(),
+                      accuracy: 100.0,
+                      altitude: 0.0,
+                      heading: 0.0,
+                      speed: 0.0,
+                      speedAccuracy: 0.0,
+                      altitudeAccuracy: 0.0,
+                      headingAccuracy: 0.0,
+                    );
+                    context.read<LocationProvider>().updateLocation(newPosition);
+                  });
                 },
                 child: Container(
                   padding:
